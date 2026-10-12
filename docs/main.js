@@ -8,6 +8,7 @@ const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').match
 if (reduceMotion || !('IntersectionObserver' in window)) {
   items.forEach((el) => el.classList.add('is-in'))
 } else {
+  // Most items fade in as they reach the bottom of the screen.
   const observer = new IntersectionObserver(
     (entries) => {
       for (const entry of entries) {
@@ -19,7 +20,29 @@ if (reduceMotion || !('IntersectionObserver' in window)) {
     },
     { rootMargin: '0px 0px -8% 0px', threshold: 0.12 },
   )
-  items.forEach((el) => observer.observe(el))
+  // Animated diagrams wait until they are well up the screen, so the viewer sees the
+  // whole animation, not just its end.
+  const lateObserver = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-in')
+          lateObserver.unobserve(entry.target)
+        }
+      }
+    },
+    { rootMargin: '0px 0px -30% 0px', threshold: 0.2 },
+  )
+  items.forEach((el) => (el.hasAttribute('data-reveal-late') ? lateObserver : observer).observe(el))
+
+  // At the bottom of the page, reveal whatever never reached a trigger line.
+  const revealRest = () => {
+    if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) {
+      items.forEach((el) => el.classList.add('is-in'))
+    }
+  }
+  window.addEventListener('scroll', revealRest, { passive: true })
+  revealRest()
 }
 
 // Tool panels: each tool row opens its own <template> in the shared dialog.

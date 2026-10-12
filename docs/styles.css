@@ -825,11 +825,11 @@ p {
 }
 
 .flow.is-in .flow-packet {
-  animation: flow-travel 1.4s var(--ease-out) both;
+  animation: flow-travel 1.6s var(--ease-out) 0.6s both;
 }
 
 .flow.is-in .flow-wire-2 .flow-packet {
-  animation-delay: 0.9s;
+  animation-delay: 1.5s;
 }
 
 @keyframes flow-travel {
@@ -1741,4 +1741,10 @@ html.theme-changing *::after {
 .scene-curious {
   width: min(100%, 300px);
   margin-top: clamp(32px, 4vw, 56px);
+}
+
+/* The two panels under the privacy diagram arrive one after the other */
+
+.flow-views .flow-view + .flow-view {
+  transition-delay: 0.15s;
 }
