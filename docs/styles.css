@@ -592,16 +592,26 @@ p {
 }
 
 .module-dialog-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
+  position: relative;
 }
 
+.module-dialog-art {
+  padding-top: 14px;
+}
+
+/* The illustration is shown large and centered at the top of the dialog. A tall or wide
+   illustration is fitted inside the same box, so every module lines up. */
 .module-dialog-art svg {
   display: block;
-  width: 120px;
-  height: 120px;
+  width: min(100%, 420px);
+  height: 240px;
+  margin-inline: auto;
+}
+
+.module-dialog-head .module-dialog-close {
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 
 .module-dialog-close {
@@ -621,7 +631,7 @@ p {
 }
 
 .module-dialog-title {
-  margin-top: 14px;
+  margin-top: 22px;
   font-size: clamp(1.6rem, 3.4vw, 2rem);
 }
 
