@@ -4,11 +4,38 @@
 
 Product page: https://cored3sign.github.io/yggltree/
 
-Yggltree is an open-source family organizer. It runs on **your
-family's own computer**, and phones and tablets sync through a **family relay**
-on your own free Cloudflare account. Phones join by **scanning a QR code**, and
-they sync from anywhere. There's no family account to create, no subscription,
-and no company server that can read your data.
+Yggltree is a free, open-source family organizer you run yourself. Your family's
+calendar, lists and chores live on **your family's own computer and phones**, with
+no company in the middle.
+
+## Why Yggltree
+
+Most family apps run on someone else's cloud, in a format only they can use, and
+they're paid for with a subscription or with your data. Yggltree is built the
+other way round:
+
+- **Your data, your control.** It lives on your family's computer and phones.
+  Back it up, open the folder, and take it with you.
+- **Nobody in the middle.** No account with us, no ads, no tracking, nothing
+  sold. We run no servers, so we never see your data.
+- **Room for what matters.** A calendar, a shopping list and a chore chart should
+  help a family spend time together, not become another feed.
+- **Software you own.** Free and open source under the MIT License. Read it,
+  change it, and share it.
+
+## Who touches your data
+
+- **Your devices:** everything.
+- **Your relay, on your own Cloudflare account:** scrambled copies only, and it
+  sees when devices connect. Cloudflare hosts it but can't read the content.
+- **Phone push services** (Apple, Google, Mozilla, Microsoft): an encrypted
+  "something changed" ping, with no content.
+- **Open Library**, only if you look up a book by its ISBN: the ISBN is sent, and
+  the cover loads from it.
+- **The Yggltree maintainers:** nothing. There are no servers and no analytics.
+
+Phones join by **scanning a QR code**, and they sync from anywhere. There's no
+family account to create and no subscription.
 
 > **On a phone right now?** Set up Yggltree on your family computer first,
 > then set up the family relay. The full walkthrough is in
@@ -85,8 +112,8 @@ folder, an Obsidian vault that also reads fine on GitHub.
 
 ## Roadmap
 
-- **A cloud hub option**, for families without a computer that stays on
-  at home.
+- **A hub on a cloud account you control**, for families without an always-on
+  computer.
 - **Removing one lost phone** from the family, which needs a family key change.
 - **A desktop app wrapper** (Tauri or Electron), so the hub runs without a
   terminal window.

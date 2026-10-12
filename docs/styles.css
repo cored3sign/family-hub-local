@@ -1644,3 +1644,20 @@ html.theme-changing *::after {
 .hero-band .hero-visual figcaption {
   color: var(--on-accent);
 }
+
+/* Who touches your data: the same rows as the growth section, with a term and what it means */
+
+.who-rows {
+  max-width: 60rem;
+  margin: 28px 0 0;
+}
+
+.who-rows dt {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.who-rows dd {
+  margin: 0;
+  color: var(--text-muted);
+}

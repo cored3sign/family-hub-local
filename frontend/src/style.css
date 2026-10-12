@@ -1,4 +1,13 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap');
+/* Inter is bundled with the app (SIL Open Font License, see assets/fonts/OFL-inter.txt),
+   so no family device contacts a font server. Vite hashes the file into /assets/, and the
+   service worker caches it, so the font also works offline. */
+@font-face {
+  font-family: 'Inter';
+  src: url('./assets/fonts/inter-latin-wght.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
 
 :root {
   /* Warm coral/terracotta primary palette. components.css and every page
