@@ -260,8 +260,14 @@ if (carousel) {
   const behavior = reduceMotion ? 'auto' : 'smooth'
   let frame = null
 
+  // The track stops at its maximum scroll, so the last screen can't reach the left
+  // edge. It is shown at the end instead.
+  const maxScroll = () => track.scrollWidth - track.clientWidth
+
   // The track is positioned, so each slide's offsetLeft is measured from its left edge.
   function current() {
+    if (maxScroll() <= 0) return 0
+    if (track.scrollLeft >= maxScroll() - 2) return slides.length - 1
     let best = 0
     let bestDistance = Infinity
     slides.forEach((slide, i) => {
@@ -276,15 +282,17 @@ if (carousel) {
 
   function goTo(index) {
     const i = Math.max(0, Math.min(slides.length - 1, index))
-    track.scrollTo({ left: slides[i].offsetLeft, behavior })
+    const left = i === slides.length - 1 ? maxScroll() : slides[i].offsetLeft
+    track.scrollTo({ left: Math.min(left, maxScroll()), behavior })
   }
 
   function update() {
     frame = null
     const i = current()
     dots.forEach((dot, n) => dot.setAttribute('aria-current', String(n === i)))
-    prevButton.disabled = i === 0
-    nextButton.disabled = i === slides.length - 1
+    const overflow = maxScroll() > 0
+    prevButton.disabled = !overflow || i === 0
+    nextButton.disabled = !overflow || i === slides.length - 1
   }
 
   function queue() {
