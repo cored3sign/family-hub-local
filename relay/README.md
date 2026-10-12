@@ -2,7 +2,7 @@
 
 The family relay is a small free service on your own Cloudflare account. Phones use it to
 sync the family's data when they can't reach each other directly, on any network. It also
-serves the Family Hub app.
+serves your Yggltree app.
 
 What the relay can see: the encrypted data, and when devices connect. It can't read the data.
 Each family's data is encrypted on the phones with a key that never leaves the phones.
@@ -12,7 +12,7 @@ Each family's data is encrypted on the phones with a key that never leaves the p
 1. Create a free Cloudflare account at cloudflare.com and confirm your email address.
 2. Click **Deploy to Cloudflare** below and follow the steps. It creates the relay on your
    account. Cloudflare then shows the relay's address, which ends in `.workers.dev`.
-3. On the family computer, open Family Hub, go to **Settings → Family relay**, paste that
+3. On the family computer, open Yggltree, go to **Settings → Family relay**, paste that
    address into **Relay address**, and click **Start the family relay**.
 4. Each phone joins with the family QR code shown on that same screen. See
    GETTING_STARTED.md, section 6.

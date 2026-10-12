@@ -6,6 +6,7 @@ import { useOnboardingStore } from '../stores/onboarding'
 import { findAddon } from '../addons/registry'
 import { assetUrl } from '../data/assets'
 import DesktopNav from '../components/DesktopNav.vue'
+import YggltreeLogo from '../components/YggltreeLogo.vue'
 import OnboardingCallout from '../components/OnboardingCallout.vue'
 import SyncStatus from '../components/SyncStatus.vue'
 import {
@@ -259,7 +260,7 @@ const ONBOARDING_STEPS = computed(() => {
       // breakpoints -- see comment above.
       selector: '.quick-drawer__more',
       placement: 'above',
-      text: 'Browse the full catalog here to see every module Family Hub offers.',
+      text: 'Browse the full catalog here to see every module Yggltree offers.',
     },
     {
       // Step 4: the topbar avatar/menu trigger -- Settings, Help,
@@ -323,9 +324,10 @@ function onOnboardingClose() {
          layout render at all. -->
     <div class="rotate-lock">
       <RotateCw :size="40" />
-      <p>Please rotate your device back to portrait to use Family Hub.</p>
+      <p>Please rotate your device back to portrait to use Yggltree.</p>
     </div>
     <header class="topbar">
+      <YggltreeLogo class="topbar__logo" />
       <div class="topbar__identity">
         <div class="topbar__brand">{{ core.familyName }}</div>
         <div class="topbar__who">{{ core.myFirstName }} <span class="topbar__role">{{ core.memberRole }}</span></div>
@@ -733,5 +735,10 @@ function onOnboardingClose() {
     background: var(--surface);
     overflow-y: auto;
   }
+}
+.topbar__logo {
+  flex: none;
+  width: 64px;
+  color: var(--text);
 }
 </style>

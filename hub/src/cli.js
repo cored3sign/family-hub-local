@@ -75,7 +75,7 @@ function openBrowser(url, platform) {
   }
 }
 
-// True when a Family Hub answers /api/health on this port. 127.0.0.1 is
+// True when a Yggltree answers /api/health on this port. 127.0.0.1 is
 // used rather than localhost so the probe never depends on resolver order.
 export async function isHubAnswering(port, timeoutMs = 1500) {
   try {
@@ -92,7 +92,7 @@ export async function isHubAnswering(port, timeoutMs = 1500) {
 export function portInUseMessage(port) {
   const suggestion = Number(port) === 8788 ? 8789 : 8788
   return (
-    `Port ${port} is being used by another program. Close it, or start Family Hub on another port, for example: ` +
+    `Port ${port} is being used by another program. Close it, or start Yggltree on another port, for example: ` +
     `npm start -- --port ${suggestion}`
   )
 }
@@ -100,11 +100,11 @@ export function portInUseMessage(port) {
 function banner({ url, dataDir }) {
   return [
     '',
-    'Family Hub is running.',
+    'Yggltree is running.',
     `  On this computer:  ${url}`,
     '  Phones sync through the family relay: see Settings → Family relay.',
     `  Data folder:       ${dataDir}`,
-    '  Keep this window open. Press Ctrl+C or close it to stop Family Hub.',
+    '  Keep this window open. Press Ctrl+C or close it to stop Yggltree.',
     '',
   ].join('\n')
 }
@@ -156,11 +156,11 @@ export async function main({
     // the launcher again: point them at the running hub and exit 0 (the
     // Windows .bat relies on the exit code).
     // The port can also be held by some unrelated program, so only say
-    // "already running" when a Family Hub actually answers there.
+    // "already running" when a Yggltree actually answers there.
     if (err?.code === 'EADDRINUSE') {
       if (await isHubAnswering(args.port)) {
         const url = `http://localhost:${args.port}`
-        log.log(`Family Hub is already running at ${url}`)
+        log.log(`Yggltree is already running at ${url}`)
         if (args.open) openUrl(url)
         return 0
       }
@@ -174,17 +174,17 @@ export async function main({
       const port = Number.isInteger(err.port) && err.port > 0 ? err.port : args.port
       if (await isHubAnswering(port)) {
         const url = `http://localhost:${port}`
-        log.log(`Family Hub is already running at ${url}`)
+        log.log(`Yggltree is already running at ${url}`)
         if (args.open) openUrl(url)
         return 0
       }
       log.error(
-        `Another program appears to be using Family Hub's data folder (process ${err.pid}), but Family Hub isn't answering.\n` +
-          `If Family Hub isn't running, delete ${err.lockPath ?? join(dataDir, 'hub.lock')} and start it again.`
+        `Another program appears to be using Yggltree's data folder (process ${err.pid}), but Yggltree isn't answering.\n` +
+          `If Yggltree isn't running, delete ${err.lockPath ?? join(dataDir, 'hub.lock')} and start it again.`
       )
       return 1
     }
-    log.error(`Family Hub could not start: ${err?.message ?? err}`)
+    log.error(`Yggltree could not start: ${err?.message ?? err}`)
     return 1
   }
 
@@ -200,11 +200,11 @@ export async function main({
         return
       }
       stopping = true
-      log.log(`\nStopping Family Hub (${signal})...`)
+      log.log(`\nStopping Yggltree (${signal})...`)
       hub.close().then(
         () => resolveExit(0),
         (err) => {
-          log.error(`Family Hub stopped with an error: ${err?.message ?? err}`)
+          log.error(`Yggltree stopped with an error: ${err?.message ?? err}`)
           resolveExit(1)
         }
       )

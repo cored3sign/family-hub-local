@@ -56,17 +56,17 @@ describe('STATUS_COPY', () => {
       message: "This device isn't connected to your family. Scan the family's QR code to join.",
     })
     expect(STATUS_COPY.offline).toEqual({ label: 'Offline', tone: 'orange', message: 'You are offline. Changes are saved on this device.' })
-    expect(STATUS_COPY.connected).toEqual({ label: 'Synced', tone: 'green', message: 'Connected to your family hub.' })
+    expect(STATUS_COPY.connected).toEqual({ label: 'Synced', tone: 'green', message: 'Connected to your Yggltree.' })
     expect(STATUS_COPY.connecting).toEqual({ label: 'Connecting…', tone: 'grey', message: '' })
     expect(STATUS_COPY.waiting).toEqual({
       label: 'Waiting for hub',
       tone: 'yellow',
-      message: 'Changes are saved on this device and will sync when your family hub is reachable.',
+      message: 'Changes are saved on this device and will sync when your Yggltree is reachable.',
     })
   })
 
   it('statusCopy swaps in the hub-machine waiting message', () => {
-    expect(statusCopy('waiting', { role: 'hub-machine' }).message).toBe("Family Hub isn't running on this computer. Start it with npm start.")
+    expect(statusCopy('waiting', { role: 'hub-machine' }).message).toBe("Yggltree isn't running on this computer. Start it with npm start.")
     expect(statusCopy('waiting', { role: 'device' })).toEqual(STATUS_COPY.waiting)
     expect(statusCopy('connected', { role: 'hub-machine' })).toEqual(STATUS_COPY.connected)
   })
@@ -76,15 +76,15 @@ describe('STATUS_COPY', () => {
     expect(statusCopy('waiting', { role: 'hub-machine', hubRunning: true, hasConnection: false }).message).toBe(HUB_MACHINE_NOT_UPLOADED)
     // A live connection that can't sync: the hub stopped since it last answered.
     expect(statusCopy('waiting', { role: 'hub-machine', hubRunning: true, hasConnection: true }).message).toBe(
-      "Family Hub isn't running on this computer. Start it with npm start."
+      "Yggltree isn't running on this computer. Start it with npm start."
     )
     expect(statusCopy('waiting', { role: 'hub-machine', hubRunning: false, hasConnection: false }).message).toBe(
-      "Family Hub isn't running on this computer. Start it with npm start."
+      "Yggltree isn't running on this computer. Start it with npm start."
     )
   })
 
   it('statusCopy: a room restored or reset under the hub machine says reload, not "pair again"', () => {
-    expect(HUB_MACHINE_ROOM_GONE).toBe('Your family hub was restored or reset. Reload this page.')
+    expect(HUB_MACHINE_ROOM_GONE).toBe('Your Yggltree was restored or reset. Reload this page.')
     expect(statusCopy('needs-pairing', { role: 'hub-machine', problem: { kind: 'room-gone' } }).message).toBe(HUB_MACHINE_ROOM_GONE)
     expect(statusCopy('needs-pairing', { role: 'hub-machine', problem: { kind: 'revoked' } }).message).toBe(HUB_MACHINE_ROOM_GONE)
     expect(statusCopy('needs-pairing', { role: 'device', problem: { kind: 'room-gone' } })).toEqual(STATUS_COPY['needs-pairing'])
@@ -94,7 +94,7 @@ describe('STATUS_COPY', () => {
     const copy = statusCopy('needs-pairing', { role: 'device', problem: { kind: 'protocol' } })
     expect(copy).toEqual({ ...STATUS_COPY['needs-pairing'], message: PROBLEM_COPY.protocol })
     expect(PROBLEM_COPY.protocol).toBe(
-      "This device can't talk to your family hub. Update Family Hub on the family computer, then reload this page."
+      "This device can't talk to your Yggltree. Update Yggltree on the family computer, then reload this page."
     )
     expect(statusCopy('needs-pairing', { role: 'hub-machine', problem: { kind: 'protocol' } }).message).toBe(PROBLEM_COPY.protocol)
     expect(statusCopy('needs-pairing', { problem: { kind: 'revoked' } })).toEqual(STATUS_COPY['needs-pairing'])

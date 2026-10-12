@@ -18,12 +18,12 @@ describe('sync indicator', () => {
 
   it('connected: the message plus the last-synced time', () => {
     const s = { status: 'connected', statusCopy: statusCopy('connected'), lastSyncedAt: '2026-10-07 10:00:00' }
-    expect(syncMessage(s, NOW)).toBe('Connected to your family hub. Last synced: Just now.')
-    expect(syncMessage({ ...s, lastSyncedAt: null }, NOW)).toBe('Connected to your family hub.')
+    expect(syncMessage(s, NOW)).toBe('Connected to your Yggltree. Last synced: Just now.')
+    expect(syncMessage({ ...s, lastSyncedAt: null }, NOW)).toBe('Connected to your Yggltree.')
   })
 
   it('connecting has no fixed status message, so it says what it is doing', () => {
-    expect(syncMessage({ status: 'connecting', statusCopy: statusCopy('connecting') }, NOW)).toBe('Connecting to your family hub…')
+    expect(syncMessage({ status: 'connecting', statusCopy: statusCopy('connecting') }, NOW)).toBe('Connecting to your Yggltree…')
   })
 
   it('other states use the status copy verbatim (never claims synced)', () => {

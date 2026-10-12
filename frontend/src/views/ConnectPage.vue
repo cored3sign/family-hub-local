@@ -143,7 +143,7 @@ function reload() {
     <template v-if="state === 'confirm-replace'">
       <h1>Replace this device's family?</h1>
       <p class="subtitle">
-        This device already has family data that isn't from this family hub. Replacing it deletes that data from
+        This device already has family data that isn't from this Yggltree. Replacing it deletes that data from
         this device and loads your family from the hub. Download a backup first if you might need it.
       </p>
       <div class="connect-actions">
@@ -158,7 +158,7 @@ function reload() {
     <template v-else-if="state === 'replace-failed'">
       <h1>Replacing didn't finish</h1>
       <p class="subtitle">
-        Download a backup now, then close any other Family Hub tabs or windows and press Retry. Don't reload or close
+        Download a backup now, then close any other Yggltree tabs or windows and press Retry. Don't reload or close
         this page until it succeeds.
       </p>
       <div class="connect-actions">
@@ -170,7 +170,7 @@ function reload() {
     </template>
 
     <template v-else-if="state === 'confirm-adopt'">
-      <h1>Your family hub is empty</h1>
+      <h1>Your Yggltree is empty</h1>
       <p class="subtitle">
         This computer already has your family's data. Upload it to the hub so phones and tablets can sync with it.
       </p>
@@ -191,15 +191,15 @@ function reload() {
     </template>
 
     <template v-else-if="state === 'hub-not-running'">
-      <h1>Family Hub isn't running</h1>
-      <p class="subtitle">Start Family Hub on this computer (npm start), then reload.</p>
+      <h1>Yggltree isn't running</h1>
+      <p class="subtitle">Start Yggltree on this computer (npm start), then reload.</p>
       <div class="connect-actions">
         <AppButton variant="primary" @click="reload">Reload</AppButton>
       </div>
     </template>
 
     <template v-else-if="state === 'install-first'">
-      <h1>Step 1 of 2: put Family Hub on your Home Screen</h1>
+      <h1>Step 1 of 2: put Yggltree on your Home Screen</h1>
       <IosInstallGuide @safari-instead="useSafariInstead = true" />
     </template>
 
@@ -230,10 +230,10 @@ function reload() {
     </template>
 
     <template v-else>
-      <h1>Connecting to your family hub…</h1>
+      <h1>Connecting to your Yggltree…</h1>
       <p v-if="hubAddress" class="subtitle">{{ hubAddress }}</p>
       <p v-if="slow" class="connect-text connect-text--muted">
-        Make sure the family computer is on with Family Hub running, and this phone is on the same Wi-Fi.
+        Make sure the family computer is on with Yggltree running, and this phone is on the same Wi-Fi.
       </p>
     </template>
   </AppCard>

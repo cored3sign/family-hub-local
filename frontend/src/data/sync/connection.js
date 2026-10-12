@@ -1,4 +1,4 @@
-// One y-websocket provider per doc (main, assets) to the family hub:
+// One y-websocket provider per doc (main, assets) to the family computer:
 //   <hubUrl as ws(s)>/sync/<roomId>/<docName>?token=<token>
 //
 // y-websocket 3.1.0 facts this relies on (read from its source):

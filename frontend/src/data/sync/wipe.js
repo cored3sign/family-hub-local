@@ -46,7 +46,7 @@ export function deleteDatabase(name, { indexedDB = globalThis.indexedDB, blocked
       if (timer !== null) return
       timer = setTimeout(() => {
         timer = null
-        reject(new WipeError(`Deleting ${name} is blocked; close other Family Hub tabs and try again`))
+        reject(new WipeError(`Deleting ${name} is blocked; close other Yggltree tabs and try again`))
       }, blockedTimeoutMs)
     }
   })

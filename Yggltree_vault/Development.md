@@ -6,7 +6,7 @@ updated: 2026-10-08
 
 # Development
 
-How to run, test, build, and extend Family Hub Local (v2). For what the
+How to run, test, build, and extend Yggltree (v2). For what the
 code is doing conceptually, see [[Architecture]] and [[Data-Model]].
 
 ## Running

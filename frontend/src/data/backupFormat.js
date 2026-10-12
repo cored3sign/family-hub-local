@@ -6,7 +6,7 @@
 import * as Y from 'yjs'
 
 export const BACKUP_FORMAT = 'family-hub-backup'
-const NOT_A_BACKUP = 'That file is not a Family Hub backup'
+const NOT_A_BACKUP = 'That file is not a Yggltree backup'
 
 // Same naive-UTC "YYYY-MM-DD HH:MM:SS" shape as data/time.js's nowStamp --
 // duplicated here (not imported) so this module's only dependency is yjs.

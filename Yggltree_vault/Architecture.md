@@ -6,7 +6,7 @@ updated: 2026-10-09
 
 # Architecture
 
-A high-level map of how Family Hub Local (v2) is put together: a
+A high-level map of how Yggltree (v2) is put together: a
 local-first Vue app on every device, plus a small local server on the family
 computer (the **hub**) that serves the app and keeps the family's copy. Phones
 sync through the **family relay** (`relay/`), a Cloudflare Worker on the
@@ -264,7 +264,7 @@ canSetUp, pendingReplace }`:
 2. **No family on this device yet?** `canSetUp` (hub machine, and the hub
    says no family exists) goes to `/setup`; everything else goes to
    `/connect`. A freshly paired phone has no family until sync delivers
-   it, so it must land on `/connect` ("Connecting to your family hub…"),
+   it, so it must land on `/connect` ("Connecting to your Yggltree…"),
    never `/setup`.
 3. **Family exists:** `/setup` and `/connect` bounce to `/`.
 4. **No profile chosen on this device?** (`core.memberId`, resolved

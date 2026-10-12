@@ -1,4 +1,4 @@
-/* Family Hub Local product page. Tokens come from the app's frontend/src/style.css. */
+/* Yggltree product page. Tokens come from the app's frontend/src/style.css. */
 
 @font-face {
   font-family: "Inter";
@@ -270,15 +270,61 @@ p {
 }
 
 .brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
+  display: block;
+  width: 96px;
   color: var(--text);
-  font-weight: 800;
-  letter-spacing: -0.02em;
   text-decoration: none;
-  font-size: 1.05rem;
 }
+
+.mark {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.hero-mark {
+  width: clamp(220px, 34vw, 440px);
+  margin-bottom: clamp(20px, 3vw, 32px);
+  color: var(--accent-deep);
+}
+
+.hero-mark a {
+  display: block;
+  color: inherit;
+}
+
+.legal {
+  margin-top: 16px;
+  max-width: 70ch;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.legal a {
+  color: var(--text-muted);
+}
+
+.flying-mark {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 60;
+  display: block;
+  transform-origin: 0 0;
+  color: var(--accent-deep);
+  transition: color 0.4s var(--ease-out);
+  will-change: transform;
+}
+
+.flying-mark.is-pinned {
+  color: var(--text);
+}
+
+.js-mark .hero-mark,
+.js-mark .brand {
+  visibility: hidden;
+}
+
 
 .nav-links {
   display: flex;

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// `npm start` -- one command (or a double-click on "Start Family Hub") for a
+// `npm start` -- one command (or a double-click on "Start Yggltree") for a
 // family's desktop: check Node, install if needed, build the app if its
 // sources changed, then run the home hub in the foreground.
 //
@@ -22,7 +22,7 @@ var MIN_MAJOR = 22
 var MIN_MINOR = 12
 
 var NODE_MESSAGE =
-  'Family Hub needs Node.js 22.12 or newer. Download the LTS installer from https://nodejs.org, install it, then run npm start again.'
+  'Yggltree needs Node.js 22.12 or newer. Download the LTS installer from https://nodejs.org, install it, then run npm start again.'
 
 // Everything the frontend build reads. A change to any of these (path,
 // size or mtime) triggers a rebuild on the next start.

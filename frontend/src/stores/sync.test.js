@@ -204,7 +204,7 @@ describe('confirmReplace: wipe and pull', () => {
     await sync.boot({})
     await expect(sync.confirmReplace()).rejects.toThrow(REPLACE_WIPE_MESSAGE)
     expect(REPLACE_WIPE_MESSAGE).toBe(
-      "Couldn't clear this device's old data. Close any other Family Hub tabs or windows on this device and try again."
+      "Couldn't clear this device's old data. Close any other Yggltree tabs or windows on this device and try again."
     )
     expect(loadHubConfig({ storage })).toBeNull()
     expect(storage.getItem('fh.memberId')).toBe('old-family-member')
@@ -299,7 +299,7 @@ describe('status', () => {
     clock += 4000
     sync.refreshStatus()
     expect(sync.status).toBe('waiting')
-    expect(sync.statusCopy.message).toBe("Family Hub isn't running on this computer. Start it with npm start.")
+    expect(sync.statusCopy.message).toBe("Yggltree isn't running on this computer. Start it with npm start.")
   })
 
   it('the hub machine after a cancelled adopt: "isn\'t on the hub yet", not "isn\'t running"', async () => {
@@ -323,7 +323,7 @@ describe('status', () => {
     expect(sync.status).toBe('needs-pairing')
     expect(sync.problem).toMatchObject({ kind: 'protocol' })
     expect(sync.statusCopy.message).toBe(
-      "This device can't talk to your family hub. Update Family Hub on the family computer, then reload this page."
+      "This device can't talk to your Yggltree. Update Yggltree on the family computer, then reload this page."
     )
   })
 })
@@ -352,7 +352,7 @@ describe('restoreOnHub', () => {
     for (const [failure, message] of [
       [new HubApiError(400, 'bad-backup'), "The hub couldn't read that backup file."],
       [new HubApiError(413), 'That backup file is too large for the hub.'],
-      [new TypeError('Failed to fetch'), "Couldn't reach Family Hub on this computer to restore."],
+      [new TypeError('Failed to fetch'), "Couldn't reach Yggltree on this computer to restore."],
     ]) {
       setActivePinia(createPinia())
       applyCalls = []
@@ -592,7 +592,7 @@ describe('hub-machine re-probe while waiting (keeps hubRunning fresh)', () => {
     clock = boot0 + 4000
     sync.refreshStatus()
     expect(sync.status).toBe('waiting')
-    expect(sync.statusCopy.message).toBe("Family Hub isn't running on this computer. Start it with npm start.")
+    expect(sync.statusCopy.message).toBe("Yggltree isn't running on this computer. Start it with npm start.")
     expect(fetches).toHaveLength(0) // the boot probe counts: nothing before 15 s
 
     answer = INFO
@@ -629,7 +629,7 @@ describe('hub-machine re-probe while waiting (keeps hubRunning fresh)', () => {
     expect(fetches).toHaveLength(3)
     await flush()
     expect(sync.hubInfo).toBeNull()
-    expect(sync.statusCopy.message).toBe("Family Hub isn't running on this computer. Start it with npm start.")
+    expect(sync.statusCopy.message).toBe("Yggltree isn't running on this computer. Start it with npm start.")
   })
 
   it('never overlaps probes while one is in flight', async () => {

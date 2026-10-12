@@ -4,7 +4,7 @@
 //   to the last cached index.html when offline.
 // - /assets/*: Vite's content-hashed bundles never change under a given URL,
 //   so cache-first is safe and makes offline reloads instant.
-// - /api/ and /sync/ (the family hub) are never touched.
+// - /api/ and /sync/ (the family computer) are never touched.
 // - Everything else (including /version.json, which UpdatePrompt must always
 //   fetch fresh) passes straight through to the network.
 // Also handles push notifications.
@@ -68,7 +68,7 @@ self.addEventListener('fetch', (event) => {
 })
 
 self.addEventListener('push', (event) => {
-  let data = { title: 'Family Hub', body: 'You have a new notification.' }
+  let data = { title: 'Yggltree', body: 'You have a new notification.' }
   if (event.data) {
     try {
       data = event.data.json()
@@ -78,7 +78,7 @@ self.addEventListener('push', (event) => {
   }
 
   event.waitUntil(
-    self.registration.showNotification(data.title || 'Family Hub', {
+    self.registration.showNotification(data.title || 'Yggltree', {
       body: data.body || '',
       icon: '/icons/icon-192.png',
       badge: '/icons/icon-192.png',

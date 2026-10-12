@@ -1,12 +1,12 @@
 ---
-title: Family Hub documentation
+title: Yggltree documentation
 tags: [index]
 updated: 2026-10-09
 ---
 
-# Family Hub documentation
+# Yggltree documentation
 
-Developer notes for Family Hub. For setup and everyday use, see
+Developer notes for Yggltree. For setup and everyday use, see
 `GETTING_STARTED.md` at the repository root.
 
 - [[Architecture]]: how the family computer's hub, the app and the sync layer fit together.

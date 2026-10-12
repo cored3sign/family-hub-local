@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useCoreStore } from '../stores/core'
+import YggltreeLogo from './YggltreeLogo.vue'
 import { addons, findAddon } from '../addons/registry'
 import {
   LayoutGrid, LayoutDashboard, Grid2x2Plus,
@@ -38,6 +39,9 @@ const enabledAddons = computed(() =>
 
 <template>
   <nav class="desktop-nav" aria-label="Modules">
+    <div class="desktop-nav__brand">
+      <YggltreeLogo />
+    </div>
     <router-link to="/dashboard" class="desktop-nav__item">
       <LayoutDashboard :size="20" class="desktop-nav__icon" />
       <span>Dashboard</span>
@@ -74,6 +78,15 @@ const enabledAddons = computed(() =>
    but that global rule loses to this scoped rule's higher specificity
    (Vue compiles scoped selectors with a [data-v-xxx] attribute match), so
    the actual toggle must live here too or the rail stays visible on mobile. */
+.desktop-nav__brand {
+  padding: 4px 10px 18px;
+  color: var(--text);
+}
+
+.desktop-nav__brand .yggltree-logo {
+  width: 120px;
+}
+
 .desktop-nav {
   display: none;
   flex-direction: column;

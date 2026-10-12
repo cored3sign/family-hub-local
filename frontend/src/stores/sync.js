@@ -21,8 +21,8 @@ import { deriveSyncStatus, statusCopy } from '../data/sync/status.js'
 
 export const ALREADY_SET_UP_MESSAGE = 'Your family is already set up on this hub'
 export const REPLACE_WIPE_MESSAGE =
-  "Couldn't clear this device's old data. Close any other Family Hub tabs or windows on this device and try again."
-const HUB_UNREACHABLE_MESSAGE = "Couldn't reach Family Hub on this computer. Make sure it's running, then try again."
+  "Couldn't clear this device's old data. Close any other Yggltree tabs or windows on this device and try again."
+const HUB_UNREACHABLE_MESSAGE = "Couldn't reach Yggltree on this computer. Make sure it's running, then try again."
 
 const CLAIM_ID_KEY = 'fh.setupClaimId'
 // Hub machine, status "waiting": how often /api/hub/info is re-probed so
@@ -134,7 +134,7 @@ function claimId() {
 }
 
 function restoreFailedError(err) {
-  let message = "Couldn't reach Family Hub on this computer to restore. Make sure it's running, then try again."
+  let message = "Couldn't reach Yggltree on this computer to restore. Make sure it's running, then try again."
   if (err instanceof HubApiError && err.status === 413) message = 'That backup file is too large for the hub.'
   else if (err instanceof HubApiError && err.status === 400) message = "The hub couldn't read that backup file."
   else if (err instanceof HubApiError) message = `The hub couldn't restore the backup (error ${err.status}).`
@@ -200,7 +200,7 @@ export const useSyncStore = defineStore('sync', {
       try {
         boot = await deps.bootSync({ fam: family(), location: deps.location, storage: deps.storage })
       } catch (err) {
-        console.error('Family Hub sync could not start:', err)
+        console.error('Yggltree sync could not start:', err)
         boot = null
       }
       if (boot) {
@@ -319,7 +319,7 @@ export const useSyncStore = defineStore('sync', {
         await hubApi().claim(claimId())
       } catch (err) {
         if (err instanceof HubApiError && err.status === 409) throw new Error(ALREADY_SET_UP_MESSAGE)
-        if (err instanceof HubApiError) throw new Error(`Family Hub couldn't start setup (error ${err.status}).`)
+        if (err instanceof HubApiError) throw new Error(`Yggltree couldn't start setup (error ${err.status}).`)
         throw new Error(HUB_UNREACHABLE_MESSAGE)
       }
     },

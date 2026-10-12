@@ -123,12 +123,12 @@ describe('Node version messages', () => {
   it('name the real minimum (22.12) in npm start and both launchers', async () => {
     const { readFile } = await import('node:fs/promises')
     expect(start.NODE_MESSAGE).toBe(
-      'Family Hub needs Node.js 22.12 or newer. Download the LTS installer from https://nodejs.org, install it, then run npm start again.'
+      'Yggltree needs Node.js 22.12 or newer. Download the LTS installer from https://nodejs.org, install it, then run npm start again.'
     )
     const root = new URL('../../', import.meta.url)
-    for (const name of ['Start Family Hub.command', 'Start Family Hub.bat']) {
+    for (const name of ['Start Yggltree.command', 'Start Yggltree.bat']) {
       const text = await readFile(new URL(name, root), 'utf8')
-      expect(text, name).toContain('Family Hub needs Node.js 22.12 or newer.')
+      expect(text, name).toContain('Yggltree needs Node.js 22.12 or newer.')
       expect(text, name).not.toContain('Node.js 22 or newer')
     }
   })

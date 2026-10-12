@@ -61,7 +61,7 @@ watch(() => route.hash, scrollToHash)
         </span>
         <h3>Tutorial</h3>
       </div>
-      <p class="subtitle">Walk back through the guided tour of Family Hub, step by step.</p>
+      <p class="subtitle">Walk back through the guided tour of Yggltree, step by step.</p>
       <AppButton @click="startTutorial">View tutorial</AppButton>
     </AppCard>
 
@@ -91,7 +91,7 @@ watch(() => route.hash, scrollToHash)
         </div>
         <div>
           <dt>This device</dt>
-          <dd v-if="sync.isHubMachine">This computer is your family hub.</dd>
+          <dd v-if="sync.isHubMachine">This computer is your Yggltree.</dd>
           <dd v-else-if="sync.config">Joined to your family.</dd>
           <dd v-else>Not joined to a family yet.</dd>
         </div>
@@ -120,7 +120,7 @@ watch(() => route.hash, scrollToHash)
         <h3>Install the app</h3>
       </div>
       <p class="subtitle">
-        Family Hub works as an app straight from the browser -- no store, no sideloading, and no separate download to
+        Yggltree works as an app straight from the browser -- no store, no sideloading, and no separate download to
         keep up to date. Install it after this phone has joined the family.
       </p>
       <p v-if="!relayAddress" class="hint">
@@ -128,13 +128,13 @@ watch(() => route.hash, scrollToHash)
       </p>
       <ol class="app-install-steps">
         <li>On the family computer, open Settings → Family relay and keep its QR code on screen.</li>
-        <li>Scan the QR code with the phone's Camera app. It opens Family Hub in Safari.</li>
+        <li>Scan the QR code with the phone's Camera app. It opens Yggltree in Safari.</li>
         <li>
           Put it on the Home Screen. iPhone: tap <strong>Share</strong>, then <strong>Add to Home Screen</strong>, then
           <strong>Add</strong>. Android: tap the <strong>⋮</strong> menu, then <strong>Add to Home screen</strong>.
         </li>
         <li>
-          Open Family Hub from its new icon and scan the QR code again. On iPhone this second scan is needed: the icon
+          Open Yggltree from its new icon and scan the QR code again. On iPhone this second scan is needed: the icon
           keeps its own data apart from Safari, and notifications only work from the icon.
         </li>
       </ol>
@@ -143,6 +143,15 @@ watch(() => route.hash, scrollToHash)
         made without a connection wait on the phone and sync when it reaches the family relay again.
       </p>
     </AppCard>
+    <section class="about" aria-label="About Yggltree">
+      <p><strong>Yggltree</strong> &copy; 2026 Yggltree contributors. Free software under the MIT License.</p>
+      <p>
+        The software is provided &ldquo;as is&rdquo;, without warranty of any kind. &ldquo;Yggltree&rdquo; and the
+        Yggltree logo are the names of this project. The license covers the code and documentation, not the names or
+        the logo.
+      </p>
+      <p>Source and the full license: <a href="https://github.com/cored3sign/family-hub-local">github.com/cored3sign/family-hub-local</a></p>
+    </section>
   </div>
 </template>
 
@@ -304,5 +313,14 @@ watch(() => route.hash, scrollToHash)
   background: var(--surface);
   padding: 1px 5px;
   border-radius: 4px;
+}
+.about {
+  margin-top: 32px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.about p + p {
+  margin-top: 8px;
 }
 </style>

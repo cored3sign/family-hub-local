@@ -1,6 +1,6 @@
 {
-  "name": "Family Hub",
-  "short_name": "Family Hub",
+  "name": "Yggltree",
+  "short_name": "Yggltree",
   "description": "A modular family dashboard — to-do, calendar, shopping, and more.",
   "start_url": "/",
   "display": "standalone",

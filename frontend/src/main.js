@@ -68,7 +68,7 @@ initFamily()
     console.error('Failed to open local storage:', err)
     const el = document.getElementById('app')
     if (el) {
-      el.textContent = "Family Hub couldn't open its storage on this device. Check that this browser allows site data (not a private window) and reload."
+      el.textContent = "Yggltree couldn't open its storage on this device. Check that this browser allows site data (not a private window) and reload."
     }
   })
 

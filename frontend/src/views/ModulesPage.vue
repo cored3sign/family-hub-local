@@ -198,7 +198,7 @@ function unpinModule(key) {
       <div class="modules-header__text">
         <h2>Modules</h2>
         <p class="modules-header__subtitle">
-          Browse everything Family Hub can do. Every module is free.
+          Browse everything Yggltree can do. Every module is free.
         </p>
       </div>
     </div>

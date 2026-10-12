@@ -14,28 +14,28 @@ export const STATUS_COPY = {
     message: "This device isn't connected to your family. Scan the family's QR code to join.",
   },
   offline: { label: 'Offline', tone: 'orange', message: 'You are offline. Changes are saved on this device.' },
-  connected: { label: 'Synced', tone: 'green', message: 'Connected to your family hub.' },
+  connected: { label: 'Synced', tone: 'green', message: 'Connected to your Yggltree.' },
   connecting: { label: 'Connecting…', tone: 'grey', message: '' },
   waiting: {
     label: 'Waiting for hub',
     tone: 'yellow',
-    message: 'Changes are saved on this device and will sync when your family hub is reachable.',
+    message: 'Changes are saved on this device and will sync when your Yggltree is reachable.',
   },
 }
 
 // needs-pairing messages that depend on why (the problem kind).
 export const PROBLEM_COPY = {
-  protocol: "This device can't talk to your family hub. Update Family Hub on the family computer, then reload this page.",
+  protocol: "This device can't talk to your Yggltree. Update Yggltree on the family computer, then reload this page.",
 }
 
-const HUB_MACHINE_WAITING = "Family Hub isn't running on this computer. Start it with npm start."
+const HUB_MACHINE_WAITING = "Yggltree isn't running on this computer. Start it with npm start."
 // The hub answers but this browser has no live connection to it (it kept
 // its own family instead of uploading it, e.g. a cancelled adopt).
 export const HUB_MACHINE_NOT_UPLOADED = "This computer's family isn't on the hub yet. Reload to upload it."
 // The hub machine was told its room is gone (4404 / 4410: a restore or a
 // reset hub) or its token is no longer valid: a reload picks up the hub's
 // current room. Nothing needs pairing on the family computer itself.
-export const HUB_MACHINE_ROOM_GONE = 'Your family hub was restored or reset. Reload this page.'
+export const HUB_MACHINE_ROOM_GONE = 'Your Yggltree was restored or reset. Reload this page.'
 
 // connectingSinceMs: when the current unsynced period began (boot, a lost
 // connection, or a fresh attempt such as a token refresh) -- the

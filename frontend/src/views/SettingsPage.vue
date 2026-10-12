@@ -293,7 +293,7 @@ async function turnOnNotifications() {
   notifyError.value = ''
   const permission = await Notification.requestPermission()
   if (permission !== 'granted') {
-    notifyError.value = `Notifications are ${permission}. Allow them for Family Hub in the phone's Settings.`
+    notifyError.value = `Notifications are ${permission}. Allow them for Yggltree in the phone's Settings.`
     return
   }
   const reg = await navigator.serviceWorker.ready
@@ -593,7 +593,7 @@ function initials(name) {
         <div v-else class="restore-section">
           <strong>Restore from the family computer</strong>
           <p class="hint">
-            Backups are restored through Family Hub on the family computer. Open Settings there to restore one.
+            Backups are restored through Yggltree on the family computer. Open Settings there to restore one.
           </p>
         </div>
       </AppCard>
@@ -656,7 +656,7 @@ function initials(name) {
         </p>
         <p v-else-if="notifyState === 'unsupported'" class="hint">This browser can't show notifications.</p>
         <p v-else-if="notifyState === 'add-to-home'" class="hint">
-          On iPhone, first add Family Hub to the Home Screen (Share → Add to Home Screen), open it from its icon,
+          On iPhone, first add Yggltree to the Home Screen (Share → Add to Home Screen), open it from its icon,
           then come back to this screen.
         </p>
         <template v-else-if="notifyState === 'on'">
@@ -676,7 +676,7 @@ function initials(name) {
           <span>Restoring didn't finish on this computer.</span>
         </p>
         <p class="restore-stuck__copy">
-          Download a backup now, then close any other Family Hub tabs or windows and press Retry. Don't reload or
+          Download a backup now, then close any other Yggltree tabs or windows and press Retry. Don't reload or
           close this page until it succeeds.
         </p>
         <p v-if="exportError" class="error">{{ exportError }}</p>

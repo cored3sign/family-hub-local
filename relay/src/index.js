@@ -190,7 +190,7 @@ export class Room extends DurableObject {
       const subscription = JSON.parse(subJson)
       const keys = await this.env.CONFIG.get(this.env.CONFIG.idFromName(SERVER_KEY)).vapid()
       const vapid = { subject: SERVER_CONTACT, publicKey: keys.publicKey, privateKey: keys.privateKey }
-      const message = { data: JSON.stringify({ title: 'Family Hub', body: 'New family update' }), options: { ttl: 300 } }
+      const message = { data: JSON.stringify({ title: 'Yggltree', body: 'New family update' }), options: { ttl: 300 } }
       const res = await fetch(endpoint, await buildPushPayload(message, subscription, vapid))
       if (res.status === 404 || res.status === 410) this.sql.exec('DELETE FROM subs WHERE endpoint = ?', endpoint)
       console.log(`push to ${new URL(endpoint).host}: ${res.status}`)

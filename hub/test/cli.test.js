@@ -82,9 +82,9 @@ describe('cli process', () => {
     const [, port] = await run.waitForOutput(/http:\/\/localhost:(\d+)/)
     await run.waitForOutput(/Keep this window open/)
     expect(run.output()).toContain(dataDir)
-    expect(run.output()).toContain('Family Hub is running.')
+    expect(run.output()).toContain('Yggltree is running.')
     expect(run.output()).toContain('  Phones sync through the family relay: see Settings → Family relay.')
-    expect(run.output()).toContain('  Keep this window open. Press Ctrl+C or close it to stop Family Hub.')
+    expect(run.output()).toContain('  Keep this window open. Press Ctrl+C or close it to stop Yggltree.')
     expect(run.output()).not.toMatch(/ExperimentalWarning/)
     const res = await fetch(`http://127.0.0.1:${port}/api/nope`)
     expect(res.status).toBe(404)
@@ -99,13 +99,13 @@ describe('cli process', () => {
     const dataDir = await fx.tmpDir('hub-data-')
     const run = runCli(['--port', String(hub.port), '--data', dataDir])
     expect(await run.exited).toBe(0)
-    expect(run.output()).toContain(`Family Hub is already running at http://localhost:${hub.port}`)
+    expect(run.output()).toContain(`Yggltree is already running at http://localhost:${hub.port}`)
     // It gave its lock back on the way out.
     await expect(access(join(dataDir, 'hub.lock'))).rejects.toThrow()
   })
 
   it('a port held by some other program exits 1 with a "use another port" hint, without opening a browser', async () => {
-    // A plain HTTP server that is not Family Hub: /api/health answers, but not as a hub.
+    // A plain HTTP server that is not Yggltree: /api/health answers, but not as a hub.
     const other = createHttpServer((req, res) => {
       res.writeHead(200, { 'content-type': 'application/json' })
       res.end(JSON.stringify({ ok: true, app: 'something-else' }))
@@ -123,7 +123,7 @@ describe('cli process', () => {
       const text = lines.join('\n')
       expect(text).not.toMatch(/already running/)
       expect(text).toContain(
-        `Port ${port} is being used by another program. Close it, or start Family Hub on another port, for example: npm start -- --port 8788`
+        `Port ${port} is being used by another program. Close it, or start Yggltree on another port, for example: npm start -- --port 8788`
       )
       // It gave its lock back on the way out.
       await expect(access(join(dataDir, 'hub.lock'))).rejects.toThrow()
@@ -163,7 +163,7 @@ describe('cli process', () => {
     // A different requested port: the URL must come from the lock, not --port.
     const run = runCli(['--port', '0', '--data', dataDir])
     expect(await run.exited).toBe(0)
-    expect(run.output()).toContain(`Family Hub is already running at http://localhost:${hub.port}`)
+    expect(run.output()).toContain(`Yggltree is already running at http://localhost:${hub.port}`)
     // The running hub's lock is untouched.
     await access(join(dataDir, 'hub.lock'))
   })
@@ -223,7 +223,7 @@ describe('cli process', () => {
 describe('portInUseMessage', () => {
   it('suggests 8788, or 8789 when 8788 itself is the busy port', () => {
     expect(portInUseMessage(8787)).toBe(
-      "Port 8787 is being used by another program. Close it, or start Family Hub on another port, for example: npm start -- --port 8788"
+      "Port 8787 is being used by another program. Close it, or start Yggltree on another port, for example: npm start -- --port 8788"
     )
     expect(portInUseMessage(8788)).toContain('for example: npm start -- --port 8789')
   })

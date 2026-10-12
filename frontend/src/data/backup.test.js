@@ -24,7 +24,7 @@ describe('backup', () => {
   })
 
   it('rejects files that are not family backups', () => {
-    expect(() => parseBackup('hello')).toThrow('That file is not a Family Hub backup')
+    expect(() => parseBackup('hello')).toThrow('That file is not a Yggltree backup')
     const empty = createBackup({ doc: new Y.Doc(), assets: new Y.Doc() })
     expect(() => parseBackup(empty)).toThrow('That backup has no family in it')
   })

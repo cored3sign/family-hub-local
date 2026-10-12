@@ -69,7 +69,7 @@ async function reload() {
   const state = await checkBuild({ buildVersion: __APP_BUILD_VERSION__ })
   busy.value = false
   if (state === 'unreachable') {
-    error.value = "Can't reach your family hub right now. Connect to your home Wi-Fi, then tap Update again."
+    error.value = "Can't reach your Yggltree right now. Connect to your home Wi-Fi, then tap Update again."
     return
   }
   if (state === 'current') {
@@ -87,7 +87,7 @@ async function reload() {
 
 <template>
   <div v-if="showPrompt" class="update-prompt" role="status">
-    <span class="update-prompt__text">A new version of Family Hub is available.</span>
+    <span class="update-prompt__text">A new version of Yggltree is available.</span>
     <button type="button" class="update-prompt__btn" :disabled="busy" @click="reload">
       {{ busy ? 'Checking…' : 'Update' }}
     </button>

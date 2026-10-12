@@ -121,7 +121,7 @@ function closeRestore() {
 
 <template>
   <AppCard>
-    <h1>Set up your family hub</h1>
+    <h1>Set up your Yggltree</h1>
     <p class="subtitle">Set up your family on this computer. Phones and tablets join later with the family QR code from Settings → Family relay.</p>
     <form class="auth-form" @submit.prevent="submit">
       <FormField v-model="familyName" label="Family name" placeholder="The Riveras" required />
@@ -140,7 +140,7 @@ function closeRestore() {
     <div v-if="sync.restoreStuck" class="setup-restore">
       <p class="error">Restoring didn't finish on this computer.</p>
       <p>
-        Download a backup now, then close any other Family Hub tabs or windows and press Retry. Don't reload or
+        Download a backup now, then close any other Yggltree tabs or windows and press Retry. Don't reload or
         close this page until it succeeds.
       </p>
       <p v-if="backupError" class="error">{{ backupError }}</p>

@@ -1,5 +1,5 @@
 <script setup>
-// Step 1 of 2 on iPhone: put Family Hub on the Home Screen. Step 2 is a second
+// Step 1 of 2 on iPhone: put Yggltree on the Home Screen. Step 2 is a second
 // scan, made inside the new icon, because iPhone keeps a Home Screen app's data
 // apart from Safari. "Use in Safari instead" joins right here when the scan
 // brought a family link, and otherwise hands over to the normal join screen.
@@ -23,7 +23,7 @@ function useInSafari() {
     </ol>
 
     <div class="ios-install__then">
-      <p><strong>Step 2 of 2:</strong> open <strong>Family Hub</strong> from its new icon, then tap <strong>Scan the family QR code</strong>.</p>
+      <p><strong>Step 2 of 2:</strong> open <strong>Yggltree</strong> from its new icon, then tap <strong>Scan the family QR code</strong>.</p>
       <p class="hint">iPhone keeps the icon's data apart from Safari, so the icon needs its own scan. You only do this once.</p>
     </div>
 

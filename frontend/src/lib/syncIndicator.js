@@ -18,7 +18,7 @@ export function lastSyncedText(lastSyncedAt, now = new Date()) {
 
 // The full sentence for the indicator's title / live region.
 export function syncMessage({ status, statusCopy, lastSyncedAt }, now = new Date()) {
-  if (status === 'connecting') return 'Connecting to your family hub…'
+  if (status === 'connecting') return 'Connecting to your Yggltree…'
   const message = statusCopy?.message ?? ''
   if (status === 'connected' && lastSyncedAt) return `${message} Last synced: ${lastSyncedText(lastSyncedAt, now)}.`
   return message

@@ -23,7 +23,7 @@ function initials(name) {
 
 <template>
   <AppCard class="profiles-card">
-    <h1>Who's using {{ core.familyName || 'Family Hub' }}?</h1>
+    <h1>Who's using {{ core.familyName || 'Yggltree' }}?</h1>
     <ul class="profile-grid">
       <li v-for="m in members" :key="m.id">
         <button type="button" class="profile-tile" @click="choose(m.id)">

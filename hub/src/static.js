@@ -156,7 +156,7 @@ export function createStaticHandler({ distDir }) {
     const indexPath = join(root, 'index.html')
     const s = await servable(indexPath)
     if (!s) {
-      sendText(res, 503, 'Family Hub has not been built yet. Run `npm run build` (or `npm start`), then reload.')
+      sendText(res, 503, 'Yggltree has not been built yet. Run `npm run build` (or `npm start`), then reload.')
       return
     }
     await serveFile(req, res, indexPath, '/index.html', s)
