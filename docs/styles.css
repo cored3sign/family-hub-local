@@ -674,24 +674,6 @@ p {
   background: var(--accent);
 }
 
-.module-example {
-  margin-top: 22px;
-  padding: 16px 18px;
-  border-radius: 14px;
-  background: var(--surface-variant);
-}
-
-.module-example p {
-  margin: 0;
-}
-
-.module-example-label {
-  margin-bottom: 6px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--text);
-}
-
 .module-dialog-foot {
   display: flex;
   flex-wrap: wrap;
