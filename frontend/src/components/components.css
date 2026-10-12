@@ -1,0 +1,707 @@
+/* Component library styles. Mobile-first: base rules
+   target small screens; the desktop breakpoint (900px, matching the nav
+   breakpoint already used elsewhere) is an addition, not a rewrite. */
+
+/* AppButton */
+.app-btn {
+  font: var(--type-label);
+  min-height: var(--control-min);
+  padding: 10px 20px;
+  border: 1px solid transparent;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background-color 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+}
+
+.app-btn:disabled {
+  opacity: 0.38;
+  cursor: default;
+}
+
+.app-btn--primary {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  box-shadow: var(--elevation-1);
+}
+
+.app-btn--primary:hover:not(:disabled) {
+  box-shadow: var(--elevation-2);
+  background: color-mix(in srgb, var(--accent) 92%, var(--text) 8%);
+}
+
+.app-btn--primary:active:not(:disabled) {
+  box-shadow: none;
+  background: color-mix(in srgb, var(--accent) 84%, var(--text) 16%);
+}
+
+.app-btn--secondary {
+  background: transparent;
+  color: var(--accent);
+  border-color: var(--border);
+}
+
+.app-btn--secondary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.app-btn--danger {
+  background: transparent;
+  color: var(--danger);
+  border-color: var(--border);
+}
+
+.app-btn--danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--danger) 8%, transparent);
+}
+
+.app-btn--ghost {
+  background: transparent;
+  color: var(--text-muted);
+  padding: 4px 10px;
+  border-radius: 8px;
+}
+
+.app-btn--ghost:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+  color: var(--text);
+}
+
+.app-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* FormField */
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font: var(--type-label);
+  color: var(--text-muted);
+}
+
+.form-field input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  font: var(--type-body);
+  min-height: var(--control-min);
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.form-field input::placeholder {
+  color: var(--text-muted);
+}
+
+.form-field input:hover {
+  border-color: color-mix(in srgb, var(--text) 30%, var(--border));
+}
+
+.form-field input:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.form-field input:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* AppCard */
+.app-card {
+  max-width: 360px;
+  margin: 10vh auto;
+  padding: 24px;
+  background: var(--surface);
+  border-radius: 16px;
+  box-shadow: var(--elevation-1);
+  text-align: center;
+}
+
+/* ListRow */
+.list-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: box-shadow 120ms ease, border-color 120ms ease;
+}
+
+.list-row:hover {
+  box-shadow: var(--elevation-1);
+  border-color: color-mix(in srgb, var(--text) 16%, var(--border));
+}
+
+.list-row__main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.list-row.done .list-row__main {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.list-row__del {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin: -12px -8px -12px 0;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  color: var(--text-muted);
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.list-row__del:hover {
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  color: var(--danger);
+}
+
+.list-row__del:focus-visible,
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* AppTag */
+.app-tag {
+  font: var(--type-label);
+  font-size: 12px;
+  color: var(--on-accent-container);
+  background: var(--accent-container);
+  border-radius: 6px;
+  padding: 2px 8px;
+}
+
+/* EmptyState */
+.empty-state {
+  color: var(--text-muted);
+  text-align: center;
+  padding: 24px 0;
+}
+
+/* AddRow */
+.add-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.add-row .form-field {
+  flex: 1;
+  min-width: 120px;
+}
+
+/* AppModal — mobile: bottom sheet. Desktop: centered dialog.
+   One component, responsive variants. */
+.app-modal__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 100;
+  /* The backdrop itself must not be draggable/pannable -- only the
+     panel's own content should scroll (vertically only). Without this, a
+     touch-drag starting on the backdrop (or bleeding through a modal that
+     doesn't fully contain the gesture) can pan/scroll the page underneath
+     while the modal appears to float independently. */
+  touch-action: none;
+  overscroll-behavior: contain;
+}
+
+.app-modal__panel {
+  background: var(--surface);
+  border-radius: 20px 20px 0 0;
+  box-shadow: var(--elevation-3);
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* Header is sticky (see .app-modal__header below) so it needs its own
+     horizontal padding instead of the panel's -- padding-top is 0 so the
+     sticky header sits flush with the panel's rounded top edge. */
+  padding: 0 20px 20px;
+  /* The panel is the one thing allowed to move, and only by
+     vertical scroll -- pan-y permits vertical touch scrolling while
+     blocking horizontal pan/pinch gestures on the panel itself. */
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+}
+
+/* On a tall drawer (e.g. Recipes' "Edit recipe"), a header that scrolled
+   away with the body content would look janky AND make the close button
+   unreachable once scrolled past it (it ends up off-screen). Sticky keeps
+   the header pinned to the panel's visible top edge as the content scrolls
+   beneath it -- the header reads as the part of the drawer that "moves
+   with" you, staying put while everything else slides past, and keeps
+   Close reachable at any scroll position. */
+.app-modal__header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 -20px 12px;
+  padding: 20px 20px 12px;
+  background: var(--surface);
+  border-radius: 20px 20px 0 0;
+}
+
+.app-modal__header h3 {
+  margin: 0;
+}
+
+.app-modal__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin: -12px -12px -12px 0;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0;
+  transition: background-color 120ms ease;
+}
+
+.app-modal__close:hover {
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+}
+
+@media (min-width: 900px) {
+  .app-modal__backdrop {
+    align-items: center;
+  }
+
+  .app-modal__panel {
+    border-radius: 16px;
+    width: 90%;
+    max-width: 480px;
+    max-height: 80vh;
+  }
+}
+
+/* AssigneeFilterChips */
+.assignee-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.assignee-chip {
+  font: var(--type-label);
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--control-min);
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.assignee-chip:hover {
+  border-color: color-mix(in srgb, var(--text) 30%, var(--border));
+  color: var(--text);
+}
+
+.assignee-chip--active {
+  background: var(--accent-container);
+  border-color: transparent;
+  color: var(--on-accent-container);
+}
+
+.assignee-chip--active:hover {
+  background: color-mix(in srgb, var(--accent-container) 85%, var(--text) 15%);
+}
+
+.assignee-chip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* NotificationBell */
+.notif-bell {
+  position: relative;
+}
+
+.notif-bell__trigger {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.notif-bell__trigger:hover {
+  background: var(--accent-container);
+  color: var(--on-accent-container);
+}
+
+.notif-bell__badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  border-radius: 8px;
+  background: var(--danger);
+  color: var(--danger-container);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}
+
+.notif-bell__panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 320px;
+  max-width: 88vw;
+  max-height: 70vh;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--elevation-3);
+  z-index: 50;
+  padding: 12px;
+}
+
+.notif-bell__panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.notif-bell__panel-header h3 {
+  margin: 0;
+}
+
+.notif-bell__panel-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.notif-bell__mark-all {
+  background: transparent;
+  border: none;
+  color: var(--accent);
+  font: var(--type-label);
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+}
+
+.notif-bell__mark-all:hover {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.notif-bell__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.notif-bell__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.notif-bell__item:hover {
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+}
+
+.notif-bell__item.unread {
+  background: color-mix(in srgb, var(--accent-container) 45%, transparent);
+}
+
+.notif-bell__item.unread:hover {
+  background: color-mix(in srgb, var(--accent-container) 65%, transparent);
+}
+
+.notif-bell__dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.notif-bell__item-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.notif-bell__item-clear {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--control-min);
+  height: var(--control-min);
+  margin: -10px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.notif-bell__item-clear:hover {
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  color: var(--danger);
+}
+
+.notif-bell__message {
+  margin: 0;
+  font: var(--type-body);
+  font-size: 14px;
+  color: var(--text);
+}
+
+.notif-bell__time {
+  margin: 2px 0 0;
+  font: var(--type-label);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ModuleCard — mobile: stacked list row. Desktop: grid tile. One component,
+   reflowed via CSS, not two layouts. */
+.module-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.module-card {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  transition: box-shadow 120ms ease, border-color 120ms ease;
+}
+
+.module-card:hover {
+  box-shadow: var(--elevation-1);
+  border-color: color-mix(in srgb, var(--text) 16%, var(--border));
+}
+
+.module-card--muted {
+  opacity: 0.72;
+}
+
+.module-card--enabled {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+}
+
+.module-card__icon {
+  font-size: 22px;
+  line-height: 1;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-variant);
+  color: var(--text-muted);
+  border-radius: 12px;
+}
+
+.module-card__icon--tinted {
+  color: var(--accent-contrast);
+}
+
+.module-card__body {
+  flex: 1;
+  min-width: 200px;
+}
+
+.module-card__top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.module-card__label {
+  font: var(--type-title);
+  margin: 0;
+}
+
+.module-card__desc {
+  font: var(--type-body);
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 2px 0 0;
+}
+
+.module-card__action {
+  flex-shrink: 0;
+}
+
+.app-tag--muted {
+  color: var(--text-muted);
+  background: var(--surface-variant);
+}
+
+.app-tag--danger {
+  color: var(--danger);
+  background: var(--danger-container);
+}
+
+.app-tag--enabled {
+  cursor: pointer;
+}
+
+.catalog-category {
+  margin-bottom: 28px;
+}
+
+.catalog-category h3 {
+  margin-bottom: 12px;
+}
+
+@media (min-width: 900px) {
+  .module-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
+  }
+
+  .module-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .module-card__top {
+    width: 100%;
+  }
+
+  .module-card__action {
+    width: 100%;
+  }
+
+  .module-card__action .app-btn,
+  .module-card__action .app-tag {
+    width: 100%;
+    text-align: center;
+    display: block;
+  }
+}
+
+/* UpdatePrompt (force-update on stale PWA build) -- a top banner,
+   fixed above .topbar (z-index 10, style.css) so it's never hidden behind
+   it, but below .rotate-lock (z-index 1000) since that overlay's whole job
+   is blocking every other affordance on screen. */
+.update-prompt {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 16px;
+  padding-top: max(10px, env(safe-area-inset-top));
+  background: var(--accent);
+  color: var(--accent-contrast);
+  box-shadow: var(--elevation-2);
+}
+
+.update-prompt__text {
+  font: var(--type-label);
+  color: var(--accent-contrast);
+}
+
+.update-prompt__btn {
+  flex-shrink: 0;
+  min-height: var(--control-min);
+  padding: 6px 18px;
+  border: 1px solid transparent;
+  border-radius: 20px;
+  background: var(--surface);
+  color: var(--accent-deep);
+  font: var(--type-label);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.update-prompt__btn:hover {
+  background: var(--accent-container);
+}
+
+.update-prompt__btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.update-prompt__error {
+  flex-basis: 100%;
+  margin: 0;
+  text-align: center;
+  font: var(--type-label);
+  color: var(--accent-contrast);
+}

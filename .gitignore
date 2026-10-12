@@ -1,0 +1,9 @@
+node_modules/
+frontend/dist/
+.DS_Store
+*.log
+hub-data/
+.hub-dev/
+
+# The Obsidian vault is committed; only the editor's per-user state is ignored.
+Family_Hub_vault/.obsidian/

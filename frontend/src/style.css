@@ -1,0 +1,830 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap');
+
+:root {
+  /* Warm coral/terracotta primary palette. components.css and every page
+     read these tokens (--accent/--surface/etc.), so a palette change
+     needs no per-page edits. */
+  --text: #2b2622;
+  --text-muted: #756a63;
+  --bg: #faf3ec;
+  --surface: #ffffff;
+  --surface-variant: #f2e9df;
+  --border: #e3d8cb;
+  --accent: #f4633a;
+  --accent-deep: #d6380c;
+  --accent-soft: #f89c82;
+  --accent-contrast: #ffffff;
+  --accent-container: #fde3d8;
+  --on-accent-container: #7a2a0e;
+  --complement: #0ca9d6;
+  --complement-mid: #3acbf4;
+  --complement-soft: #82def8;
+  --danger: #ba1a1a;
+  --danger-container: #ffdad6;
+
+  /* Module icon-tile accents: DashboardPage.vue and ShoppingPage.vue both
+     use the same green as an icon-tile gradient stop for Shopping —
+     tokenized here so every module reaches for one shared value instead of
+     re-picking a close hex. */
+  --tile-shopping: #8fd4a8;
+
+  /* Module icon-tile accents: a per-module gradient stop for icon tiles that
+     don't already fit an existing token family (e.g. Shopping reaches for a
+     green not otherwise in the palette). --tile-wishlist gives Wishlist's
+     Gift icon tile a violet-leaning stop distinct from Shopping/Chore/Goal/
+     Calendar's existing tile colors. */
+  --tile-wishlist: #a78bfa;
+
+  /* Module-specific icon-tile accent (Recipes & Meal Planning):
+     a warm amber-to-coral gradient distinct from --accent's own tile use
+     elsewhere, following the --tile-<modulename> pattern. */
+  --tile-recipe-start: #f6b26b;
+  --tile-recipe-end: var(--accent);
+
+  /* Module-specific icon-tile accents (LibraryPage.vue): follows the
+     --tile-<modulename> pattern. A warm gold-amber pair reads as
+     "book/paper" while staying inside the coral-forward palette (mixed
+     from --accent
+     and --accent-deep rather than a new off-palette hex). */
+  --tile-library: #e0a341;
+  --tile-library-deep: #b8791f;
+
+  /* Module-specific icon-tile accent (Communication), following the
+     --tile-<modulename> pattern: announcements get their own
+     gradient identity; check-ins and 1:1 time reuse the existing
+     --complement (sky) family directly since that's already the
+     second brand color, not a new module identity of their own. */
+  --tile-communication: linear-gradient(135deg, var(--accent-soft), var(--accent));
+
+  /* Module-specific icon-tile accents (ModuleCard.vue catalog grid): Goals
+     and Family Binder both use --accent directly on their own pages (a
+     per-goal color and a plain coral tile, respectively, neither a fixed
+     module identity), so the catalog grid -- where every module's tile
+     sits side by side -- needs its own distinct color for each rather than
+     three modules (Chores+Funds, Goals, Binder) all rendering the same
+     coral tile. Rose
+     for Goals (distinct from --tile-wishlist's violet); a slate-teal pair
+     for Binder (an archival/reference feel, distinct from --complement's
+     brighter sky blue) -- two stops of its own family, not crossed with
+     --accent-deep, since teal-to-coral read as muddy rather than blended. */
+  --tile-goal: #e8879e;
+  --tile-binder: #5c9aa1;
+  --tile-binder-deep: #3a636a;
+
+  /* Elevation: soft, warm-tinted shadow plus a faint surface lift reads as
+     "raised" without a hard block-shadow costume. */
+  --elevation-1: 0 1px 2px rgba(40, 25, 15, 0.08), 0 1px 3px 1px rgba(40, 25, 15, 0.08);
+  --elevation-2: 0 1px 2px rgba(40, 25, 15, 0.1), 0 2px 6px 2px rgba(40, 25, 15, 0.1);
+  --elevation-3: 0 4px 8px 3px rgba(40, 25, 15, 0.12), 0 1px 3px rgba(40, 25, 15, 0.14);
+
+  /* Type scale: Inter throughout — a variable font with first-class
+     browser/OS rendering support, versatile across web and mobile. */
+  --type-headline: 800 24px/1.25 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --type-title: 700 17px/1.3 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --type-body: 400 16px/1.5 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --type-label: 500 13px/1.4 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Platform-minimum tap
+     target (44px iOS / 48dp Android, using the smaller of the two as the
+     floor). Every button, chip, checkbox/radio, and native form control
+     app-wide sizes off this one token instead of each view picking its own
+     28-40px value. */
+  --control-min: 44px;
+
+  font: var(--type-body);
+  color-scheme: light;
+  color: var(--text);
+  background: var(--bg);
+}
+
+/* Family-wide colorway picker (Settings > Appearance). Each block
+   below is a full override of the same cross-cutting tokens set on :root
+   above (--text/--bg/--surface/--accent* family/--complement* family) --
+   never new component CSS, so components don't need multiple versions of
+   themselves. Per-module --tile-* identity colors and --danger* are
+   intentionally left alone: the themes replace the coral brand color with
+   4 hues, not re-skin each module's own icon-tile identity.
+
+   Selected via [data-theme="<key>"] on <html> (set in main.js from the
+   family's config.json theme.color_theme, and live-updated by
+   SettingsPage's Appearance picker) rather than a prefers-color-scheme
+   media query -- this is a family-wide choice, not a per-device/OS
+   preference, so there is no OS-driven (light/dark) branch here.
+
+   Each theme is given exactly 4 hex values, spent
+   deliberately rather than force-mapped 1:1 onto --accent/--accent-deep/
+   --accent-soft/--accent-contrast: one hex becomes --accent, a second
+   becomes --complement (a distinct second brand color, mirroring the
+   coral/sky pairing this replaces), and the remaining two become --bg/
+   --surface-variant or --text depending on which is light/dark enough to
+   carry that role at WCAG-reasonable contrast -- --surface stays white (or
+   near-white) in every theme so card content keeps reading clearly, since
+   none of the 4 given hexes per theme was intended as a card-background
+   color. --accent-contrast/--on-accent-container are picked per theme so
+   text sitting on --accent/--accent-container stays readable rather than
+   inheriting the coral theme's white-on-coral assumption. */
+:root[data-theme="bold"] {
+  --text: #1a2436;
+  --text-muted: #5b6579;
+  --bg: #f4f6fb;
+  --surface: #ffffff;
+  --surface-variant: #eef1f8;
+  --border: #d8dde8;
+  --accent: #ff6347;
+  --accent-deep: #d6472c;
+  --accent-soft: #ff9a85;
+  --accent-contrast: #ffffff;
+  --accent-container: #ffe066;
+  --on-accent-container: #4a3b00;
+  --complement: #1e4ca1;
+  --complement-mid: #3866c2;
+  --complement-soft: #a7c0ec;
+}
+
+:root[data-theme="garden"] {
+  --text: #33421f;
+  --text-muted: #6b7a53;
+  --bg: #f4f0e3;
+  --surface: #fffdf7;
+  --surface-variant: #e3dac9;
+  --border: #cfc2a3;
+  --accent: #556b2f;
+  --accent-deep: #3d4d20;
+  --accent-soft: #86a15a;
+  --accent-contrast: #ffffff;
+  --accent-container: #e6b35a;
+  --on-accent-container: #4a3410;
+  --complement: #cc5959;
+  --complement-mid: #d97e7e;
+  --complement-soft: #ecbcbc;
+}
+
+:root[data-theme="garage"] {
+  --text: #26282a;
+  --text-muted: #6c6f70;
+  --bg: #f1f0ef;
+  --surface: #ffffff;
+  --surface-variant: #e3e2e1;
+  --border: #babcbc;
+  --accent: #215f72;
+  --accent-deep: #17434f;
+  --accent-soft: #5a8b9b;
+  --accent-contrast: #ffffff;
+  --accent-container: #d8e6ea;
+  --on-accent-container: #123642;
+  --complement: #713d21;
+  --complement-mid: #935a3a;
+  --complement-soft: #d3ab93;
+}
+
+:root[data-theme="fruit"] {
+  --text: #262656;
+  --text-muted: #5b5b86;
+  --bg: #f6f3e9;
+  --surface: #ffffff;
+  --surface-variant: #ece4cd;
+  --border: #d8ccab;
+  --accent: #e15335;
+  --accent-deep: #b53e24;
+  --accent-soft: #ec8a75;
+  --accent-contrast: #ffffff;
+  --accent-container: #c6b98b;
+  --on-accent-container: #262656;
+  --complement: #97a868;
+  --complement-mid: #aebb87;
+  --complement-soft: #d3dbb9;
+}
+
+/* Breeze, Carnival and Meadow fill gaps left by Bold's saturated primary
+   triad, Garden's earthy olive/rose, Garage's industrial grey/teal, Fruit's
+   tan/red-orange/navy and the default coral: none of those is blue-forward
+   as its PRIMARY hue, none is a bright kid-friendly palette, and none is a
+   soft/muted low-saturation option. Each theme's 4 hex values pass
+   categorical-palette checks (OKLCH lightness band, chroma floor, CVD
+   adjacent-pair separation, normal-vision floor), which confirm the 4
+   colors are sufficiently distinct/accessible from each other -- the same
+   property a 4-color UI theme needs, even though those checks are built for
+   chart-series colors rather than UI tokens. Token mapping follows the same
+   reasoning as bold/garden/garage/fruit above: one hex becomes --accent
+   (the family's primary action color), a second becomes --complement (a
+   distinct second brand color), --surface stays white/near-white for card
+   legibility, and --bg/--text/--surface-variant/--border are derived
+   tints/shades of the theme's hues (not one of the 4 raw hexes) picked for
+   WCAG-reasonable contrast rather than reused verbatim. */
+
+/* Breeze: a cool blue/teal-forward palette -- the current 5 colorways have
+   blue only as a secondary/complement note (coral's sky complement, bold's
+   navy complement, garage's teal-as-accent-but-industrial-grey-led); this
+   is the first theme where blue IS the primary hue, for a calmer/cooler
+   family that doesn't want a warm-forward brand color. Deep blue #1a5fa8 ->
+   --accent, teal #2ba38a -> --complement (green-leaning, kept far enough
+   from the blue to stay distinct per CVD check), amber #d99000 reserved for
+   --accent-container (a warm counter-note so the whole UI doesn't go
+   monochrome-cool), slate violet #6a5acd folds into --on-accent-container/
+   --text for a cool-neutral ink instead of coral's warm brown-black. */
+:root[data-theme="breeze"] {
+  --text: #1a2f45;
+  --text-muted: #57728c;
+  --bg: #eef5fa;
+  --surface: #ffffff;
+  --surface-variant: #dfebf3;
+  --border: #c3d7e3;
+  --accent: #1a5fa8;
+  --accent-deep: #123f70;
+  --accent-soft: #6699cc;
+  --accent-contrast: #ffffff;
+  --accent-container: #ffe3ab;
+  --on-accent-container: #5c3d00;
+  --complement: #2ba38a;
+  --complement-mid: #59bda7;
+  --complement-soft: #a6dccf;
+}
+
+/* Carnival: a bright, higher-saturation, kid-friendly palette -- distinct
+   from Bold (which is a saturated but conventional red/blue/yellow
+   *primary-color* triad) by leaning into a playful pink/cyan/marigold mix
+   that reads as "fun for kids" rather than "corporate bold." Pink #e0457a
+   -> --accent (the family's main action color), bright sky-blue #2196c9 ->
+   --complement, marigold #d99000 -> --accent-container, teal-green #00998a
+   folds into --on-accent-container for a cool-dark ink that keeps the
+   palette from tipping all-warm. */
+:root[data-theme="carnival"] {
+  --text: #3a2038;
+  --text-muted: #8a5f82;
+  --bg: #fdf2f6;
+  --surface: #ffffff;
+  --surface-variant: #fbe1ea;
+  --border: #f0c4d6;
+  --accent: #e0457a;
+  --accent-deep: #b8265a;
+  --accent-soft: #ee85ab;
+  --accent-contrast: #ffffff;
+  --accent-container: #ffe6a3;
+  --on-accent-container: #5c3a00;
+  --complement: #2196c9;
+  --complement-mid: #5bb8e0;
+  --complement-soft: #a9dcef;
+}
+
+/* Meadow: a softer, lower-saturation option across the board for a family
+   that wants gentle rather than bold -- distinct from Garden (an earthy
+   olive/rose/cream palette that's still fairly saturated/dark) by pulling
+   every hue toward a muted, dusty register. Sage green #3a7d43 -> --accent,
+   dusty rose #c15f76 -> --complement, dusty blue #3167a0 folds into
+   --accent-container/border tinting, ochre #c98a3a reserved as a warm
+   counter-note in --on-accent-container. Chroma sits at this validator's
+   floor deliberately -- true pastel desaturation (C well under 0.10) reads
+   as gray and fails the CVD-separation check outright when tried, which
+   would have produced a wishy-washy, hard-to-scan UI even before the
+   colorblind-safety concern; this is the softest palette that still keeps
+   the 4 hues told apart at a glance. */
+:root[data-theme="meadow"] {
+  --text: #2e3b2e;
+  --text-muted: #6c7a6c;
+  --bg: #f4f1e9;
+  --surface: #fffefb;
+  --surface-variant: #e7e0d0;
+  --border: #d3c9b2;
+  --accent: #3a7d43;
+  --accent-deep: #285a2f;
+  --accent-soft: #79a880;
+  --accent-contrast: #ffffff;
+  --accent-container: #d9e6da;
+  --on-accent-container: #1d3d21;
+  --complement: #c15f76;
+  --complement-mid: #d1899a;
+  --complement-soft: #e7c3cc;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  /* The viewport meta's user-scalable=no blocks pinch-zoom, but iOS
+     Safari's double-tap-to-zoom gesture ignores that and needs its own
+     opt-out -- touch-action: manipulation tells the browser this element
+     only wants pan/tap gestures, not zoom, without disabling scroll. */
+  touch-action: manipulation;
+}
+
+h1, h2 {
+  font: var(--type-headline);
+  margin: 0 0 12px;
+}
+
+h3 {
+  font: var(--type-title);
+  margin: 0 0 8px;
+}
+
+.error {
+  color: var(--danger);
+  font-size: 14px;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+}
+
+.subtitle {
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+/* App shell layout — not yet componentized (single instance, DashboardLayout.vue) */
+
+.app-shell {
+  /* A bounded height (not min-height) so .content's own
+     overflow-y: auto actually creates an internal scroll region, since
+     .topbar and .bottom-nav are both position: fixed now (out of this
+     flex flow entirely) -- .content is the only flex child left, and it
+     needs a real height ceiling to know when to start scrolling itself
+     rather than growing the whole page. */
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Landscape is blocked rather than made to scroll further: letting
+   .content scroll would still leave real module content reachable in
+   landscape. .rotate-lock is a full-screen overlay hidden in
+   portrait and shown in landscape; app-shell's own children stay in the
+   DOM (untouched, no orientation branching in their own layout) but are
+   hidden behind/via this overlay so nothing but the rotate prompt is
+   usable until the device goes back to portrait -- the module layouts
+   themselves do nothing on screen rotation. */
+.rotate-lock {
+  display: none;
+}
+
+@media (orientation: landscape) {
+  .rotate-lock {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 32px;
+    background: var(--bg);
+    color: var(--text);
+    text-align: center;
+  }
+
+  .rotate-lock p {
+    max-width: 320px;
+    font: var(--type-body);
+    color: var(--text-muted);
+  }
+
+  .app-shell > .topbar,
+  .app-shell > .content,
+  .app-shell > .bottom-nav,
+  /* Teleported (to <body>) drawer/modal backdrops -- not app-shell
+     descendants in the DOM, so they need their own rule to stay hidden
+     behind the rotate-lock overlay in landscape too. */
+  .quick-drawer__backdrop,
+  .app-modal__backdrop {
+    display: none;
+  }
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  /* Mobile/PWA notch support: additive to the 12px above
+     -- env() resolves to 0 on a device with no notch/inset (or a browser
+     without viewport-fit=cover support), so this is a no-op there and only
+     adds real space on an iPhone with a notch/Dynamic Island. */
+  padding-top: max(12px, env(safe-area-inset-top));
+  /* Anchors the header to the active color theme instead of floating as a
+     plain white bar -- same two accent stops the FAB/tile gradients already
+     use (see .nav-fab), so it reads as "this app's color," not a one-off. */
+  background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+  box-shadow: var(--elevation-1);
+  /* Fixed, not scroll-with-content -- content slides underneath
+     (see .content's matching padding-top below, which reserves the exact
+     same space this bar occupies so nothing is hidden behind it on load). */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+}
+
+.topbar__identity {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.topbar__brand {
+  font: var(--type-title);
+  /* --accent-contrast is #fff in every theme -- safe against the gradient
+     above regardless of which hue is active. */
+  color: var(--accent-contrast);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topbar__who {
+  font: var(--type-label);
+  color: var(--accent-contrast);
+  opacity: 0.85;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topbar__role {
+  text-transform: capitalize;
+}
+
+.topbar__actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+}
+
+.topbar__menu-trigger {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  color: var(--accent-contrast);
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.topbar__menu-trigger:hover,
+.topbar__menu-trigger--open {
+  background: rgb(255 255 255 / 20%);
+  color: var(--accent-contrast);
+}
+
+/* NotificationBell renders inside .topbar__actions -- override its default
+   (light-surface) icon color to match the gradient header it actually sits
+   on here, without touching the component's own base styles used elsewhere. */
+.topbar__actions .notif-bell__trigger {
+  color: var(--accent-contrast);
+}
+
+.topbar__actions .notif-bell__trigger:hover {
+  background: rgb(255 255 255 / 20%);
+  color: var(--accent-contrast);
+}
+
+.topbar__menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px;
+  background: var(--surface);
+  border-radius: 16px;
+  box-shadow: var(--elevation-3);
+  z-index: 20;
+}
+
+.topbar__menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  min-height: 44px;
+  border: none;
+  border-radius: 10px;
+  background: none;
+  color: var(--text);
+  font: var(--type-body);
+  font-size: 14px;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  position: relative;
+  width: 100%;
+}
+
+.topbar__menu-item:hover {
+  background: var(--surface-variant);
+}
+
+.topbar__menu-item--danger {
+  color: var(--danger);
+}
+
+/* Pending-setup indicator on the Settings nav link. */
+.pending-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--danger);
+  margin-left: 3px;
+}
+
+.content {
+  flex: 1;
+  padding: 16px;
+  /* Reserves the fixed topbar's own height (roughly 12px padding +
+     one line of brand text + one line of who-text + 12px padding, plus
+     the iOS safe-area inset) so page content starts below it on load
+     instead of being hidden underneath -- matches the topbar's own
+     max(12px, env(...)) pattern so both sides agree on the same real
+     space regardless of notch presence. */
+  padding-top: calc(64px + max(12px, env(safe-area-inset-top)));
+  padding-bottom: 88px;
+  max-width: 640px;
+  width: 100%;
+  margin: 0 auto;
+  overflow-y: auto;
+  /* Soft fade where content meets the fixed topbar/bottom-nav, for a bit
+     of depth as it scrolls underneath them -- a mask fades the content
+     itself to transparent at the edges rather than an opaque overlay, so
+     it works over any content color/image, not just the cream background. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 16px, black calc(100% - 16px), transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, black 16px, black calc(100% - 16px), transparent 100%);
+}
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-around;
+  background: var(--surface);
+  box-shadow: var(--elevation-2);
+  /* Vertical padding is only 4px so the bar stays short even though the
+     icons/FAB below are large -- a bigger icon in a tighter bar, not a
+     bigger bar. */
+  padding: 4px 0;
+  /* The home-indicator inset on iPhones without a physical home
+     button -- same additive/no-op-elsewhere reasoning as .topbar above. */
+  padding-bottom: max(4px, env(safe-area-inset-bottom));
+}
+
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 48px;
+  padding: 4px 4px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font: var(--type-label);
+  font-size: 11px;
+  border-radius: 14px;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.nav-item:hover {
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+}
+
+.nav-item.router-link-active {
+  color: var(--accent);
+}
+
+.nav-item.router-link-active .nav-icon {
+  color: var(--accent);
+}
+
+.nav-label {
+  font-weight: 600;
+}
+
+/* Desktop shell (real desktop only -- min-width alone, no orientation/
+   pointer check: the app is portrait-locked everywhere below this width,
+   so no phone/PWA viewport (even landscape) ever reaches 1200px). Swaps the mobile "fixed topbar +
+   centered column + fixed bottom-nav" shell for a slim top bar over a
+   1/4-nav / 3/4-content grid. Deliberately well above the 900px breakpoint
+   several module pages already use for their own internal grid tweaks
+   (BinderPage/CalendarPage) -- those are tablet-width content adjustments
+   within the existing mobile shell, not a shell change, and must not
+   collide with this one.
+
+   The actual shell rules (.app-shell/.topbar/.content/.bottom-nav at this
+   breakpoint) live in DashboardLayout.vue's own <style scoped> block, not
+   here -- .app-shell's base layout rule is scoped there too (compiles to
+   a [data-v-xxx] attribute selector), so an unscoped override here would
+   lose that specificity fight even from later in the cascade. Keeping the
+   override in the same scope as the rule it overrides sidesteps the
+   problem instead of fighting it with !important. .desktop-rail's
+   show/hide is likewise owned by DesktopNav.vue's own scoped style, for
+   the same reason -- this file only carries the shared token comment. */
+
+/* Module page list layout — the list container itself (not the row, which is
+   the ListRow component). Used by every module page. */
+.module-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.row-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+/* Reusable floor for any interactive element that doesn't already
+   have its own sizing rule (one-off icon buttons in a page's <style scoped>
+   block, etc.) -- apply this class rather than hand-picking a height. */
+.control-min {
+  min-width: var(--control-min);
+  min-height: var(--control-min);
+}
+
+/* Native form controls, themed once here and picked up everywhere --
+   no module should hand-roll its own <select>/checkbox/file-input
+   styling. Bare `select` (not just `.form-field select`)
+   because several views (Shopping's toolbar, To-Do's per-row reassign,
+   Chores/Library/Settings' own forms) put a <select> outside FormField's
+   wrapper entirely. */
+select {
+  font: var(--type-body);
+  font-size: 15px;
+  min-height: var(--control-min);
+  padding: 8px 32px 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background-color: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  /* A small chevron drawn with currentColor via a data-URI instead of
+     depending on the OS-drawn arrow (which ignores --surface/--text). */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23756a63' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 6 8 10 12 6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 14px;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+select:hover {
+  border-color: color-mix(in srgb, var(--text) 30%, var(--border));
+}
+
+select:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+select:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* Checkboxes/radios: the native control is kept (not swapped for a custom
+   div) so labels, keyboard behavior and screen readers stay free.
+   Keeping the visible box small (20px) while padding out to a 44px tap
+   target, the way icon buttons separate hit-area from visual size via
+   padding + negative margin, doesn't work here -- a native appearance:auto
+   checkbox ignores author padding in WebKit/Blink, so the padding would
+   silently do nothing while the negative margin still applied, pulling the
+   box out of its label and overlapping neighboring rows/text. So rendering
+   is taken over with appearance:none and a hand-drawn box/check/dot -- this is the
+   version of "keep the native input, just re-skin it" that actually
+   respects sizing cross-browser, and gives an honest 44px box with no
+   invisible-inflation trick required. */
+input[type="checkbox"],
+input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: var(--control-min);
+  height: var(--control-min);
+  min-width: var(--control-min);
+  margin: 0;
+  padding: 0;
+  flex: none;
+  display: inline-grid;
+  place-content: center;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  color: var(--accent);
+  cursor: pointer;
+}
+
+input[type="checkbox"] {
+  border-radius: 8px;
+}
+
+input[type="radio"] {
+  border-radius: 50%;
+}
+
+input[type="checkbox"]::before,
+input[type="radio"]::before {
+  content: '';
+  width: 12px;
+  height: 12px;
+  transform: scale(0);
+  transition: transform 100ms ease;
+}
+
+input[type="checkbox"]::before {
+  background: var(--accent);
+  border-radius: 3px;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+
+input[type="radio"]::before {
+  background: var(--accent);
+  border-radius: 50%;
+}
+
+input[type="checkbox"]:checked,
+input[type="radio"]:checked {
+  border-color: var(--accent);
+}
+
+input[type="checkbox"]:checked::before,
+input[type="radio"]:checked::before {
+  transform: scale(1);
+}
+
+input[type="checkbox"]:focus-visible,
+input[type="radio"]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Date/time/etc. native inputs: FormField already themes plain <input>s via
+   .form-field input in components.css, but a bare <input type="date"> used
+   outside FormField (or the picker-indicator swatch, which FormField's
+   rules don't reach) still needs its own rule. */
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+input[type="month"] {
+  min-height: var(--control-min);
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+input[type="month"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+}
+
+/* File inputs: the OS-drawn "Choose File" button is restyled as an
+   app-btn--secondary lookalike via the standard ::file-selector-button
+   pseudo-element, so Recipes' photo field, Binder's image field and
+   Settings' restore-file field all pick this up with no per-view markup
+   change (Settings' avatar upload already hides its input behind a real
+   .app-btn label, which continues to work unchanged alongside this). */
+input[type="file"] {
+  font: var(--type-label);
+  color: var(--text-muted);
+}
+
+input[type="file"]::file-selector-button {
+  font: var(--type-label);
+  min-height: var(--control-min);
+  margin-right: 10px;
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+input[type="file"]::file-selector-button:hover {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}

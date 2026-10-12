@@ -1,0 +1,21 @@
+{
+  "name": "family-relay",
+  "main": "src/index.js",
+  "compatibility_date": "2026-02-24",
+  // The app's files are copied into public/ by `npm run build:app`.
+  "assets": {
+    "directory": "./public",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/room/*", "/vapid-public-key"]
+  },
+  "durable_objects": {
+    "bindings": [
+      { "name": "ROOMS", "class_name": "Room" },
+      { "name": "CONFIG", "class_name": "Config" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["Room"] },
+    { "tag": "v2", "new_sqlite_classes": ["Config"] }
+  ]
+}

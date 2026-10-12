@@ -1,0 +1,13 @@
+{
+  "name": "family-hub-local",
+  "private": true,
+  "workspaces": ["frontend", "hub"],
+  "engines": { "node": ">=22.12" },
+  "scripts": {
+    "start": "node scripts/start.cjs",
+    "build": "npm run build -w frontend",
+    "test": "npm test -w frontend && npm test -w hub",
+    "hub": "node hub/src/cli.js",
+    "dev:hub": "node hub/src/cli.js --data .hub-dev --no-open"
+  }
+}

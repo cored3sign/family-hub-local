@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- viewport-fit=cover is required for env(safe-area-inset-*)
+         to resolve to anything but 0 on iOS -- without it the topbar/
+         bottom-nav safe-area CSS is inert. -->
+    <!-- user-scalable=no + maximum-scale=1 disable pinch-zoom for a
+         native-app feel; double-tap-zoom is separately blocked in
+         style.css via touch-action: manipulation on the page root, since
+         the viewport meta tag alone doesn't stop double-tap gesture zoom
+         on iOS Safari. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Family Hub (Local)</title>
+    <!-- Inter is the app's typeface (loaded by frontend/src/style.css's own
+         @import); preconnect warms the Google Fonts origin it loads from. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- PWA installability. -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <meta name="theme-color" content="#f4633a" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

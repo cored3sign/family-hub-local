@@ -1,0 +1,18 @@
+{
+  "name": "family-relay",
+  "private": true,
+  "type": "module",
+  "description": "Family Hub relay: stores and forwards encrypted family changes, and serves the app.",
+  "scripts": {
+    "build:app": "npm --prefix .. run build -w frontend && rm -rf public && cp -R ../frontend/dist public",
+    "dev": "npm run build:app && wrangler dev --local",
+    "deploy": "npm run build:app && wrangler deploy",
+    "test": "node test/run.mjs"
+  },
+  "dependencies": {
+    "@block65/webcrypto-web-push": "^2.0.0"
+  },
+  "devDependencies": {
+    "wrangler": "^4.149.0"
+  }
+}
