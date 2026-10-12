@@ -282,17 +282,6 @@ p {
   height: auto;
 }
 
-.hero-mark {
-  width: clamp(220px, 34vw, 440px);
-  margin-bottom: clamp(20px, 3vw, 32px);
-  color: var(--accent-deep);
-}
-
-.hero-mark a {
-  display: block;
-  color: inherit;
-}
-
 .legal {
   margin-top: 16px;
   max-width: 70ch;
@@ -303,28 +292,6 @@ p {
 .legal a {
   color: var(--text-muted);
 }
-
-.flying-mark {
-  position: fixed;
-  left: 0;
-  top: 0;
-  z-index: 60;
-  display: block;
-  transform-origin: 0 0;
-  color: var(--accent-deep);
-  transition: color 0.4s var(--ease-out);
-  will-change: transform;
-}
-
-.flying-mark.is-pinned {
-  color: var(--text);
-}
-
-.js-mark .hero-mark,
-.js-mark .brand {
-  visibility: hidden;
-}
-
 
 .nav-links {
   display: flex;
@@ -1575,6 +1542,20 @@ html.theme-changing *::after {
   padding-bottom: var(--space-section);
 }
 
+.band-copy {
+  display: grid;
+  gap: clamp(28px, 4vw, 48px);
+}
+
+.band-mark {
+  width: 100%;
+  color: var(--on-accent);
+}
+
+.band-mark .mark {
+  width: 100%;
+}
+
 .band h2 {
   color: var(--on-accent);
   font-size: clamp(2.6rem, 6.4vw, 5.4rem);
@@ -1644,6 +1625,10 @@ html.theme-changing *::after {
 @media (max-width: 900px) {
   .band-grid {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .band-mark {
+    width: min(100%, 420px);
   }
 
   .band-shot {
