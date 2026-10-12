@@ -247,3 +247,63 @@ document.querySelectorAll('[data-scene]').forEach((slot) => {
   const source = document.querySelector(`[data-module="${slot.dataset.scene}"] svg.illus`)
   if (source) slot.replaceChildren(source.cloneNode(true))
 })
+
+// See it in action: the screen carousel. The arrows, the dots and the arrow keys
+// move it one screen at a time. Without this script the screens still scroll sideways.
+const carousel = document.querySelector('[data-carousel]')
+if (carousel) {
+  const track = carousel.querySelector('.carousel-track')
+  const slides = Array.from(track.querySelectorAll('.slide'))
+  const dots = Array.from(document.querySelectorAll('[data-carousel-dot]'))
+  const prevButton = document.querySelector('[data-carousel-prev]')
+  const nextButton = document.querySelector('[data-carousel-next]')
+  const behavior = reduceMotion ? 'auto' : 'smooth'
+  let frame = null
+
+  // The track is positioned, so each slide's offsetLeft is measured from its left edge.
+  function current() {
+    let best = 0
+    let bestDistance = Infinity
+    slides.forEach((slide, i) => {
+      const distance = Math.abs(slide.offsetLeft - track.scrollLeft)
+      if (distance < bestDistance) {
+        best = i
+        bestDistance = distance
+      }
+    })
+    return best
+  }
+
+  function goTo(index) {
+    const i = Math.max(0, Math.min(slides.length - 1, index))
+    track.scrollTo({ left: slides[i].offsetLeft, behavior })
+  }
+
+  function update() {
+    frame = null
+    const i = current()
+    dots.forEach((dot, n) => dot.setAttribute('aria-current', String(n === i)))
+    prevButton.disabled = i === 0
+    nextButton.disabled = i === slides.length - 1
+  }
+
+  function queue() {
+    if (frame === null) frame = requestAnimationFrame(update)
+  }
+
+  track.addEventListener('scroll', queue, { passive: true })
+  window.addEventListener('resize', queue)
+  prevButton.addEventListener('click', () => goTo(current() - 1))
+  nextButton.addEventListener('click', () => goTo(current() + 1))
+  dots.forEach((dot, n) => dot.addEventListener('click', () => goTo(n)))
+  track.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowRight') {
+      event.preventDefault()
+      goTo(current() + 1)
+    } else if (event.key === 'ArrowLeft') {
+      event.preventDefault()
+      goTo(current() - 1)
+    }
+  })
+  update()
+}

@@ -778,58 +778,79 @@
         </div>
       </section>
 
-      <section class="section section-rows" aria-labelledby="screens-title">
+      <section class="section section-screens" aria-labelledby="screens-title">
         <div class="wrap">
-          <h2 class="visually-hidden" id="screens-title">Screens from the app</h2>
-
-          <div class="feature-row reveal">
-            <div class="feature-copy">
-              <h3>A shopping list the whole family can add to.</h3>
-              <p>Anyone can add an item from their phone, even from the car park. Each item keeps its store and category, so the list reads the way you shop.</p>
+          <div class="carousel-head">
+            <div class="section-head">
+              <h2 id="screens-title">See it in action.</h2>
+              <p class="lead">Real screens from the app, from a made-up family. Browse them with the arrows or the dots.</p>
             </div>
-            <figure class="feature-shot">
-              <img src="img/screens/desk-shopping.webp" width="1440" height="900" alt="The shopping list on a laptop, with the family's items and their stores." loading="lazy" />
-            </figure>
+            <div class="carousel-controls">
+              <button class="carousel-btn" type="button" data-carousel-prev aria-label="Previous screen">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+              </button>
+              <button class="carousel-btn" type="button" data-carousel-next aria-label="Next screen">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+              </button>
+            </div>
           </div>
 
-          <div class="feature-row feature-row-flip reveal">
-            <div class="feature-copy">
-              <h3>One calendar for everyone.</h3>
-              <p>Add an event with a time, assign it to the person it belongs to, and everyone sees it on their own phone.</p>
-            </div>
-            <figure class="feature-shot">
-              <img src="img/screens/desk-calendar.webp" width="1440" height="900" alt="The family calendar for the week, with events assigned to each person." loading="lazy" />
-            </figure>
+          <div class="carousel" data-carousel role="region" aria-roledescription="carousel" aria-label="Screens from the app">
+            <ol class="carousel-track" tabindex="0">
+              <li class="slide" role="group" aria-roledescription="slide" aria-label="1 of 5">
+                <figure class="slide-shot">
+                  <img src="img/screens/desk-shopping.webp" width="1440" height="900" alt="The shopping list on a laptop, with the family's items and their stores." loading="lazy" />
+                </figure>
+                <div class="slide-copy">
+                  <h3>A shopping list the whole family can add to.</h3>
+                  <p>Anyone can add an item from their phone, even from the car park. Each item keeps its store and category, so the list reads the way you shop.</p>
+                </div>
+              </li>
+              <li class="slide" role="group" aria-roledescription="slide" aria-label="2 of 5">
+                <figure class="slide-shot">
+                  <img src="img/screens/desk-calendar.webp" width="1440" height="900" alt="The family calendar for the week, with events assigned to each person." loading="lazy" />
+                </figure>
+                <div class="slide-copy">
+                  <h3>One calendar for everyone.</h3>
+                  <p>Add an event with a time, assign it to the person it belongs to, and everyone sees it on their own phone.</p>
+                </div>
+              </li>
+              <li class="slide" role="group" aria-roledescription="slide" aria-label="3 of 5">
+                <figure class="slide-shot">
+                  <img src="img/screens/desk-chores.webp" width="1440" height="900" alt="The chores screen, with each person's open chores and the reward for each." loading="lazy" />
+                </figure>
+                <div class="slide-copy">
+                  <h3>Chores and allowance that add up.</h3>
+                  <p>Assign a chore with a reward. When it's finished, the reward goes into that person's balance, so the allowance keeps itself honest.</p>
+                </div>
+              </li>
+              <li class="slide" role="group" aria-roledescription="slide" aria-label="4 of 5">
+                <figure class="slide-shot">
+                  <img src="img/screens/desk-recipes.webp" width="1440" height="900" alt="Saved recipes, each with its servings and an add-to-shopping-list button." loading="lazy" />
+                </figure>
+                <div class="slide-copy">
+                  <h3>Recipes that become a shopping list.</h3>
+                  <p>Save a recipe with its ingredients, then add them all to the shopping list in one tap. Take the items off again the same way.</p>
+                </div>
+              </li>
+              <li class="slide slide-phone" role="group" aria-roledescription="slide" aria-label="5 of 5">
+                <figure class="slide-shot">
+                  <img src="img/screens/phone-dashboard.webp" width="390" height="844" alt="The dashboard on a phone, with this week's events and chores by person." loading="lazy" />
+                </figure>
+                <div class="slide-copy">
+                  <h3>It works without signal, and catches up later.</h3>
+                  <p>Phones keep working with no connection. Anything you change is saved on the phone and syncs once it reaches the family relay again, on Wi-Fi or mobile data.</p>
+                </div>
+              </li>
+            </ol>
           </div>
 
-          <div class="feature-row reveal">
-            <div class="feature-copy">
-              <h3>Chores and allowance that add up.</h3>
-              <p>Assign a chore with a reward. When it's finished, the reward goes into that person's balance, so the allowance keeps itself honest.</p>
-            </div>
-            <figure class="feature-shot">
-              <img src="img/screens/desk-chores.webp" width="1440" height="900" alt="The chores screen, with each person's open chores and the reward for each." loading="lazy" />
-            </figure>
-          </div>
-
-          <div class="feature-row feature-row-flip reveal">
-            <div class="feature-copy">
-              <h3>Recipes that become a shopping list.</h3>
-              <p>Save a recipe with its ingredients, then add them all to the shopping list in one tap. Take the items off again the same way.</p>
-            </div>
-            <figure class="feature-shot">
-              <img src="img/screens/desk-recipes.webp" width="1440" height="900" alt="Saved recipes, each with its servings and an add-to-shopping-list button." loading="lazy" />
-            </figure>
-          </div>
-
-          <div class="feature-row reveal">
-            <div class="feature-copy">
-              <h3>It works without signal, and catches up later.</h3>
-              <p>Phones keep working with no connection. Anything you change is saved on the phone and syncs once it reaches the family relay again, on Wi-Fi or mobile data.</p>
-            </div>
-            <figure class="feature-shot feature-shot-phone">
-              <img src="img/screens/phone-dashboard.webp" width="390" height="844" alt="The dashboard on a phone, with this week's events and chores by person." loading="lazy" />
-            </figure>
+          <div class="carousel-dots">
+            <button type="button" data-carousel-dot aria-label="Show screen 1 of 5"></button>
+            <button type="button" data-carousel-dot aria-label="Show screen 2 of 5"></button>
+            <button type="button" data-carousel-dot aria-label="Show screen 3 of 5"></button>
+            <button type="button" data-carousel-dot aria-label="Show screen 4 of 5"></button>
+            <button type="button" data-carousel-dot aria-label="Show screen 5 of 5"></button>
           </div>
         </div>
       </section>
