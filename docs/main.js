@@ -2,6 +2,17 @@
 // fade-in state, and it turns animation off for people who prefer reduced motion.
 document.documentElement.classList.add('js')
 
+// A refresh should start at the top, not wherever the browser last left the page.
+// A link to a section (#privacy and so on) keeps its place. The reset is instant,
+// so the page doesn't visibly scroll up from where it was.
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
+if (!location.hash) {
+  const root = document.documentElement
+  root.style.scrollBehavior = 'auto'
+  window.scrollTo(0, 0)
+  root.style.scrollBehavior = ''
+}
+
 const items = document.querySelectorAll('.reveal')
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
