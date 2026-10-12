@@ -34,9 +34,9 @@ npm start -- --port 8788 --data /tmp/fh-test --no-open
 | Flag | Meaning |
 | --- | --- |
 | `--port <n>` | listen port (default 8787; `0` picks a free one) |
-| `--data <dir>` | data folder (else `FAMILY_HUB_DATA`, else the platform default) |
+| `--data <dir>` | data folder (else `YGGLTREE_DATA`, else the platform default) |
 | `--dist <dir>` | built frontend (default `frontend/dist`) |
-| `--no-open` | don't open a browser (also `FAMILY_HUB_NO_OPEN=1`) |
+| `--no-open` | don't open a browser (also `YGGLTREE_NO_OPEN=1`) |
 
 `npm run hub` runs the hub directly, without the install/build steps.
 

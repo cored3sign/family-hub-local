@@ -17,7 +17,7 @@ Each family's data is encrypted on the phones with a key that never leaves the p
 4. Each phone joins with the family QR code shown on that same screen. See
    GETTING_STARTED.md, section 6.
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cored3sign/family-hub-local/tree/relay-setup/relay)
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cored3sign/yggltree/tree/relay-setup/relay)
 
 The family link carries the family's key. Keep it private, like a house key. Anyone who has the
 link can join your family.

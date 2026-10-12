@@ -28,7 +28,7 @@ import { buildPushPayload } from '@block65/webcrypto-web-push'
 const MAX_ENTRY_BYTES = 256 * 1024
 const HISTORY_PAGE = 500
 const PUSH_GAP_MS = 20000
-const SERVER_CONTACT = 'https://github.com/cored3sign/family-hub-local'
+const SERVER_CONTACT = 'https://github.com/cored3sign/yggltree'
 const SERVER_KEY = 'server'
 const MAX_SUBSCRIPTIONS = 40
 // Only the push services browsers use. The relay sends requests only to these hosts.

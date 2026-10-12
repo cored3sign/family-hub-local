@@ -159,12 +159,12 @@ dataDir.js      the default data folder per platform
   `hub.lock` and backup files are `0600` (existing folders and `hub.json`
   are tightened at startup, best effort; no effect on Windows).
 - **Data folder** (outside the repo): macOS
-  `~/Library/Application Support/Family Hub`, Windows
-  `%APPDATA%\Family Hub`, Linux `${XDG_DATA_HOME:-~/.local/share}/family-hub`.
-  Override with `--data <dir>` or `FAMILY_HUB_DATA`. See [[Data-Model]]
+  `~/Library/Application Support/Yggltree`, Windows
+  `%APPDATA%\Yggltree`, Linux `${XDG_DATA_HOME:-~/.local/share}/yggltree`.
+  Override with `--data <dir>` or `YGGLTREE_DATA`. See [[Data-Model]]
   for the files inside.
 - **Daily backups.** At startup and every 24 h, if the family changed, the
-  hub writes `backups/family-hub-YYYY-MM-DD.fhub.json` in the same format
+  hub writes `backups/yggltree-YYYY-MM-DD.fhub.json` in the same format
   as an in-app backup, keeping the newest 14.
 
 ## The sync layer (`src/data/sync/`)

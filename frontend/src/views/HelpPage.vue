@@ -150,7 +150,7 @@ watch(() => route.hash, scrollToHash)
         Yggltree logo are the names of this project. The license covers the code and documentation, not the names or
         the logo.
       </p>
-      <p>Source and the full license: <a href="https://github.com/cored3sign/family-hub-local">github.com/cored3sign/family-hub-local</a></p>
+      <p>Source and the full license: <a href="https://github.com/cored3sign/yggltree">github.com/cored3sign/yggltree</a></p>
     </section>
   </div>
 </template>

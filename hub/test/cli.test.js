@@ -22,7 +22,7 @@ const CLI = fileURLToPath(new URL('../src/cli.js', import.meta.url))
 
 function runCli(args, env = {}) {
   const child = spawn(process.execPath, [CLI, ...args], {
-    env: { ...process.env, FAMILY_HUB_NO_OPEN: '1', ...env },
+    env: { ...process.env, YGGLTREE_NO_OPEN: '1', ...env },
     stdio: ['ignore', 'pipe', 'pipe'],
   })
   children.push(child)
@@ -51,7 +51,7 @@ describe('cli argument parsing', () => {
       dataDir: '/d',
       open: false,
     })
-    expect(parseCliArgs([], { FAMILY_HUB_DATA: '/env', FAMILY_HUB_NO_OPEN: '1' })).toMatchObject({
+    expect(parseCliArgs([], { YGGLTREE_DATA: '/env', YGGLTREE_NO_OPEN: '1' })).toMatchObject({
       port: 8787,
       dataDir: '/env',
       open: false,

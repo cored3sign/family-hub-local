@@ -23,13 +23,13 @@ company server that can read your data.
 2. [Install on a Mac](#2-install-on-a-mac)
 3. [Install on Windows](#3-install-on-windows)
 4. [First-run setup](#4-first-run-setup)
-5. [Set up the family relay](#5-set-up-the-family-relay)
+5. [Set up the family relay](#5-set-up-the-yggltree-relay)
 6. [Add phones and tablets](#6-add-phones-and-tablets)
 7. [Keeping it running](#7-keeping-it-running)
 8. [Backups](#8-backups)
 9. [If a phone is lost or stolen](#9-if-a-phone-is-lost-or-stolen)
 10. [Restoring a backup](#10-restoring-a-backup)
-11. [Updating Yggltree](#11-updating-family-hub)
+11. [Updating Yggltree](#11-updating-yggltree)
 12. [Troubleshooting](#12-troubleshooting)
 13. [Security notes](#13-security-notes)
 
@@ -60,11 +60,11 @@ company server that can read your data.
 
 **Step 2: Download Yggltree.**
 
-1. Go to [github.com/cored3sign/family-hub-local](https://github.com/cored3sign/family-hub-local).
+1. Go to [github.com/cored3sign/yggltree](https://github.com/cored3sign/yggltree).
 2. Click the green **Code** button, then **Download ZIP**.
 3. Open your **Downloads** folder. If the ZIP wasn't unzipped
    automatically, double-click it. You'll get a folder named something like
-   `family-hub-local-main`.
+   `yggltree-main`.
 4. Move that folder into your **Documents** folder.
 
 **Step 3: Start Yggltree.**
@@ -99,7 +99,7 @@ browser opens Yggltree by itself:
 Yggltree is running.
   On this computer:  http://localhost:8787
   Phones sync through the family relay: see Settings → Family relay.
-  Data folder:       /Users/you/Library/Application Support/Family Hub
+  Data folder:       /Users/you/Library/Application Support/Yggltree
   Keep this window open. Press Ctrl+C or close it to stop Yggltree.
 ```
 
@@ -118,11 +118,11 @@ Continue with [section 4](#4-first-run-setup).
 
 **Step 2: Download Yggltree.**
 
-1. Go to [github.com/cored3sign/family-hub-local](https://github.com/cored3sign/family-hub-local).
+1. Go to [github.com/cored3sign/yggltree](https://github.com/cored3sign/yggltree).
 2. Click the green **Code** button, then **Download ZIP**.
 3. In your **Downloads** folder, right-click the ZIP and choose **Extract
    All…**, then **Extract**. You'll get a folder named something like
-   `family-hub-local-main`. Move it somewhere permanent, such as
+   `yggltree-main`. Move it somewhere permanent, such as
    **Documents**.
 4. **Don't run Yggltree from inside the ZIP.** Windows lets you open a
    ZIP like a folder, but Yggltree won't work from there. Always use the
@@ -147,7 +147,7 @@ npm start
 ```
 
 When Yggltree is ready, the window shows a summary like the Mac example
-above, with **Data folder** under `C:\Users\you\AppData\Roaming\Family Hub`,
+above, with **Data folder** under `C:\Users\you\AppData\Roaming\Yggltree`,
 and your web browser opens Yggltree by itself.
 
 ---
@@ -270,13 +270,13 @@ backups anyway.
 - **Automatic daily backups:** while Yggltree runs, it saves a backup once
   a day if anything changed. It keeps the newest 14. They are in the
   `backups` folder inside the data folder, named like
-  `family-hub-2026-10-08.fhub.json`.
+  `yggltree-2026-10-08.fhub.json`.
 - **Copy the whole data folder:** stop Yggltree first, then copy the folder
   somewhere safe. The **Data folder** line in your Yggltree window shows where
   it is. By default it's:
-  - **Mac:** `~/Library/Application Support/Family Hub`. In Finder, choose
+  - **Mac:** `~/Library/Application Support/Yggltree`. In Finder, choose
     **Go → Go to Folder…** and paste that path.
-  - **Windows:** `%APPDATA%\Family Hub`. Paste that into File Explorer's
+  - **Windows:** `%APPDATA%\Yggltree`. Paste that into File Explorer's
     address bar.
 
 The data folder is kept separate from your Yggltree program folder, so

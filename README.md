@@ -2,7 +2,7 @@
 
 # Yggltree
 
-Product page: https://cored3sign.github.io/family-hub-local/
+Product page: https://cored3sign.github.io/yggltree/
 
 Yggltree is an open-source family organizer. It runs on **your
 family's own computer**, and phones and tablets sync through a **family relay**
@@ -33,7 +33,7 @@ You need a Mac or Windows computer that stays at home, a free
    Or clone it:
 
    ```sh
-   git clone https://github.com/cored3sign/family-hub-local.git
+   git clone https://github.com/cored3sign/yggltree.git
    ```
 3. **Start it:** double-click **Start Yggltree** in the folder
    (`Start Yggltree.command` on a Mac, `Start Yggltree.bat` on
@@ -54,8 +54,8 @@ You need a Mac or Windows computer that stays at home, a free
    Screen, and scan the family QR code shown in **Settings → Family relay**.
 
 Your family's data is stored in a data folder outside the program folder
-(on a Mac, `~/Library/Application Support/Family Hub`; on Windows,
-`%APPDATA%\Family Hub`), so updating Yggltree never touches it. The folder keeps its older name so your existing data stays where it is.
+(on a Mac, `~/Library/Application Support/Yggltree`; on Windows,
+`%APPDATA%\Yggltree`), so updating Yggltree never touches it. The first time you start Yggltree, it moves an existing data folder from its old "Family Hub" name, so your data comes with you.
 
 **➡️ See [`GETTING_STARTED.md`](GETTING_STARTED.md)** for the step-by-step
 guide: installing on Mac and Windows, the family relay, adding phones, keeping

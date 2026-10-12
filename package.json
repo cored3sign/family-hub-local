@@ -1,5 +1,5 @@
 {
-  "name": "family-hub-local",
+  "name": "yggltree",
   "private": true,
   "workspaces": ["frontend", "hub"],
   "engines": { "node": ">=22.12" },

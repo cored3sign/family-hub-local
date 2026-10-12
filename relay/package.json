@@ -1,5 +1,5 @@
 {
-  "name": "family-relay",
+  "name": "yggltree-relay",
   "private": true,
   "type": "module",
   "description": "Yggltree relay: stores and forwards encrypted family changes, and serves the app.",

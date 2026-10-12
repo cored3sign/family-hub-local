@@ -4,9 +4,9 @@
 // then calls main() from here.
 //
 //   --port <n>          listen port for this computer (default 8787)
-//   --data <dir>        data directory (else FAMILY_HUB_DATA, else the per-OS default)
+//   --data <dir>        data directory (else YGGLTREE_DATA, else the per-OS default)
 //   --dist <dir>        built frontend (default <repo>/frontend/dist)
-//   --no-open           don't open a browser (also FAMILY_HUB_NO_OPEN=1)
+//   --no-open           don't open a browser (also YGGLTREE_NO_OPEN=1)
 //
 // The hub listens on this computer only. Phones sync through the family
 // relay (see relay/README.md), not through this computer.
@@ -20,7 +20,7 @@ import { homedir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
-import { defaultDataDir } from './dataDir.js'
+import { defaultDataDir, legacyDataDir, migrateLegacyDataDir } from './dataDir.js'
 
 const DEFAULT_PORT = 8787
 
@@ -51,9 +51,9 @@ export function parseCliArgs(argv, env) {
   return {
     help: values.help,
     port,
-    dataDir: values.data ?? (env.FAMILY_HUB_DATA || undefined),
+    dataDir: values.data ?? (env.YGGLTREE_DATA || env.FAMILY_HUB_DATA || undefined),
     distDir: values.dist,
-    open: !values['no-open'] && !truthyEnv(env.FAMILY_HUB_NO_OPEN),
+    open: !values['no-open'] && !truthyEnv(env.YGGLTREE_NO_OPEN) && !truthyEnv(env.FAMILY_HUB_NO_OPEN),
   }
 }
 
@@ -144,7 +144,17 @@ export async function main({
   silenceLocalStorageWarning()
   const { startHub } = await import('./server.js')
 
-  const dataDir = resolve(args.dataDir ?? defaultDataDir({ platform, env, homedir: homedir() }))
+  let dataDir = resolve(args.dataDir ?? defaultDataDir({ platform, env, homedir: homedir() }))
+  if (args.dataDir === undefined) {
+    const migration = await migrateLegacyDataDir({
+      dataDir,
+      legacyDir: legacyDataDir({ platform, env, homedir: homedir() }),
+    })
+    dataDir = resolve(migration.dir)
+    if (migration.action === 'moved') log.log(`Moved your data folder to ${dataDir}. Your data came with it.`)
+    if (migration.action === 'in-use') log.log(`Using your existing data folder at ${dataDir}, which another copy is still using.`)
+    if (migration.action === 'failed') log.log(`Couldn't move your data folder (${migration.error?.message ?? migration.error}). Using it at ${dataDir} for now.`)
+  }
   // undefined -> startHub's default, <repo>/frontend/dist resolved from server.js
   const distDir = args.distDir === undefined ? undefined : resolve(args.distDir)
 

@@ -105,7 +105,7 @@ function downloadBackup() {
   try {
     const url = URL.createObjectURL(new Blob([createBackup(family())], { type: 'application/json' }))
     const stamp = new Date().toISOString().slice(0, 10)
-    const a = Object.assign(document.createElement('a'), { href: url, download: `family-hub-backup-${stamp}.fhub.json` })
+    const a = Object.assign(document.createElement('a'), { href: url, download: `yggltree-backup-${stamp}.fhub.json` })
     a.click()
     setTimeout(() => URL.revokeObjectURL(url), 1000)
   } catch (err) {

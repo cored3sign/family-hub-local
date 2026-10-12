@@ -1,5 +1,5 @@
 {
-  "name": "family-relay",
+  "name": "yggltree-relay",
   "main": "src/index.js",
   "compatibility_date": "2026-02-24",
   // The app's files are copied into public/ by `npm run build:app`.

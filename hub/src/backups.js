@@ -1,7 +1,7 @@
 // Automatic daily hub backups.
 //
 // At startup and then every 24 h, if the current room's family changed
-// since the last backup, write backups/family-hub-<local date>.fhub.json
+// since the last backup, write backups/yggltree-<local date>.fhub.json
 // with createBackup() (the same format "Download a backup" produces, so
 // it restores through the normal restore path) and keep the newest 14.
 //
@@ -23,13 +23,15 @@ import { PRIVATE_FILE_MODE, ensurePrivateDir, writeFileAtomic } from './fsAtomic
 
 export const BACKUP_KEEP = 14
 export const BACKUP_INTERVAL_MS = 24 * 60 * 60 * 1000
-const BACKUP_FILE = /^family-hub-\d{4}-\d{2}-\d{2}\.fhub\.json$/
+// Older builds wrote family-hub-<date>.fhub.json; those are still recognized.
+const BACKUP_FILE = /^(?:yggltree|family-hub)-\d{4}-\d{2}-\d{2}\.fhub\.json$/
+const dayOf = (name) => name.match(/\d{4}-\d{2}-\d{2}/)[0]
 const STATE_FILE = 'last-backup.json'
 
 const pad = (n) => String(n).padStart(2, '0')
 
 export function backupFileName(date) {
-  return `family-hub-${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}.fhub.json`
+  return `yggltree-${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}.fhub.json`
 }
 
 function fingerprint({ doc, assets }) {
@@ -77,7 +79,9 @@ export function createBackups({
   }
 
   async function prune() {
-    const names = (await fs.readdir(dir)).filter((n) => BACKUP_FILE.test(n)).sort()
+    const names = (await fs.readdir(dir))
+      .filter((n) => BACKUP_FILE.test(n))
+      .sort((a, b) => (dayOf(a) < dayOf(b) ? -1 : dayOf(a) > dayOf(b) ? 1 : 0))
     for (const name of names.slice(0, Math.max(0, names.length - keep))) {
       await fs.unlink(join(dir, name)).catch((err) => {
         if (!err || err.code !== 'ENOENT') throw err

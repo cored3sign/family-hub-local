@@ -224,7 +224,7 @@ function todayStamp() {
 function downloadBackup() {
   exportError.value = ''
   try {
-    download(`family-hub-backup-${todayStamp()}.fhub.json`, createBackup(family()), 'application/json')
+    download(`yggltree-backup-${todayStamp()}.fhub.json`, createBackup(family()), 'application/json')
   } catch (e) {
     exportError.value = e.message
   }
@@ -233,7 +233,7 @@ function downloadBackup() {
 function downloadJsonExport() {
   exportError.value = ''
   try {
-    download(`family-hub-export-${todayStamp()}.json`, JSON.stringify(exportJson(doc), null, 2), 'application/json')
+    download(`yggltree-export-${todayStamp()}.json`, JSON.stringify(exportJson(doc), null, 2), 'application/json')
   } catch (e) {
     exportError.value = e.message
   }

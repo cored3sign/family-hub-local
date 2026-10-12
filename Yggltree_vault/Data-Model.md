@@ -197,7 +197,7 @@ hub.json     { v: 1,
                }
 hub.lock     { pid, startedAt }   one hub per data folder
 rooms/<roomId>/main.snapshot  main.log  assets.snapshot  assets.log
-backups/family-hub-YYYY-MM-DD.fhub.json   newest 14 kept
+backups/yggltree-YYYY-MM-DD.fhub.json   newest 14 kept
 backups/last-backup.json                  fingerprint of the last backup
 ```
 

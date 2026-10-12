@@ -190,7 +190,7 @@ const THEMES = {
   }
 };
 
-const THEME_STORE = 'family-hub-page-theme'
+const THEME_STORE = 'yggltree-page-theme'
 const themeTiles = document.querySelectorAll('.theme-tile')
 const themeName = document.getElementById('theme-name')
 let themeTimer = null

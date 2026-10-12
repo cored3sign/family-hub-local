@@ -7,9 +7,9 @@ import { defaultDataDir } from '../src/dataDir.js'
 // the platform conventions: "Family Hub" (capitalized, with a space) on
 // darwin/win32, lowercase hyphenated "family-hub" on linux.
 describe('defaultDataDir', () => {
-  it('darwin: ~/Library/Application Support/Family Hub', () => {
+  it('darwin: ~/Library/Application Support/Yggltree', () => {
     const dir = defaultDataDir({ platform: 'darwin', env: {}, homedir: '/Users/example' })
-    expect(dir).toBe('/Users/example/Library/Application Support/Family Hub')
+    expect(dir).toBe('/Users/example/Library/Application Support/Yggltree')
   })
 
   it('win32: uses APPDATA when set', () => {
@@ -18,12 +18,12 @@ describe('defaultDataDir', () => {
       env: { APPDATA: 'C:\\Users\\example\\AppData\\Roaming' },
       homedir: 'C:\\Users\\example',
     })
-    expect(dir).toBe('C:\\Users\\example\\AppData\\Roaming\\Family Hub')
+    expect(dir).toBe('C:\\Users\\example\\AppData\\Roaming\\Yggltree')
   })
 
-  it('win32: falls back to ~/AppData/Roaming/Family Hub when APPDATA is unset', () => {
+  it('win32: falls back to ~/AppData/Roaming/Yggltree when APPDATA is unset', () => {
     const dir = defaultDataDir({ platform: 'win32', env: {}, homedir: 'C:\\Users\\example' })
-    expect(dir).toBe('C:\\Users\\example\\AppData\\Roaming\\Family Hub')
+    expect(dir).toBe('C:\\Users\\example\\AppData\\Roaming\\Yggltree')
   })
 
   it('linux: uses XDG_DATA_HOME when set', () => {
@@ -32,11 +32,11 @@ describe('defaultDataDir', () => {
       env: { XDG_DATA_HOME: '/home/example/.data' },
       homedir: '/home/example',
     })
-    expect(dir).toBe('/home/example/.data/family-hub')
+    expect(dir).toBe('/home/example/.data/yggltree')
   })
 
   it('linux: falls back to homedir/.local/share when XDG_DATA_HOME is unset', () => {
     const dir = defaultDataDir({ platform: 'linux', env: {}, homedir: '/home/example' })
-    expect(dir).toBe('/home/example/.local/share/family-hub')
+    expect(dir).toBe('/home/example/.local/share/yggltree')
   })
 })

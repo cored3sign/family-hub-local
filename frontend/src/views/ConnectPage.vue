@@ -19,7 +19,7 @@ import IosInstallGuide from '../components/IosInstallGuide.vue'
 //
 // A phone joins by scanning the family's QR code from Settings → Family
 // relay, or by pasting the family link. Both are handled below.
-const GETTING_STARTED_URL = 'https://github.com/cored3sign/family-hub-local#readme'
+const GETTING_STARTED_URL = 'https://github.com/cored3sign/yggltree#readme'
 const SLOW_HINT_MS = 10_000
 
 const core = useCoreStore()
@@ -125,7 +125,7 @@ function downloadBackup() {
   backupError.value = ''
   try {
     const url = URL.createObjectURL(new Blob([createBackup(family())], { type: 'application/json' }))
-    const a = Object.assign(document.createElement('a'), { href: url, download: `family-hub-backup-${todayStamp()}.fhub.json` })
+    const a = Object.assign(document.createElement('a'), { href: url, download: `yggltree-backup-${todayStamp()}.fhub.json` })
     a.click()
     setTimeout(() => URL.revokeObjectURL(url), 1000)
   } catch (err) {
