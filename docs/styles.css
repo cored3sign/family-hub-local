@@ -1735,3 +1735,10 @@ html.theme-changing *::after {
   width: 26px;
   background: var(--accent-deep);
 }
+
+/* For the curious: the family binder's illustration, under the lead */
+
+.scene-curious {
+  width: min(100%, 300px);
+  margin-top: clamp(32px, 4vw, 56px);
+}
