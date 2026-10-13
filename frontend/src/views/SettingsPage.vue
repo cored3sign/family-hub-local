@@ -8,7 +8,7 @@ import { onBeforeRouteLeave, useRouter } from 'vue-router'
 import {
   Home, UserRound, Users, Database,
   Camera, Download, AlertTriangle, Palette,
-  Smartphone,
+  Smartphone, MonitorSmartphone,
 } from 'lucide-vue-next'
 import { useCoreStore } from '../stores/core'
 import { useSyncStore } from '../stores/sync'
@@ -25,7 +25,7 @@ import { isStandaloneApp, isIosSafariTab } from '../lib/platform.js'
 import { newFamilyKey, deriveRoomId, deriveAuth, toBase64Url } from '../data/relay/crypto'
 import QRCode from 'qrcode'
 import { createHubApi } from '../data/sync/hubApi.js'
-import { listDevices, describeLastSeen } from '../data/presence.js'
+import { listDevices, describeLastSeen, thisDeviceLabel } from '../data/presence.js'
 
 const core = useCoreStore()
 const sync = useSyncStore()
@@ -36,6 +36,7 @@ const members = useLive(listMembers)
 
 const devices = useLive(listDevices)
 const thisDeviceId = relayDeviceId()
+const thisDeviceName = thisDeviceLabel()
 // Ticks once a minute so "10 min ago" stays current while the page is open.
 const clock = ref(new Date())
 const clockTimer = setInterval(() => (clock.value = new Date()), 60 * 1000)
@@ -543,57 +544,10 @@ function initials(name) {
   <div class="module-page settings-page">
     <h2>Settings</h2>
 
-    <AppCard v-if="core.isAdmin" class="settings-card">
-        <div class="settings-card__header">
-          <span class="settings-icon-tile settings-icon-tile--household">
-            <Home :size="20" />
-          </span>
-          <h3>Household</h3>
-        </div>
-        <form class="settings-form" @submit.prevent="saveSettings">
-          <FormField v-model="familyName" label="Family name" required />
-          <label class="form-field">
-            <span class="form-field__label">Week starts on</span>
-            <select v-model="weekStartDay">
-              <option value="sunday">Sunday</option>
-              <option value="monday">Monday</option>
-            </select>
-          </label>
-          <p v-if="settingsError" class="error">{{ settingsError }}</p>
-          <p v-if="settingsSuccess" class="success">{{ settingsSuccess }}</p>
-          <AppButton type="submit" :disabled="savingSettings">{{ savingSettings ? 'Saving…' : 'Save' }}</AppButton>
-        </form>
-      </AppCard>
-
-      <!-- Your theme: yours alone, and it follows you to every device you sign in on. Applies straight away. -->
-      <AppCard class="settings-card">
-        <div class="settings-card__header">
-          <span class="settings-icon-tile settings-icon-tile--appearance">
-            <Palette :size="20" />
-          </span>
-          <h3>Your theme</h3>
-        </div>
-        <p class="hint">Only you see this. It follows you to every device where you sign in. Applies straight away.</p>
-        <div class="theme-picker" role="radiogroup" aria-label="Your theme">
-          <button
-            v-for="t in THEME_CHOICES"
-            :key="t.key"
-            type="button"
-            role="radio"
-            :aria-checked="myTheme === t.key"
-            class="theme-chip"
-            :class="{ 'theme-chip--selected': myTheme === t.key }"
-            @click="chooseTheme(t.key)"
-          >
-            <span class="theme-chip__dots" aria-hidden="true">
-              <span class="theme-chip__dot" :style="{ background: t.primary }" />
-              <span class="theme-chip__dot" :style="{ background: t.secondary }" />
-            </span>
-            <span class="theme-chip__label">{{ t.label }}</span>
-          </button>
-        </div>
-        <p v-if="themeError" class="error">{{ themeError }}</p>
-      </AppCard>
+    <!-- You: settings that are yours alone, and follow you to every device you sign in on. -->
+    <section class="settings-group" aria-labelledby="group-you">
+      <h2 id="group-you" class="settings-group__title">You</h2>
+      <p class="settings-group__note">Only you see these. They follow you to every device you sign in on.</p>
 
       <!-- My profile -->
       <AppCard class="settings-card">
@@ -633,6 +587,112 @@ function initials(name) {
         <AppButton variant="ghost" type="button" @click="switchProfile">Switch profile</AppButton>
       </AppCard>
 
+      <!-- Your theme: yours alone, and it follows you to every device you sign in on. Applies straight away. -->
+      <AppCard class="settings-card">
+        <div class="settings-card__header">
+          <span class="settings-icon-tile settings-icon-tile--appearance">
+            <Palette :size="20" />
+          </span>
+          <h3>Your theme</h3>
+        </div>
+        <p class="hint">Only you see this. It follows you to every device where you sign in. Applies straight away.</p>
+        <div class="theme-picker" role="radiogroup" aria-label="Your theme">
+          <button
+            v-for="t in THEME_CHOICES"
+            :key="t.key"
+            type="button"
+            role="radio"
+            :aria-checked="myTheme === t.key"
+            class="theme-chip"
+            :class="{ 'theme-chip--selected': myTheme === t.key }"
+            @click="chooseTheme(t.key)"
+          >
+            <span class="theme-chip__dots" aria-hidden="true">
+              <span class="theme-chip__dot" :style="{ background: t.primary }" />
+              <span class="theme-chip__dot" :style="{ background: t.secondary }" />
+            </span>
+            <span class="theme-chip__label">{{ t.label }}</span>
+          </button>
+        </div>
+        <p v-if="themeError" class="error">{{ themeError }}</p>
+      </AppCard>
+
+      <!-- This device: its name, and turning sync off here. Sync and notifications are set per device. -->
+      <AppCard class="settings-card">
+        <div class="settings-card__header">
+          <span class="settings-icon-tile settings-icon-tile--data">
+            <MonitorSmartphone :size="20" />
+          </span>
+          <h3>This device</h3>
+        </div>
+        <p class="device-row__name">{{ thisDeviceName }}</p>
+        <template v-if="relay">
+          <p class="hint">
+            This only affects this device. It stops syncing and notifications here. This device keeps its copy of
+            the family's data.
+          </p>
+          <AppButton variant="danger" @click="turnOffRelay">Turn off sync on this device</AppButton>
+        </template>
+      </AppCard>
+
+      <!-- Notifications on this phone: only for devices that use the family relay. -->
+      <AppCard v-if="relay" class="settings-card">
+        <div class="settings-card__header">
+          <span class="settings-icon-tile settings-icon-tile--data">
+            <Smartphone :size="20" />
+          </span>
+          <h3>Notifications on this phone</h3>
+        </div>
+        <p class="hint">
+          Get a notification when something changes in your family's lists, even when the app is closed. The
+          notification doesn't say what changed. Tap it to open the app.
+        </p>
+        <p v-if="notifyState === 'other-origin'" class="hint">
+          Turn notifications on from the phone itself, using the family relay link (not from this computer).
+        </p>
+        <p v-else-if="notifyState === 'unsupported'" class="hint">This browser can't show notifications.</p>
+        <p v-else-if="notifyState === 'add-to-home'" class="hint">
+          On iPhone, first add Yggltree to the Home Screen (Share → Add to Home Screen), open it from its icon,
+          then come back to this screen.
+        </p>
+        <template v-else-if="notifyState === 'on'">
+          <p class="hint"><strong>On</strong> for this phone.</p>
+          <AppButton variant="ghost" @click="turnOffNotifications">Turn off</AppButton>
+        </template>
+        <AppButton v-else-if="notifyState === 'off'" variant="secondary" @click="turnOnNotifications">
+          Turn on notifications
+        </AppButton>
+        <p v-if="notifyError" class="error">{{ notifyError }}</p>
+      </AppCard>
+    </section>
+
+    <!-- Family: shared by everyone. Only admins see this section. -->
+    <section v-if="core.isAdmin" class="settings-group" aria-labelledby="group-family">
+      <h2 id="group-family" class="settings-group__title">Family</h2>
+      <p class="settings-group__note">Shared by everyone in the family. Admins manage these.</p>
+
+      <AppCard class="settings-card">
+        <div class="settings-card__header">
+          <span class="settings-icon-tile settings-icon-tile--household">
+            <Home :size="20" />
+          </span>
+          <h3>Household</h3>
+        </div>
+        <form class="settings-form" @submit.prevent="saveSettings">
+          <FormField v-model="familyName" label="Family name" required />
+          <label class="form-field">
+            <span class="form-field__label">Week starts on</span>
+            <select v-model="weekStartDay">
+              <option value="sunday">Sunday</option>
+              <option value="monday">Monday</option>
+            </select>
+          </label>
+          <p v-if="settingsError" class="error">{{ settingsError }}</p>
+          <p v-if="settingsSuccess" class="success">{{ settingsSuccess }}</p>
+          <AppButton type="submit" :disabled="savingSettings">{{ savingSettings ? 'Saving…' : 'Save' }}</AppButton>
+        </form>
+      </AppCard>
+
       <!-- Family members & devices: each member, and the devices they're using. Admins manage members. -->
       <AppCard class="settings-card">
         <div class="settings-card__header">
@@ -641,7 +701,7 @@ function initials(name) {
           </span>
           <h3>Family members &amp; Devices</h3>
         </div>
-        <p class="hint">Who is using each device. You can't remove a device from here yet.</p>
+        <p class="hint">Who is using each device.</p>
         <ul class="module-list">
           <ListRow v-for="m in members" :key="m.id">
             <div class="member-row">
@@ -755,31 +815,34 @@ function initials(name) {
           </p>
         </div>
       </AppCard>
+    </section>
 
-      <!-- Family relay: sync through a relay the family runs on its own account. Setting it up and adding
-           phones is for admins. Any phone that uses the relay can turn it off for itself. -->
+    <!-- Sync: how this device's family connects. Setting up the relay and adding devices is for admins. -->
+    <section v-if="core.isAdmin || relay" class="settings-group" aria-labelledby="group-sync">
+      <h2 id="group-sync" class="settings-group__title">Sync</h2>
+      <p class="settings-group__note">The connection between your devices.</p>
+
+      <!-- Relay: sync through a relay the family runs on its own account. -->
       <AppCard v-if="core.isAdmin || relay" class="settings-card">
         <div class="settings-card__header">
           <span class="settings-icon-tile settings-icon-tile--data">
             <Database :size="20" />
           </span>
-          <h3>Family relay</h3>
+          <h3>Relay</h3>
         </div>
 
-        <!-- A relay is set up on this device: show it. -->
+        <!-- A relay is set up on this device: show its status. Admins can add a device from here. -->
         <template v-if="relay">
-          <template v-if="core.isAdmin">
-            <p class="hint">Phones sync through this relay. Add a phone by scanning the QR code below.</p>
-            <p class="hint">Relay: <strong>{{ relay.url }}</strong></p>
-            <p class="add-device__url">{{ relayLink }}</p>
+          <p class="hint">Syncing through your relay.</p>
+          <details v-if="core.isAdmin" class="relay-setup">
+            <summary>Add a device</summary>
+            <p class="hint">
+              Scan this code with a phone's camera, or open the link on the device. Keep it private: the link contains
+              the family key.
+            </p>
             <img v-if="relayQr" :src="relayQr" alt="Family relay link" width="220" height="220" />
-            <p class="hint">Keep this private: the link contains the family key.</p>
-          </template>
-          <p class="hint">
-            This only affects this device. It stops syncing and notifications here. This device keeps its copy of
-            the family's data.
-          </p>
-          <AppButton variant="danger" @click="turnOffRelay">Turn off the relay on this device</AppButton>
+            <p class="add-device__url">{{ relayLink }}</p>
+          </details>
         </template>
 
         <!-- No relay yet: one name, one button. -->
@@ -824,6 +887,7 @@ function initials(name) {
         <!-- A relay exists: manage it from a quiet section. -->
         <details v-if="core.isAdmin && relay" class="relay-setup">
           <summary>Manage the relay</summary>
+          <p class="hint">Relay: <strong>{{ relay.url }}</strong></p>
           <p v-if="cloudflare.connected" class="hint">
             Cloudflare account: <strong>{{ cloudflare.accountName }}</strong>
           </p>
@@ -851,35 +915,7 @@ function initials(name) {
         </details>
       </AppCard>
 
-      <!-- Notifications on this phone: only for devices that use the family relay. -->
-      <AppCard v-if="relay" class="settings-card">
-        <div class="settings-card__header">
-          <span class="settings-icon-tile settings-icon-tile--data">
-            <Smartphone :size="20" />
-          </span>
-          <h3>Notifications on this phone</h3>
-        </div>
-        <p class="hint">
-          Get a notification when something changes in your family's lists, even when the app is closed. The
-          notification doesn't say what changed. Tap it to open the app.
-        </p>
-        <p v-if="notifyState === 'other-origin'" class="hint">
-          Turn notifications on from the phone itself, using the family relay link (not from this computer).
-        </p>
-        <p v-else-if="notifyState === 'unsupported'" class="hint">This browser can't show notifications.</p>
-        <p v-else-if="notifyState === 'add-to-home'" class="hint">
-          On iPhone, first add Yggltree to the Home Screen (Share → Add to Home Screen), open it from its icon,
-          then come back to this screen.
-        </p>
-        <template v-else-if="notifyState === 'on'">
-          <p class="hint"><strong>On</strong> for this phone.</p>
-          <AppButton variant="ghost" @click="turnOffNotifications">Turn off</AppButton>
-        </template>
-        <AppButton v-else-if="notifyState === 'off'" variant="secondary" @click="turnOnNotifications">
-          Turn on notifications
-        </AppButton>
-        <p v-if="notifyError" class="error">{{ notifyError }}</p>
-      </AppCard>
+    </section>
 
     <AppModal :open="showRestoreModal || sync.restoreStuck" title="Restore from backup" @close="closeRestoreModal">
       <div v-if="sync.restoreStuck" class="restore-modal">
@@ -1194,6 +1230,25 @@ function initials(name) {
 
 .device-row .hint {
   margin: 0;
+}
+
+/* The three groups on this page: You, Family, Sync. Each has a title and a line saying who it reaches. */
+.settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.settings-group__title {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.settings-group__note {
+  margin: -8px 0 0;
+  color: var(--text-muted);
+  font: var(--type-label);
 }
 
 /* Under a member's row, indented to line up with the name (avatar 40px + 12px gap). */

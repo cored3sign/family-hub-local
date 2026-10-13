@@ -10,7 +10,7 @@ import { createBackup } from '../data/backupFormat.js'
 // hub machine here, and only while its hub has no family. Creating (or
 // restoring) first claims the hub (POST /api/hub/claim), so two browsers
 // on this computer can't both seed a family. Phones and tablets never see
-// this page; they join with the family QR code from Settings -> Family relay.
+// this page; they join with the family QR code from Settings -> Sync.
 const core = useCoreStore()
 const sync = useSyncStore()
 const router = useRouter()
@@ -122,7 +122,7 @@ function closeRestore() {
 <template>
   <AppCard>
     <h1>Set up your Yggltree</h1>
-    <p class="subtitle">Set up your family on this computer. Phones and tablets join later with the family QR code from Settings → Family relay.</p>
+    <p class="subtitle">Set up your family on this computer. Phones and tablets join later with the family QR code from Settings → Sync.</p>
     <form class="auth-form" @submit.prevent="submit">
       <FormField v-model="familyName" label="Family name" placeholder="The Riveras" required />
       <FormField v-model="yourName" label="Your name" placeholder="Sam" required />

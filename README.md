@@ -74,18 +74,18 @@ You need a Mac or Windows computer that stays at home, a free
    Keep the window open while your family uses Yggltree.
 4. **Open [http://localhost:8787](http://localhost:8787)** on that computer
    (it usually opens by itself) and set up your family.
-5. **Set up the family relay:** in **Settings → Family relay**, connect your
+5. **Set up the family relay:** in **Settings → Sync**, connect your
    Cloudflare account and name your relay. Yggltree creates it on your account.
    [`relay/README.md`](relay/README.md) explains the steps.
-6. **Add phones:** on each phone, open the relay address, add it to the Home
-   Screen, and scan the family QR code shown in **Settings → Family relay**.
+6. **Add devices:** on each phone, open the relay address, add it to the Home
+   Screen, and scan the family QR code shown in **Settings → Sync**.
 
 Your family's data is stored in a data folder outside the program folder
 (on a Mac, `~/Library/Application Support/Yggltree`; on Windows,
 `%APPDATA%\Yggltree`), so updating Yggltree never touches it. The first time you start Yggltree, it moves an existing data folder from its old "Family Hub" name, so your data comes with you.
 
 **➡️ See [`GETTING_STARTED.md`](GETTING_STARTED.md)** for the step-by-step
-guide: installing on Mac and Windows, the family relay, adding phones, keeping
+guide: installing on Mac and Windows, the family relay, adding devices, keeping
 it running, backups, and troubleshooting.
 
 ## How it works
@@ -100,7 +100,7 @@ it locally, so nothing waits on the network. Devices merge their changes using
 - **The family computer** runs a small local server (one Node.js process) that
   serves the app and keeps the family's data on that computer. It listens on
   this computer only.
-- Phones join with a QR code from **Settings → Family relay**. No passwords.
+- Phones join with a QR code from **Settings → Sync**. No passwords.
 - Phones open the app over HTTPS from the relay, so they open without a
   connection once they've been opened. Changes made without a connection sync
   when the phone reaches the relay again.

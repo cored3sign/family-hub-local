@@ -1,5 +1,5 @@
 // The family's device list. Each device writes one record about itself into the family's
-// shared data, and Settings → Devices shows them. A record holds only a readable label, a
+// shared data, and Settings → Family shows them. A record holds only a readable label, a
 // random id, and when the device last synced. It says nothing about what the device shows.
 
 import { all, get, insert, patch } from './collection.js'

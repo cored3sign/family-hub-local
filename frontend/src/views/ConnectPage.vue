@@ -69,7 +69,7 @@ function useRelayLink() {
   relayLinkError.value = ''
   const candidate = parseRelayLink(relayLinkText.value)
   if (!candidate) {
-    relayLinkError.value = "That isn't a family link. Copy the whole link from Settings → Family relay."
+    relayLinkError.value = "That isn't a family link. Copy the whole link from Settings → Sync."
     return
   }
   if (!offerRelayJoin(candidate)) {

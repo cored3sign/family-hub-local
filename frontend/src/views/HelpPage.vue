@@ -99,15 +99,15 @@ watch(() => route.hash, scrollToHash)
 
       <p v-if="sync.isHubMachine" class="hint">
         <template v-if="core.isAdmin">
-          To add a phone or tablet, open <router-link to="/settings">Settings</router-link> → Family relay and scan its
-          QR code with the phone.
+          To add a device, open <router-link to="/settings">Settings</router-link> → Sync, expand Add a device, and scan
+          its QR code with the phone.
         </template>
         <template v-else>
-          An admin can add phones and tablets in <router-link to="/settings">Settings</router-link> on this computer.
+          An admin can add devices in <router-link to="/settings">Settings</router-link> on this computer.
         </template>
       </p>
       <p v-else class="hint">
-        To join this device again, scan the family QR code from Settings → Family relay on the family computer. Your
+        To join this device again, scan the family QR code from Settings → Sync on the family computer. Your
         changes stay saved on this device while it isn't syncing.
       </p>
     </AppCard>
@@ -124,10 +124,10 @@ watch(() => route.hash, scrollToHash)
         keep up to date. Install it after this phone has joined the family.
       </p>
       <p v-if="!relayAddress" class="hint">
-        Set up the family relay first: open Settings → Family relay on the family computer.
+        Set up the family relay first: open Settings → Sync on the family computer.
       </p>
       <ol class="app-install-steps">
-        <li>On the family computer, open Settings → Family relay and keep its QR code on screen.</li>
+        <li>On the family computer, open Settings → Sync, expand Add a device, and keep its QR code on screen.</li>
         <li>Scan the QR code with the phone's Camera app. It opens Yggltree in Safari.</li>
         <li>
           Put it on the Home Screen. iPhone: tap <strong>Share</strong>, then <strong>Add to Home Screen</strong>, then

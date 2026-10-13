@@ -12,7 +12,7 @@ Each family's data is encrypted on the phones with a key that never leaves the p
 The easiest way is from the Yggltree app on the family computer:
 
 1. Create a free Cloudflare account at cloudflare.com and confirm your email address.
-2. In Yggltree, open **Settings → Family relay**, type a name for the relay, such as
+2. In Yggltree, open **Settings → Sync**, type a name for the relay, such as
    `smith-family-relay`, and click **Set up my relay**. The name becomes the start of the
    relay's address, for example `smith-family-relay.smith.workers.dev`. The first time,
    your browser opens a Cloudflare page: sign in, click **Allow**, and come back to
@@ -31,7 +31,7 @@ keeps its own copy of the family's data either way.
 
 - **The Deploy to Cloudflare button**, below. It creates the relay on your account.
   Cloudflare then shows the relay's address. Paste that address into **Relay address**
-  in **Settings → Family relay**, and click **Start the family relay**.
+  in **Settings → Sync**, and click **Start the family relay**.
 - **The command line**, for someone comfortable with a terminal. After `npx wrangler login`:
 
       cd relay

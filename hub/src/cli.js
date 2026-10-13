@@ -102,7 +102,7 @@ function banner({ url, dataDir }) {
     '',
     'Yggltree is running.',
     `  On this computer:  ${url}`,
-    '  Phones sync through the family relay: see Settings → Family relay.',
+    '  Phones sync through the family relay: see Settings → Sync.',
     `  Data folder:       ${dataDir}`,
     '  Keep this window open. Press Ctrl+C or close it to stop Yggltree.',
     '',

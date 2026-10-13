@@ -118,7 +118,7 @@ export async function bootSync({
     if (result.role === 'unpaired') result.role = 'device'
   }
 
-  // This device's entry in the family's device list (Settings → Devices). Same id the
+  // This device's entry in the family's device list (Settings → Family). Same id the
   // relay uses for this device, so Settings can mark it as "This device".
   startPresence(fam.doc, { id: relayDeviceId(opts), label: thisDeviceLabel(), memberId: () => currentMemberId() })
 

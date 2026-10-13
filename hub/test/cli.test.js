@@ -83,7 +83,7 @@ describe('cli process', () => {
     await run.waitForOutput(/Keep this window open/)
     expect(run.output()).toContain(dataDir)
     expect(run.output()).toContain('Yggltree is running.')
-    expect(run.output()).toContain('  Phones sync through the family relay: see Settings → Family relay.')
+    expect(run.output()).toContain('  Phones sync through the family relay: see Settings → Sync.')
     expect(run.output()).toContain('  Keep this window open. Press Ctrl+C or close it to stop Yggltree.')
     expect(run.output()).not.toMatch(/ExperimentalWarning/)
     const res = await fetch(`http://127.0.0.1:${port}/api/nope`)

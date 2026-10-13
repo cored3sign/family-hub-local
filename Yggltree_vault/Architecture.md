@@ -184,7 +184,7 @@ status.js     the five sync states and their copy
   room id, token and role are never written to a Y.Doc. See [[Data-Model]]
   for the keys.
 - **Phones join through the relay, not the hub.** A phone scans the family QR
-  code from **Settings → Family relay** (or pastes the family link). The link
+  code from **Settings → Sync** (or pastes the family link). The link
   carries the family key in its `#relay=1.<key>` fragment, which is never sent
   to a server. The hub issues no pairing codes.
 - **Room-binding invariant.** A device's IndexedDB state belongs to
@@ -211,7 +211,7 @@ straight from the hub. Any other hostname is a *device*. The hub listens on
 this computer only, so the family computer is opened at
 `http://localhost:8787`.
 
-Admin-only screens (the family relay settings, Restore) appear only on the hub
+Admin-only Settings groups (Family, Sync) and Restore appear only on the hub
 machine and only for admin profiles. The admin check is advisory; the hub's admin guard is
 the real boundary.
 

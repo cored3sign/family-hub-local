@@ -13,7 +13,7 @@ mobile data, or away. There are no family accounts, no subscription, and no
 company server that can read your data.
 
 > **Reading this on a phone?** Do sections 1 to 5 on your family computer
-> first. Then come back to the phone for [section 6](#6-add-phones-and-tablets).
+> first. Then come back to the phone for [section 6](#6-add-a-device).
 
 ---
 
@@ -24,7 +24,7 @@ company server that can read your data.
 3. [Install on Windows](#3-install-on-windows)
 4. [First-run setup](#4-first-run-setup)
 5. [Set up the family relay](#5-set-up-the-family-relay)
-6. [Add phones and tablets](#6-add-phones-and-tablets)
+6. [Add a device](#6-add-a-device)
 7. [Keeping it running](#7-keeping-it-running)
 8. [Backups](#8-backups)
 9. [If a phone is lost or stolen](#9-if-a-phone-is-lost-or-stolen)
@@ -98,7 +98,7 @@ browser opens Yggltree by itself:
 ```
 Yggltree is running.
   On this computer:  http://localhost:8787
-  Phones sync through the family relay: see Settings → Family relay.
+  Phones sync through the family relay: see Settings → Sync.
   Data folder:       /Users/you/Library/Application Support/Yggltree
   Keep this window open. Press Ctrl+C or close it to stop Yggltree.
 ```
@@ -186,7 +186,7 @@ Set it up once, from Settings.
 **Step 1: Create a free Cloudflare account** at [cloudflare.com](https://cloudflare.com),
 and confirm your email address.
 
-**Step 2: Set up the relay.** On the family computer, open **Settings → Family relay**.
+**Step 2: Set up the relay.** On the family computer, open **Settings → Sync**.
 Type a name for the relay, such as `smith-family-relay`, and click **Set up my relay**.
 The name becomes the start of the relay's address, for example
 `smith-family-relay.smith.workers.dev`.
@@ -220,11 +220,11 @@ The free plan's limits are in the [relay setup guide](relay/README.md#limits-on-
 
 ---
 
-## 6. Add phones and tablets
+## 6. Add a device
 
 Each phone joins once. The family computer shows what it needs.
 
-**On the family computer:** open **Settings → Family relay**. The QR code and
+**On the family computer:** open **Settings → Sync** and expand **Add a device**. The QR code and
 the family link are shown there. Only admins can see them.
 
 **On the phone:**
@@ -241,7 +241,7 @@ the family link are shown there. Only admins can see them.
    - To use Yggltree in Safari only, tap **Use in Safari instead** on the
      Step 1 page.
 
-**Check that it joined:** on the family computer, open **Settings → Devices**.
+**Check that it joined:** on the family computer, open **Settings → Family**.
 The phone is listed there once it has the family's data, with its browser and
 when it was last seen.
 
@@ -314,8 +314,8 @@ updating or re-downloading Yggltree never touches it.
 Today you can't remove one phone from the family from the family computer. What
 you can do:
 
-If you can still reach the phone, open **Settings → Family relay** on it and
-tap **Turn off the relay on this device**. Then it stops syncing and sending
+If you can still reach the phone, open **Settings** on it, find **This device**, and
+tap **Turn off sync on this device**. Then it stops syncing and sending
 notifications. Its copy of the family's data stays on it.
 
 A lost phone keeps the family link it already has, so it can still read the
@@ -345,14 +345,14 @@ with the backup's contents.
 
 ### After a restore
 
-1. On the family computer, open **Settings → Family relay**. If the relay address
+1. On the family computer, open **Settings → Sync**. If the relay address
    is there and the relay shows as running, go on to step 2. If the relay address
    is empty, start the relay again: paste the address Cloudflare gave you (it ends
    in `.workers.dev`) into **Relay address** and click **Start the family relay**.
    You can also create a new relay from the same screen ([section 5](#5-set-up-the-family-relay)).
 2. Starting the relay creates a new family key, so every phone has to join
    again. Each phone scans the new QR code on the same screen, as in
-   [section 6](#6-add-phones-and-tablets).
+   [section 6](#6-add-a-device).
 
 ---
 
@@ -385,15 +385,15 @@ stays put. Phones keep their family and don't need to join again.
 | The window says **Another program appears to be using Yggltree's data folder** | Usually left over after a crash. If Yggltree really isn't running, delete the `hub.lock` file the message names and start again. |
 | The family computer shows **Yggltree isn't running** | Start Yggltree ([section 2](#2-install-on-a-mac) or [section 3](#3-install-on-windows)), then reload the page. |
 | **Relay address** says it must start with `https://` | Paste the whole address Cloudflare gave you, starting with `https://`. |
-| There's no QR code in **Settings → Family relay** | Only admins see it. Ask an admin to open the page on the family computer. |
+| There's no QR code in **Settings → Sync** | Only admins see it. Expand **Add a device** to show it. Ask an admin to open the page on the family computer. |
 | Scanning the QR code doesn't work | Make sure you allowed the camera when the phone asked. Or tap **Or paste the family link** and paste the link from the family computer. |
-| The phone shows **Join your family** after you've joined | Scan the family QR code again from **Settings → Family relay**. |
+| The phone shows **Join your family** after you've joined | Scan the family QR code again from **Settings → Sync**. |
 | The phone shows **Not syncing** | Check the phone has a connection (Wi-Fi or mobile data). Open the icon again. If it still says **Not syncing**, scan the family QR code again. |
 | A device shows **Your Yggltree was restored or reset. Reload this page.** | Reload the page on the family computer ([section 10](#10-restoring-a-backup)). |
-| **Settings → Family relay** has no relay address | This happens after the browser's data is cleared, or after a restore. Paste the relay address into **Relay address**, click **Start the family relay**, and have each phone scan the new QR code ([section 10](#10-restoring-a-backup)). |
+| **Settings → Sync** has no relay address | This happens after the browser's data is cleared, or after a restore. Paste the relay address into **Relay address**, click **Start the family relay**, and have each phone scan the new QR code ([section 10](#10-restoring-a-backup)). |
 | You can't find the relay address | It's the address Cloudflare gave you when you deployed the relay. In the Cloudflare dashboard, open **Workers & Pages** and choose the relay; its address is shown on its page. |
-| A notification never arrives | Turn notifications on from the Home Screen app ([section 6](#6-add-phones-and-tablets)). On iPhone, notifications only work from the Home Screen app. |
-| A phone doesn't appear under **Settings → Devices** | It hasn't received the family's data yet. Scan the family QR code again ([section 6](#6-add-phones-and-tablets)). |
+| A notification never arrives | Turn notifications on from the Home Screen app ([section 6](#6-add-a-device)). On iPhone, notifications only work from the Home Screen app. |
+| A phone doesn't appear under **Settings → Family** | It hasn't received the family's data yet. Scan the family QR code again ([section 6](#6-add-a-device)). |
 
 ---
 
