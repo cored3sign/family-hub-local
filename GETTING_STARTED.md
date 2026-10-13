@@ -23,7 +23,7 @@ company server that can read your data.
 2. [Install on a Mac](#2-install-on-a-mac)
 3. [Install on Windows](#3-install-on-windows)
 4. [First-run setup](#4-first-run-setup)
-5. [Set up the family relay](#5-set-up-the-yggltree-relay)
+5. [Set up the family relay](#5-set-up-the-family-relay)
 6. [Add phones and tablets](#6-add-phones-and-tablets)
 7. [Keeping it running](#7-keeping-it-running)
 8. [Backups](#8-backups)
