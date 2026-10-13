@@ -278,7 +278,7 @@ function relaySetupFailure(err) {
 async function loadCloudflareStatus() {
   if (!core.isAdmin) return
   try {
-    cloudflare.value = await hubRelay.relayStatus()
+    cloudflare.value = await hubRelay.checkRelay()
   } catch {
     cloudflare.value = { connected: false, method: null, accountName: null }
   }

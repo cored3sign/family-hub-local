@@ -5,7 +5,8 @@
 //   GET  /api/hub/info           admin
 //   POST /api/hub/claim          admin + mutation
 //   POST /api/hub/restore        admin + mutation, body <= 512 MiB, streamed
-//   GET  /api/relay/status       admin
+//   GET  /api/relay/status       admin (reads the saved connection only; starts no program)
+//   POST /api/relay/check        admin + mutation (asks Wrangler whether it's logged in here)
 //   POST /api/relay/login        admin + mutation (Wrangler's Cloudflare login, opens a browser page)
 //   POST /api/relay/token        admin + mutation (checks the Cloudflare token, then saves it here)
 //   POST /api/relay/token/forget admin + mutation
@@ -181,15 +182,28 @@ export function createApi({
     throw new RelayError('Connect Cloudflare first.')
   }
 
+  // Reads the saved connection only. It starts no program, so it can't be used to run anything.
   async function relayStatus(req, res) {
+    const saved = await readConnection(dataDir)
+    if (saved) sendJson(res, 200, { connected: true, method: saved.token ? 'token' : 'login', accountName: saved.accountName ?? null })
+    else sendJson(res, 200, { connected: false, method: null, accountName: null })
+  }
+
+  // Asks Wrangler whether it's logged in on this computer. This runs a program, so it's a
+  // mutation route: only the local admin's own page can call it.
+  async function relayCheck(req, res) {
     const saved = await readConnection(dataDir)
     if (saved) {
       sendJson(res, 200, { connected: true, method: saved.token ? 'token' : 'login', accountName: saved.accountName ?? null })
       return
     }
-    const account = await wranglerAccount().catch(() => null)
-    if (account) sendJson(res, 200, { connected: true, method: 'login', accountName: account.accountName })
-    else sendJson(res, 200, { connected: false, method: null, accountName: null })
+    try {
+      const account = await exclusive(() => wranglerAccount())
+      if (account) sendJson(res, 200, { connected: true, method: 'login', accountName: account.accountName })
+      else sendJson(res, 200, { connected: false, method: null, accountName: null })
+    } catch (err) {
+      relayFailure(res, err)
+    }
   }
 
   async function relayLogin(req, res) {
@@ -264,6 +278,7 @@ export function createApi({
     ['/api/hub/claim', ['POST', claim, 'mutation']],
     ['/api/hub/restore', ['POST', restore, 'mutation']],
     ['/api/relay/status', ['GET', relayStatus, 'admin']],
+    ['/api/relay/check', ['POST', relayCheck, 'mutation']],
     ['/api/relay/login', ['POST', relayLogin, 'mutation']],
     ['/api/relay/token', ['POST', relaySaveToken, 'mutation']],
     ['/api/relay/token/forget', ['POST', relayForgetToken, 'mutation']],

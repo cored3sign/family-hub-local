@@ -51,6 +51,8 @@ export function createHubApi({ baseUrl = '', fetchImpl } = {}) {
     restore: (backupText) => call('POST', '/api/hub/restore', { admin: true, rawBody: backupText }),
     // Relay set-up from Settings. The Cloudflare token stays on this computer.
     relayStatus: () => call('GET', '/api/relay/status', { admin: true }),
+    // Asks Wrangler whether it's logged in here (this runs a program, so it's a mutation).
+    checkRelay: () => call('POST', '/api/relay/check', { admin: true, body: {}, timeoutMs: 60000 }),
     // Opens Cloudflare's login page on this computer, and waits until the family clicks Allow.
     loginCloudflare: () => call('POST', '/api/relay/login', { admin: true, timeoutMs: 330000 }),
     saveRelayToken: (token) => call('POST', '/api/relay/token', { admin: true, body: { token }, timeoutMs: 60000 }),
