@@ -51,6 +51,8 @@ export function createHubApi({ baseUrl = '', fetchImpl } = {}) {
     restore: (backupText) => call('POST', '/api/hub/restore', { admin: true, rawBody: backupText }),
     // Relay set-up from Settings. The Cloudflare token stays on this computer.
     relayStatus: () => call('GET', '/api/relay/status', { admin: true }),
+    // Opens Cloudflare's login page on this computer, and waits until the family clicks Allow.
+    loginCloudflare: () => call('POST', '/api/relay/login', { admin: true, timeoutMs: 330000 }),
     saveRelayToken: (token) => call('POST', '/api/relay/token', { admin: true, body: { token }, timeoutMs: 60000 }),
     forgetRelayToken: () => call('POST', '/api/relay/token/forget', { admin: true }),
     // Creating a relay runs a build and a deploy, so it can take a few minutes.

@@ -264,7 +264,7 @@ function startRelay() {
 // --- Set up the relay from this computer. The Cloudflare token stays on this computer, and the
 // hub creates or deletes the relay on the family's Cloudflare account.
 const hubRelay = createHubApi({ baseUrl: globalThis.location?.origin ?? '' })
-const cloudflare = ref({ tokenSaved: false, accountName: null })
+const cloudflare = ref({ connected: false, method: null, accountName: null })
 const cloudflareToken = ref('')
 const relayNameInput = ref('')
 const relaySetupBusy = ref('') // '' | connect | create | replace | erase
@@ -280,13 +280,27 @@ async function loadCloudflareStatus() {
   try {
     cloudflare.value = await hubRelay.relayStatus()
   } catch {
-    cloudflare.value = { tokenSaved: false, accountName: null }
+    cloudflare.value = { connected: false, method: null, accountName: null }
   }
 }
 
-async function connectCloudflare() {
+// Opens Cloudflare's login page in the browser. The family signs in there and clicks Allow.
+async function connectWithCloudflare() {
   relaySetupError.value = ''
   relaySetupBusy.value = 'connect'
+  try {
+    cloudflare.value = await hubRelay.loginCloudflare()
+  } catch (err) {
+    relaySetupFailure(err)
+  } finally {
+    relaySetupBusy.value = ''
+  }
+}
+
+// The advanced option: a Cloudflare API token that the family pastes in.
+async function connectWithToken() {
+  relaySetupError.value = ''
+  relaySetupBusy.value = 'connect-token'
   try {
     cloudflare.value = await hubRelay.saveRelayToken(cloudflareToken.value.trim())
     cloudflareToken.value = ''
@@ -725,26 +739,37 @@ function initials(name) {
 
         <div v-if="core.isAdmin" class="relay-setup">
           <h4>Set up a relay from this computer</h4>
-          <p class="hint">
-            Yggltree can create the relay on your Cloudflare account for you. You'll need a Cloudflare API token
-            first. The setup guide, section 5, shows how to make one.
-          </p>
-          <template v-if="!cloudflare.tokenSaved">
-            <label class="form-field">
-              <span class="form-field__label">Cloudflare API token</span>
-              <input v-model="cloudflareToken" type="password" autocomplete="off" />
-            </label>
-            <AppButton
-              variant="secondary"
-              :disabled="!cloudflareToken.trim() || relaySetupBusy !== ''"
-              @click="connectCloudflare"
-            >
-              {{ relaySetupBusy === 'connect' ? 'Checking the token…' : 'Connect Cloudflare' }}
+          <p class="hint">Yggltree can create the relay on your Cloudflare account for you. Connect your account first.</p>
+          <template v-if="!cloudflare.connected">
+            <AppButton variant="secondary" :disabled="relaySetupBusy !== ''" @click="connectWithCloudflare">
+              {{ relaySetupBusy === 'connect' ? 'Waiting for the Cloudflare page…' : 'Connect Cloudflare' }}
             </AppButton>
+            <p class="hint">
+              Your browser opens a Cloudflare page. Sign in there, click Allow, then come back to Yggltree.
+            </p>
+            <details class="relay-setup__advanced">
+              <summary>Use an API token instead</summary>
+              <label class="form-field">
+                <span class="form-field__label">Cloudflare API token</span>
+                <input v-model="cloudflareToken" type="password" autocomplete="off" />
+              </label>
+              <AppButton
+                variant="secondary"
+                :disabled="!cloudflareToken.trim() || relaySetupBusy !== ''"
+                @click="connectWithToken"
+              >
+                {{ relaySetupBusy === 'connect-token' ? 'Checking the token…' : 'Connect with this token' }}
+              </AppButton>
+            </details>
           </template>
           <template v-else>
             <p class="hint">Connected to the Cloudflare account <strong>{{ cloudflare.accountName }}</strong>.</p>
-            <AppButton variant="secondary" :disabled="relaySetupBusy !== ''" @click="forgetCloudflare">
+            <AppButton
+              v-if="cloudflare.method === 'token'"
+              variant="secondary"
+              :disabled="relaySetupBusy !== ''"
+              @click="forgetCloudflare"
+            >
               Forget this token
             </AppButton>
             <label class="form-field">
@@ -1237,6 +1262,16 @@ function initials(name) {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+}
+
+.relay-setup__advanced {
+  display: grid;
+  gap: 12px;
+}
+
+.relay-setup__advanced summary {
+  cursor: pointer;
+  color: var(--text-muted);
 }
 
 </style>

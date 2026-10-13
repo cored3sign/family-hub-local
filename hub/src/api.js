@@ -6,6 +6,7 @@
 //   POST /api/hub/claim          admin + mutation
 //   POST /api/hub/restore        admin + mutation, body <= 512 MiB, streamed
 //   GET  /api/relay/status       admin
+//   POST /api/relay/login        admin + mutation (Wrangler's Cloudflare login, opens a browser page)
 //   POST /api/relay/token        admin + mutation (checks the Cloudflare token, then saves it here)
 //   POST /api/relay/token/forget admin + mutation
 //   POST /api/relay/create       admin + mutation (optional: replace an existing relay first)
@@ -26,7 +27,19 @@ import { parseBackup } from '../../frontend/src/data/backupFormat.js'
 import { isAdminMutationAllowed, isLocalAdminRequest } from './admin.js'
 import { BodyError, JSON_BODY_LIMIT, RESTORE_BODY_LIMIT, bodyText, readBody, readJsonBody } from './body.js'
 import { openDocStore } from './persistence.js'
-import { RelayError, deleteRelay, deployRelay, forgetToken, isRelayName, isTokenShape, readToken, saveToken, verifyToken } from './relayManager.js'
+import {
+  RelayError,
+  deleteRelay,
+  deployRelay,
+  forgetConnection,
+  isRelayName,
+  isTokenShape,
+  loginWithWrangler,
+  readConnection,
+  saveConnection,
+  verifyToken,
+  wranglerAccount,
+} from './relayManager.js'
 
 const MAX_CLAIM_ID_LENGTH = 200
 
@@ -158,9 +171,35 @@ export function createApi({
     return sendJson(res, 500, { error: 'relay-failed', message: 'Something went wrong with the relay. Try again.' })
   }
 
+  // The Cloudflare access to use: a pasted token if the family chose that, otherwise
+  // Wrangler's login on this computer.
+  async function cloudflareAuth() {
+    const saved = await readConnection(dataDir)
+    if (saved) return { token: saved.token ?? null, accountId: saved.accountId ?? null }
+    const account = await wranglerAccount()
+    if (account) return { token: null, accountId: account.accountId }
+    throw new RelayError('Connect Cloudflare first.')
+  }
+
   async function relayStatus(req, res) {
-    const saved = await readToken(dataDir)
-    sendJson(res, 200, { tokenSaved: Boolean(saved), accountName: saved?.accountName ?? null })
+    const saved = await readConnection(dataDir)
+    if (saved) {
+      sendJson(res, 200, { connected: true, method: saved.token ? 'token' : 'login', accountName: saved.accountName ?? null })
+      return
+    }
+    const account = await wranglerAccount().catch(() => null)
+    if (account) sendJson(res, 200, { connected: true, method: 'login', accountName: account.accountName })
+    else sendJson(res, 200, { connected: false, method: null, accountName: null })
+  }
+
+  async function relayLogin(req, res) {
+    try {
+      const account = await exclusive(() => loginWithWrangler())
+      await exclusive(() => saveConnection(dataDir, { accountId: account.accountId, accountName: account.accountName }))
+      sendJson(res, 200, { connected: true, method: 'login', accountName: account.accountName })
+    } catch (err) {
+      relayFailure(res, err)
+    }
   }
 
   async function relaySaveToken(req, res) {
@@ -172,16 +211,16 @@ export function createApi({
     }
     try {
       const account = await verifyToken(token)
-      await exclusive(() => saveToken(dataDir, { token, ...account }))
-      sendJson(res, 200, { tokenSaved: true, accountName: account.accountName })
+      await exclusive(() => saveConnection(dataDir, { token, ...account }))
+      sendJson(res, 200, { connected: true, method: 'token', accountName: account.accountName })
     } catch (err) {
       relayFailure(res, err)
     }
   }
 
   async function relayForgetToken(req, res) {
-    await forgetToken(dataDir)
-    sendJson(res, 200, { tokenSaved: false, accountName: null })
+    await forgetConnection(dataDir)
+    sendJson(res, 200, { connected: false, method: null, accountName: null })
   }
 
   async function relayCreate(req, res) {
@@ -194,10 +233,9 @@ export function createApi({
     }
     try {
       const url = await exclusive(async () => {
-        const saved = await readToken(dataDir)
-        if (!saved) throw new RelayError('Connect Cloudflare first, with your API token.')
-        if (replace) await deleteRelay({ address: replace, token: saved.token, accountId: saved.accountId })
-        return deployRelay({ name, token: saved.token, accountId: saved.accountId })
+        const auth = await cloudflareAuth()
+        if (replace) await deleteRelay({ address: replace, ...auth })
+        return deployRelay({ name, ...auth })
       })
       sendJson(res, 200, { url })
     } catch (err) {
@@ -210,9 +248,8 @@ export function createApi({
     const address = isPlainObject(body) && typeof body.address === 'string' ? body.address : ''
     try {
       await exclusive(async () => {
-        const saved = await readToken(dataDir)
-        if (!saved) throw new RelayError('Connect Cloudflare first, with your API token.')
-        await deleteRelay({ address, token: saved.token, accountId: saved.accountId })
+        const auth = await cloudflareAuth()
+        await deleteRelay({ address, ...auth })
       })
       sendJson(res, 200, { ok: true })
     } catch (err) {
@@ -227,6 +264,7 @@ export function createApi({
     ['/api/hub/claim', ['POST', claim, 'mutation']],
     ['/api/hub/restore', ['POST', restore, 'mutation']],
     ['/api/relay/status', ['GET', relayStatus, 'admin']],
+    ['/api/relay/login', ['POST', relayLogin, 'mutation']],
     ['/api/relay/token', ['POST', relaySaveToken, 'mutation']],
     ['/api/relay/token/forget', ['POST', relayForgetToken, 'mutation']],
     ['/api/relay/create', ['POST', relayCreate, 'mutation']],

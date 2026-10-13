@@ -1,17 +1,19 @@
 import { describe, it, expect } from 'vitest'
-import { mkdtemp, stat, readFile } from 'node:fs/promises'
+import { mkdtemp, stat } from 'node:fs/promises'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import {
   RelayError,
   deleteRelay,
   deployRelay,
-  forgetToken,
+  forgetConnection,
   isRelayName,
+  loginWithWrangler,
   nameFromAddress,
-  readToken,
-  saveToken,
+  readConnection,
+  saveConnection,
   verifyToken,
+  wranglerAccount,
 } from '../src/relayManager.js'
 
 const TOKEN = 'cf_token_1234567890_abcdefghij'
@@ -25,12 +27,14 @@ function fakeFetch(status, body) {
 function fakeRunner(answers) {
   const calls = []
   const run = async (command, args, opts) => {
-    calls.push({ command, args, env: opts.env, cwd: opts.cwd })
-    const next = answers.shift()
-    return next ?? { code: 0, output: '' }
+    calls.push({ command, args, env: opts.env, cwd: opts.cwd, timeoutMs: opts.timeoutMs })
+    return answers.shift() ?? { code: 0, output: '' }
   }
   return { run, calls }
 }
+
+const whoami = (accounts = [{ id: 'acc123', name: 'Smith family' }]) =>
+  ({ code: 0, output: JSON.stringify({ loggedIn: true, authType: 'OAuth Token', accounts }, null, 2) })
 
 describe('relay names and addresses', () => {
   it('accepts names a family would choose, and rejects the rest', () => {
@@ -55,24 +59,49 @@ describe('relay names and addresses', () => {
   })
 })
 
-describe('the saved Cloudflare token', () => {
-  it('is saved readable only by this computer’s user, and can be forgotten', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'yggltree-cf-'))
-    await saveToken(dir, { token: TOKEN, ...ACCOUNT })
-    expect(await readToken(dir)).toMatchObject({ token: TOKEN, accountId: 'acc123' })
-    if (process.platform !== 'win32') expect((await stat(join(dir, 'cloudflare.json'))).mode & 0o777).toBe(0o600)
-    await forgetToken(dir)
-    expect(await readToken(dir)).toBe(null)
+describe('Cloudflare access', () => {
+  it('Wrangler’s login is read as the account on this computer', async () => {
+    const { run, calls } = fakeRunner([whoami()])
+    expect(await wranglerAccount({ relayDir: '/relay', run })).toEqual(ACCOUNT)
+    expect(calls[0].args).toEqual(['--no-install', 'wrangler', 'whoami', '--json'])
   })
 
-  it('is checked with Cloudflare, which says which account it can deploy to', async () => {
+  it('reports no account when Wrangler is not logged in', async () => {
+    const { run } = fakeRunner([{ code: 0, output: JSON.stringify({ loggedIn: false, accounts: [] }) }])
+    expect(await wranglerAccount({ relayDir: '/relay', run })).toBe(null)
+  })
+
+  it('login opens Cloudflare’s page, waits for it, then reads the account', async () => {
+    const { run, calls } = fakeRunner([{ code: 0, output: 'logged in' }, whoami()])
+    expect(await loginWithWrangler({ relayDir: '/relay', run })).toEqual(ACCOUNT)
+    expect(calls[0].args).toEqual(['--no-install', 'wrangler', 'login'])
+    expect(calls[0].timeoutMs).toBeGreaterThan(60000)
+  })
+
+  it('login says what to do when the page wasn’t allowed', async () => {
+    const { run } = fakeRunner([{ code: 1, output: 'cancelled' }])
+    await expect(loginWithWrangler({ relayDir: '/relay', run })).rejects.toBeInstanceOf(RelayError)
+  })
+
+  it('a pasted token is checked with Cloudflare, which says which account it can deploy to', async () => {
     const account = await verifyToken(TOKEN, fakeFetch(200, { result: [{ id: 'acc123', name: 'Smith family' }] }))
     expect(account).toEqual(ACCOUNT)
   })
 
-  it('gives a clear message when Cloudflare refuses the token', async () => {
+  it('gives a clear message when Cloudflare refuses a pasted token', async () => {
     await expect(verifyToken(TOKEN, fakeFetch(403, {}))).rejects.toThrow(/didn't accept that token/)
     await expect(verifyToken(TOKEN, fakeFetch(200, { result: [] }))).rejects.toBeInstanceOf(RelayError)
+  })
+})
+
+describe('the saved connection', () => {
+  it('is saved readable only by this computer’s user, and can be forgotten', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'yggltree-cf-'))
+    await saveConnection(dir, { token: TOKEN, ...ACCOUNT })
+    expect(await readConnection(dir)).toMatchObject({ token: TOKEN, accountId: 'acc123' })
+    if (process.platform !== 'win32') expect((await stat(join(dir, 'cloudflare.json'))).mode & 0o777).toBe(0o600)
+    await forgetConnection(dir)
+    expect(await readConnection(dir)).toBe(null)
   })
 })
 
@@ -90,6 +119,16 @@ describe('deploying a relay', () => {
     expect(calls[1].args.join(' ')).not.toContain(TOKEN)
   })
 
+  it('with Wrangler’s login, passes the account and no token', async () => {
+    const { run, calls } = fakeRunner([
+      { code: 0, output: '' },
+      { code: 0, output: 'https://smith-family-relay.smith.workers.dev' },
+    ])
+    await deployRelay({ name: 'smith-family-relay', accountId: 'acc123', relayDir: '/relay', run })
+    expect(calls[1].env.CLOUDFLARE_ACCOUNT_ID).toBe('acc123')
+    expect(calls[1].args.join(' ')).not.toContain(TOKEN)
+  })
+
   it('never shows the token in an error', async () => {
     const { run } = fakeRunner([{ code: 0, output: '' }, { code: 1, output: `failed with ${TOKEN}` }])
     const err = await deployRelay({ name: 'smith-family-relay', token: TOKEN, accountId: 'acc123', relayDir: '/relay', run }).catch((e) => e)
@@ -99,7 +138,7 @@ describe('deploying a relay', () => {
 
   it('refuses a bad name before running anything', async () => {
     const { run, calls } = fakeRunner([])
-    await expect(deployRelay({ name: 'Bad Name', token: TOKEN, accountId: 'acc123', relayDir: '/relay', run })).rejects.toBeInstanceOf(RelayError)
+    await expect(deployRelay({ name: 'Bad Name', accountId: 'acc123', relayDir: '/relay', run })).rejects.toBeInstanceOf(RelayError)
     expect(calls).toHaveLength(0)
   })
 })
@@ -113,25 +152,25 @@ describe('deleting a relay', () => {
 
   it('counts a relay that is already gone as deleted', async () => {
     const { run } = fakeRunner([{ code: 1, output: 'Worker not found (10007)' }])
-    await expect(deleteRelay({ address: 'https://old-relay.smith.workers.dev', token: TOKEN, accountId: 'acc123', relayDir: '/relay', run })).resolves.toEqual({ name: 'old-relay' })
+    await expect(deleteRelay({ address: 'https://old-relay.smith.workers.dev', accountId: 'acc123', relayDir: '/relay', run })).resolves.toEqual({ name: 'old-relay' })
+  })
+
+  it('refuses an address this app did not set up', async () => {
+    const { run, calls } = fakeRunner([])
+    await expect(deleteRelay({ address: 'https://example.com', accountId: 'acc123', relayDir: '/relay', run })).rejects.toBeInstanceOf(RelayError)
+    expect(calls).toHaveLength(0)
   })
 
   it('passes the name as one value, so it can never be read as an option', async () => {
     const { run, calls } = fakeRunner([{ code: 0, output: 'deleted' }])
-    await deleteRelay({ address: 'https://old-relay.smith.workers.dev', token: TOKEN, accountId: 'acc123', relayDir: '/relay', run })
+    await deleteRelay({ address: 'https://old-relay.smith.workers.dev', accountId: 'acc123', relayDir: '/relay', run })
     expect(calls[0].args).toContain('--name=old-relay')
     expect(calls[0].args).not.toContain('--name')
   })
 
   it('refuses an address whose name looks like an option, before running anything', async () => {
     const { run, calls } = fakeRunner([])
-    await expect(deleteRelay({ address: 'https://--force.smith.workers.dev', token: TOKEN, accountId: 'acc123', relayDir: '/relay', run })).rejects.toBeInstanceOf(RelayError)
-    expect(calls).toHaveLength(0)
-  })
-
-  it('refuses an address this app did not set up', async () => {
-    const { run, calls } = fakeRunner([])
-    await expect(deleteRelay({ address: 'https://example.com', token: TOKEN, accountId: 'acc123', relayDir: '/relay', run })).rejects.toBeInstanceOf(RelayError)
+    await expect(deleteRelay({ address: 'https://--force.smith.workers.dev', accountId: 'acc123', relayDir: '/relay', run })).rejects.toBeInstanceOf(RelayError)
     expect(calls).toHaveLength(0)
   })
 })

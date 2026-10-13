@@ -186,18 +186,13 @@ Set it up once, from Settings.
 **Step 1: Create a free Cloudflare account** at [cloudflare.com](https://cloudflare.com),
 and confirm your email address.
 
-**Step 2: Create a Cloudflare API token.** In Cloudflare, open your profile's
-**API Tokens** page and choose **Create Token**. If Cloudflare offers the
-**Edit Cloudflare Workers** template, use it. Otherwise, create a token that can
-edit Workers scripts and read account settings. Copy the token. Cloudflare shows
-it only once.
+**Step 2: Connect Yggltree to Cloudflare.** On the family computer, open
+**Settings → Family relay**, and under **Set up a relay from this computer**, click
+**Connect Cloudflare**. Your browser opens a Cloudflare page. Sign in, click **Allow**,
+and come back to Yggltree. Yggltree shows the name of your Cloudflare account.
+You don't need to create or copy a token.
 
-**Step 3: Connect Yggltree.** On the family computer, open **Settings → Family relay**,
-and under **Set up a relay from this computer**, paste the token and click
-**Connect Cloudflare**. Yggltree checks the token and shows the name of your account.
-The token stays on this computer.
-
-**Step 4: Create the relay.** Type a name for it, such as `smith-family-relay`. The
+**Step 3: Create the relay.** Type a name for it, such as `smith-family-relay`. The
 name becomes the start of the relay's address. Click **Create the relay**. Yggltree
 builds the relay and puts it on your Cloudflare account. This takes a few minutes.
 When it's done, the relay's address and the QR code for phones appear on the same
@@ -205,6 +200,10 @@ screen. Keep the address.
 
 You can also set the relay up with the **Deploy to Cloudflare** button in the
 [relay setup guide](relay/README.md), and then paste its address into **Relay address**.
+
+**If the browser login doesn't work for you**, open **Use an API token instead** on the
+same screen and paste a Cloudflare API token. Make the token on Cloudflare's **API
+Tokens** page (in **My Profile**), with the **Edit Cloudflare Workers** template.
 
 ### Replacing or erasing the relay
 
