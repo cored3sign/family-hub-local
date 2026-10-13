@@ -741,4 +741,10 @@ function onOnboardingClose() {
   width: 64px;
   color: var(--text);
 }
+/* On desktop the sidebar carries the logo, so the top bar doesn't repeat it. */
+@media (min-width: 1200px) {
+  .topbar__logo {
+    display: none;
+  }
+}
 </style>
