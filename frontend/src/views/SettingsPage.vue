@@ -8,14 +8,16 @@ import { onBeforeRouteLeave, useRouter } from 'vue-router'
 import {
   Home, UserRound, Users, Database,
   Camera, Download, AlertTriangle, Palette,
-  Smartphone, MonitorSmartphone,
+  Smartphone, MonitorSmartphone, Lock,
 } from 'lucide-vue-next'
 import { useCoreStore } from '../stores/core'
 import { useSyncStore } from '../stores/sync'
+import { useAdminLockStore } from '../stores/adminLock'
+import PinForm from '../components/PinForm.vue'
 import { firstName } from '../lib/names'
 import { useFamily, useLive } from '../data/vue'
 import { assetUrl, putImageFile, removeAsset } from '../data/assets'
-import { listMembers, addMember as addMemberRecord, updateMember } from '../data/members'
+import { listMembers, addMember as addMemberRecord, setMemberRole, updateMember } from '../data/members'
 import { saveSettings as saveSettingsRecord } from '../data/settings'
 import { effectiveTheme } from '../lib/theme'
 import { createBackup, exportJson } from '../data/backup'
@@ -31,6 +33,7 @@ const core = useCoreStore()
 const sync = useSyncStore()
 const router = useRouter()
 const { doc, assets, actor } = useFamily()
+const adminLock = useAdminLockStore()
 
 const members = useLive(listMembers)
 
@@ -114,10 +117,13 @@ const newMemberName = ref('')
 const newMemberRole = ref('member')
 const addMemberError = ref('')
 
-function addMember() {
+async function addMember() {
   addMemberError.value = ''
   if (!newMemberName.value.trim()) {
     addMemberError.value = 'A name is required.'
+    return
+  }
+  if (newMemberRole.value === 'admin' && !(await adminLock.confirmAdmin(core.memberId, 'Enter your PIN to add an admin.'))) {
     return
   }
   try {
@@ -132,13 +138,25 @@ function addMember() {
 
 const changeRoleError = ref('')
 
-function changeRole(m, role) {
+// `select` is the dropdown itself: if the PIN isn't confirmed, it goes back to the role it had.
+async function changeRole(m, role, select) {
   changeRoleError.value = ''
+  if (!(await adminLock.confirmAdmin(core.memberId, `Enter your PIN to change ${firstName(m.name)}'s role.`))) {
+    if (select) select.value = m.role
+    return
+  }
   try {
-    updateMember(doc, m.id, { role })
+    setMemberRole(doc, actor(), m.id, role)
   } catch (e) {
     changeRoleError.value = e.message
   }
+}
+
+// --- Your admin PIN: changing it asks for the current PIN first. ---
+const showChangePin = ref(false)
+
+async function openChangePin() {
+  if (await adminLock.confirmAdmin(core.memberId, 'Enter your current PIN to change it.')) showChangePin.value = true
 }
 
 // --- My own profile ---
@@ -230,8 +248,9 @@ function todayStamp() {
   return new Date().toISOString().slice(0, 10)
 }
 
-function downloadBackup() {
+async function downloadBackup() {
   exportError.value = ''
+  if (!(await adminLock.confirmAdmin(core.memberId, 'Enter your PIN to download a backup.'))) return
   try {
     download(`yggltree-backup-${todayStamp()}.fhub.json`, createBackup(family()), 'application/json')
   } catch (e) {
@@ -239,8 +258,9 @@ function downloadBackup() {
   }
 }
 
-function downloadJsonExport() {
+async function downloadJsonExport() {
   exportError.value = ''
+  if (!(await adminLock.confirmAdmin(core.memberId, 'Enter your PIN to download a readable export.'))) return
   try {
     download(`yggltree-export-${todayStamp()}.json`, JSON.stringify(exportJson(doc), null, 2), 'application/json')
   } catch (e) {
@@ -347,6 +367,7 @@ async function setUpRelay() {
     relaySetupError.value = 'Use 3 to 63 lowercase letters, digits or hyphens for the relay name.'
     return
   }
+  if (!(await adminLock.confirmAdmin(core.memberId, 'Enter your PIN to set up the relay.'))) return
   if (!cloudflare.value.connected) {
     await connectWithCloudflare()
     if (!cloudflare.value.connected) return
@@ -362,6 +383,7 @@ async function buildRelay({ replacing }) {
     relaySetupError.value = 'Use 3 to 63 lowercase letters, digits or hyphens for the relay name.'
     return
   }
+  if (!(await adminLock.confirmAdmin(core.memberId, 'Enter your PIN to change the relay.'))) return
   relaySetupBusy.value = replacing ? 'replace' : 'create'
   try {
     const { url } = await hubRelay.createRelay({ name, replace: replacing ? relay.value.url : null })
@@ -376,6 +398,7 @@ async function buildRelay({ replacing }) {
 
 async function eraseRelay() {
   relaySetupError.value = ''
+  if (!(await adminLock.confirmAdmin(core.memberId, 'Enter your PIN to erase the relay.'))) return
   const sure = window.confirm(
     "Erase the relay? This deletes everything it has stored on Cloudflare. Each phone keeps its own copy of the family's data. This can't be undone.",
   )
@@ -501,6 +524,7 @@ async function confirmRestore() {
     restoreError.value = 'Type REPLACE exactly to confirm.'
     return
   }
+  if (!(await adminLock.confirmAdmin(core.memberId, 'Enter your PIN to restore a backup.'))) return
   restoring.value = true
   try {
     await sync.restoreOnHub(restoreFile.value) // reloads on success
@@ -515,6 +539,7 @@ async function confirmRestore() {
 // Retry reuses the hub's answer: it never restores into another room.
 async function retryRestore() {
   restoreError.value = ''
+  if (!(await adminLock.confirmAdmin(core.memberId, 'Enter your PIN to restore a backup.'))) return
   restoring.value = true
   try {
     await sync.retryRestore() // reloads on success
@@ -693,6 +718,20 @@ function initials(name) {
         </form>
       </AppCard>
 
+      <AppCard class="settings-card">
+        <div class="settings-card__header">
+          <span class="settings-icon-tile settings-icon-tile--members">
+            <Lock :size="20" />
+          </span>
+          <h3>Your admin PIN</h3>
+        </div>
+        <p class="hint">
+          Your PIN opens your admin profile on this device, and confirms changes to the family. Changing it asks for the
+          current PIN first.
+        </p>
+        <AppButton variant="secondary" @click="openChangePin">Change my PIN</AppButton>
+      </AppCard>
+
       <!-- Family members & devices: each member, and the devices they're using. Admins manage members. -->
       <AppCard class="settings-card">
         <div class="settings-card__header">
@@ -718,7 +757,7 @@ function initials(name) {
                 v-if="core.isAdmin"
                 class="member-role-select"
                 :value="m.role"
-                @change="changeRole(m, $event.target.value)"
+                @change="changeRole(m, $event.target.value, $event.target)"
               >
                 <option value="admin">Admin</option>
                 <option value="member">Member</option>
@@ -916,6 +955,10 @@ function initials(name) {
       </AppCard>
 
     </section>
+
+    <AppModal :open="showChangePin" title="Change your admin PIN" @close="showChangePin = false">
+      <PinForm :member-id="core.memberId" @saved="showChangePin = false" />
+    </AppModal>
 
     <AppModal :open="showRestoreModal || sync.restoreStuck" title="Restore from backup" @close="closeRestoreModal">
       <div v-if="sync.restoreStuck" class="restore-modal">

@@ -8,6 +8,7 @@
     "build": "npm run build -w frontend",
     "test": "npm test -w frontend && npm test -w hub",
     "hub": "node hub/src/cli.js",
-    "dev:hub": "node hub/src/cli.js --data .hub-dev --no-open"
+    "dev:hub": "node hub/src/cli.js --data .hub-dev --no-open",
+    "reset-admin-pin": "node hub/src/resetAdminPin.js"
   }
 }

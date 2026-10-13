@@ -1,18 +1,29 @@
 <script setup>
 import { useRouter } from 'vue-router'
+import { Lock } from 'lucide-vue-next'
 import { useCoreStore } from '../stores/core'
+import { useAdminLockStore } from '../stores/adminLock'
 import { useLive } from '../data/vue'
-import { listMembers } from '../data/members'
+import { family } from '../data/family'
+import { hasAdminPin, listMembers } from '../data/members'
 import { assetUrl } from '../data/assets'
+import { firstName } from '../lib/names'
 
 // "Who's using this device?" -- stored locally (data/session.js), never in
 // the shared doc. New members are added by an admin in Settings.
 const core = useCoreStore()
+const lock = useAdminLockStore()
 const router = useRouter()
 const members = useLive(listMembers)
 
-function choose(id) {
-  core.selectMember(id)
+// An admin with a PIN enters it to open their profile on this device. An admin
+// with no PIN yet goes straight in, and is asked to set one (see PinSetupPage).
+async function choose(member) {
+  if (member.role === 'admin' && hasAdminPin(family().doc, member.id)) {
+    const picked = await lock.confirmMember(member.id, `Enter the PIN to open ${firstName(member.name)}'s profile.`)
+    if (!picked) return
+  }
+  core.selectMember(member.id)
   router.push('/')
 }
 
@@ -26,12 +37,13 @@ function initials(name) {
     <h1>Who's using {{ core.familyName || 'Yggltree' }}?</h1>
     <ul class="profile-grid">
       <li v-for="m in members" :key="m.id">
-        <button type="button" class="profile-tile" @click="choose(m.id)">
+        <button type="button" class="profile-tile" @click="choose(m)">
           <span class="profile-avatar" :style="{ background: m.avatar_color }">
             <img v-if="assetUrl(m.avatar_asset_id)" :src="assetUrl(m.avatar_asset_id)" alt="" />
             <span v-else>{{ initials(m.name) }}</span>
           </span>
           <span class="profile-name">{{ m.name }}</span>
+          <Lock v-if="m.role === 'admin'" class="profile-lock" :size="14" aria-label="Admin, PIN protected" />
         </button>
       </li>
     </ul>

@@ -393,6 +393,7 @@ stays put. Phones keep their family and don't need to join again.
 | **Settings → Sync** has no relay address | This happens after the browser's data is cleared, or after a restore. Paste the relay address into **Relay address**, click **Start the family relay**, and have each phone scan the new QR code ([section 10](#10-restoring-a-backup)). |
 | You can't find the relay address | It's the address Cloudflare gave you when you deployed the relay. In the Cloudflare dashboard, open **Workers & Pages** and choose the relay; its address is shown on its page. |
 | A notification never arrives | Turn notifications on from the Home Screen app ([section 6](#6-add-a-device)). On iPhone, notifications only work from the Home Screen app. |
+| An admin forgot their PIN | On the family computer, with Yggltree running, open a terminal in the Yggltree folder and run `npm run reset-admin-pin`. Confirm, and each admin sets a new PIN the next time they open Yggltree. |
 | A phone doesn't appear under **Settings → Family** | It hasn't received the family's data yet. Scan the family QR code again ([section 6](#6-add-a-device)). |
 
 ---
@@ -408,5 +409,11 @@ stays put. Phones keep their family and don't need to join again.
 - **Backups aren't encrypted.** A `.fhub.json` backup and the data folder hold
   your family's data in readable form. Keep them private.
 - **Paired devices keep a full copy** of your family's data, including photos.
-- **Admin is a convenience, not a password.** Only admins see the family relay
-  settings. Lock the family computer when you step away from it.
+- **The admin PIN keeps other members out of admin settings on a shared
+  device.** Each admin has a six-digit PIN. Opening an admin profile asks for
+  it, and so do changes to the family: roles, backups and exports, restores,
+  and the relay. A PIN is not a password for the family's data. Anyone who can
+  open the family computer's account or hold the family QR code can get past
+  it. Lock the family computer when you step away from it.
+- **The PIN is stored as a hash** on the admin's member record, and a backup
+  file includes that hash. Keep backup files as private as the family's data.

@@ -1,5 +1,6 @@
 <script setup>
 import RelayJoinBanner from './components/RelayJoinBanner.vue'
+import PinPrompt from './components/PinPrompt.vue'
 </script>
 
 <template>
@@ -9,4 +10,5 @@ import RelayJoinBanner from './components/RelayJoinBanner.vue'
        not just whichever module happens to be on screen. -->
   <UpdatePrompt />
   <RelayJoinBanner />
+  <PinPrompt />
 </template>

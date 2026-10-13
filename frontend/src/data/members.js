@@ -1,5 +1,8 @@
 import { all, get, insert, patch, table, blankToNull, byText } from './collection'
+import { nowStamp } from './time'
 import { THEMES } from '../lib/theme.js'
+import { scryptAsync } from '@noble/hashes/scrypt.js'
+import { randomBytes, bytesToHex, hexToBytes } from '@noble/hashes/utils.js'
 
 const T = 'members'
 export const AVATAR_COLORS = ['#e76f51', '#2a9d8f', '#e9c46a', '#264653', '#8e7dbe', '#f4a261', '#4d5faf', '#d62828']
@@ -67,6 +70,12 @@ export function updateMember(doc, id, fields) {
   patch(doc, T, id, clean)
 }
 
+// Changes a member's role. Only an admin can do it; the last admin can't demote themselves.
+export function setMemberRole(doc, actor, memberId, role) {
+  requireAdmin(doc, actor)
+  updateMember(doc, memberId, { role })
+}
+
 export function pinModule(doc, memberId, key) {
   const pinned = getMember(doc, memberId)?.nav_pinned ?? []
   if (pinned.includes(key)) return
@@ -77,6 +86,52 @@ export function pinModule(doc, memberId, key) {
 export function unpinModule(doc, memberId, key) {
   const pinned = getMember(doc, memberId)?.nav_pinned ?? []
   patch(doc, T, memberId, { nav_pinned: pinned.filter((k) => k !== key) })
+}
+
+// Admin PINs. Six digits, stored only as an scrypt hash with its own random salt on
+// the admin's member record. A PIN is not a password: it keeps family members from
+// opening an admin profile on a shared device, and it's checked before sensitive
+// changes. The wrong-PIN lockout lives on the device (stores/adminLock.js).
+export const PIN_LENGTH = 6
+const PIN_SCRYPT = { N: 2 ** 14, r: 8, p: 1, dkLen: 32 }
+
+export function isValidPin(pin) {
+  return new RegExp(`^\\d{${PIN_LENGTH}}$`).test(String(pin ?? ''))
+}
+
+export function hasAdminPin(doc, memberId) {
+  return Boolean(getMember(doc, memberId)?.pin_hash)
+}
+
+async function pinHash(pin, salt) {
+  return scryptAsync(new TextEncoder().encode(String(pin)), salt, PIN_SCRYPT)
+}
+
+// Sets (or replaces) an admin's own PIN.
+export async function setAdminPin(doc, memberId, pin) {
+  const member = getMember(doc, memberId)
+  if (!member) throw new Error('Member not found')
+  if (member.role !== 'admin') throw new Error('Only an admin has a PIN')
+  if (!isValidPin(pin)) throw new Error(`The PIN is ${PIN_LENGTH} digits`)
+  const salt = randomBytes(16)
+  const hash = await pinHash(pin, salt)
+  patch(doc, T, memberId, { pin_salt: bytesToHex(salt), pin_hash: bytesToHex(hash), pin_set_at: nowStamp() })
+}
+
+// True when `pin` is this admin's PIN. Always false for members, and for admins with no PIN.
+export async function verifyAdminPin(doc, memberId, pin) {
+  const member = getMember(doc, memberId)
+  if (!member || member.role !== 'admin' || !member.pin_salt || !member.pin_hash || !isValidPin(pin)) return false
+  const hash = await pinHash(pin, hexToBytes(member.pin_salt))
+  return sameBytes(hash, hexToBytes(member.pin_hash))
+}
+
+// Compares every byte, so a wrong guess takes as long as a near-right one.
+function sameBytes(a, b) {
+  if (a.length !== b.length) return false
+  let diff = 0
+  for (let i = 0; i < a.length; i++) diff |= a[i] ^ b[i]
+  return diff === 0
 }
 
 export function reorderPinned(doc, memberId, keys) {

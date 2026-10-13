@@ -356,6 +356,23 @@ There are no accounts and no passwords. Each **device** picks a profile:
   any paired device) can bypass them. They exist to keep the UI honest,
   not as a security boundary. The real boundaries are the room token and
   the hub's localhost-only admin guard; see "The hub" above.
+- **Admin PINs** add a device-level gate on top. Each admin has a six-digit
+  PIN, stored as an scrypt hash (`pin_salt`, `pin_hash`, `pin_set_at` on the
+  member record; `setAdminPin` / `verifyAdminPin` in `members.js`). Picking an
+  admin profile on `ProfilesPage.vue` asks for that admin's PIN. Sensitive
+  actions (role changes, adding an admin, backups and exports, restore, relay
+  setup, replace and erase, changing the PIN) confirm the current admin's PIN
+  through `stores/adminLock.js`, which keeps the confirmation for five minutes
+  on the device. Wrong PINs lock the device out after five tries
+  (`lib/pinLockout.js`, kept in `localStorage`).
+- An admin with no PIN yet is routed to `/set-pin` (`lib/guard.js`,
+  `needsAdminPin` in `stores/core.js`) before anything else.
+- **Reset from the family computer:** the hub writes a random token to
+  `reset-token` in its data folder each time it starts (`hub/src/adminPin.js`,
+  owner-only). `npm run reset-admin-pin` (`hub/src/resetAdminPin.js`) sends it
+  to `POST /api/admin/reset-pin`, which clears every admin's PIN. The route
+  refuses a request without the token, so a browser tab on the same computer
+  can't run it.
 - A family always keeps at least one admin; `updateMember()` throws rather
   than letting the last admin demote themselves.
 

@@ -12,6 +12,7 @@
 //   POST /api/relay/token/forget admin + mutation
 //   POST /api/relay/create       admin + mutation (optional: replace an existing relay first)
 //   POST /api/relay/delete       admin + mutation (deletes the relay and everything it stored)
+//   POST /api/admin/reset-pin    admin + mutation + the reset token (clears every admin PIN; see adminPin.js)
 //
 // Admin routes check the guard (admin.js) before anything else, including
 // the method, and answer 403 with no CORS headers. No route here ever
@@ -26,6 +27,7 @@ import { join } from 'node:path'
 import * as Y from 'yjs'
 import { parseBackup } from '../../frontend/src/data/backupFormat.js'
 import { isAdminMutationAllowed, isLocalAdminRequest } from './admin.js'
+import { RESET_HEADER, resetAdminPins, resetTokenMatches } from './adminPin.js'
 import { BodyError, JSON_BODY_LIMIT, RESTORE_BODY_LIMIT, bodyText, readBody, readJsonBody } from './body.js'
 import { openDocStore } from './persistence.js'
 import {
@@ -61,6 +63,7 @@ export function createApi({
   state,
   rooms,
   dataDir,
+  resetToken = null,
   getPort,
   familyExists,
   onRoomCommitted,
@@ -89,6 +92,22 @@ export function createApi({
       port: getPort(),
       dataDir,
     })
+  }
+
+  // Clears every admin's PIN. The reset token (written to the data folder when
+  // the hub started) is what makes this a terminal-only action: a browser tab
+  // can't read that file. See adminPin.js.
+  async function resetPin(req, res) {
+    if (!resetTokenMatches(resetToken, req.headers[RESET_HEADER])) {
+      sendJson(res, 403, { error: 'forbidden' })
+      return
+    }
+    if (!familyExists()) {
+      sendJson(res, 409, { error: 'no-family' })
+      return
+    }
+    const admins = resetAdminPins(await rooms.currentDoc('main'))
+    sendJson(res, 200, { ok: true, admins })
   }
 
   async function claim(req, res) {
@@ -284,6 +303,7 @@ export function createApi({
     ['/api/relay/token/forget', ['POST', relayForgetToken, 'mutation']],
     ['/api/relay/create', ['POST', relayCreate, 'mutation']],
     ['/api/relay/delete', ['POST', relayDelete, 'mutation']],
+    ['/api/admin/reset-pin', ['POST', resetPin, 'mutation']],
   ])
 
   // -> true if `path` is one of this module's routes (and was answered).

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import * as Y from 'yjs'
 import { newFamilyDoc, forkDoc, syncDocs } from './testing'
-import { listMembers, addMember, updateMember, requireAdmin, pinModule, unpinModule, reorderPinned, getMember, actorFor } from './members'
+import { listMembers, addMember, updateMember, requireAdmin, pinModule, unpinModule, reorderPinned, getMember, actorFor, setAdminPin, verifyAdminPin, hasAdminPin, setMemberRole } from './members'
 import { insert } from './collection'
 
 describe('members', () => {
@@ -31,6 +31,28 @@ describe('members', () => {
     expect(getMember(doc, kid.id).theme_preference).toBe(null)
     expect(() => updateMember(doc, kid.id, { theme_preference: 'blue' })).toThrow('Unknown theme')
     expect(getMember(doc, kid.id).theme_preference).toBe(null)
+  })
+
+  it('an admin sets a PIN that verifies only for that admin; members can have none', async () => {
+    const { doc, admin, kid } = newFamilyDoc()
+    expect(hasAdminPin(doc, admin.id)).toBe(false)
+    await setAdminPin(doc, admin.id, '482913')
+    expect(hasAdminPin(doc, admin.id)).toBe(true)
+    expect(await verifyAdminPin(doc, admin.id, '482913')).toBe(true)
+    expect(await verifyAdminPin(doc, admin.id, '482914')).toBe(false)
+    expect(await verifyAdminPin(doc, admin.id, '48291')).toBe(false)
+    expect(await verifyAdminPin(doc, kid.id, '482913')).toBe(false)
+    await expect(setAdminPin(doc, kid.id, '482913')).rejects.toThrow('Only an admin has a PIN')
+    await expect(setAdminPin(doc, admin.id, '12ab56')).rejects.toThrow('The PIN is 6 digits')
+    expect(getMember(doc, admin.id).pin_hash).not.toContain('482913')
+  })
+
+  it('only an admin can change a role', () => {
+    const { doc, admin, kid } = newFamilyDoc()
+    expect(() => setMemberRole(doc, kid, kid.id, 'admin')).toThrow('Only an admin can do that')
+    expect(getMember(doc, kid.id).role).toBe('member')
+    setMemberRole(doc, admin, kid.id, 'admin')
+    expect(getMember(doc, kid.id).role).toBe('admin')
   })
 
   it('pins, unpins and reorders nav modules with a 5-slot limit', () => {

@@ -31,6 +31,8 @@ export const useCoreStore = defineStore('core', {
     pinnedModules: [],
     // This member's own theme pick, or null for the default (coral).
     memberTheme: null,
+    // True for an admin who has no PIN yet: the app asks them to set one first.
+    needsAdminPin: false,
     appliedTheme: undefined,
   }),
 
@@ -67,6 +69,7 @@ export const useCoreStore = defineStore('core', {
       this.todoDefaultView = member?.todo_default_view ?? null
       this.pinnedModules = member?.nav_pinned ?? []
       this.memberTheme = member?.theme_preference ?? null
+      this.needsAdminPin = Boolean(member && member.role === 'admin' && !member.pin_hash)
       const theme = this.familyReady ? effectiveTheme(this.memberTheme) : null
       if (theme !== this.appliedTheme) {
         applyTheme(theme)

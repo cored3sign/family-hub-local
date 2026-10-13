@@ -17,6 +17,7 @@ import { WebSocketServer } from 'ws'
 import { hasFamily } from '../../frontend/src/data/backupFormat.js'
 import { CLOSE } from '../../frontend/src/data/sync/protocol.js'
 import { createApi, sendJson } from './api.js'
+import { createResetToken } from './adminPin.js'
 import { createBackups, BACKUP_INTERVAL_MS } from './backups.js'
 import { loadHubState } from './hubState.js'
 import { createRooms, parseSyncPath } from './rooms.js'
@@ -91,6 +92,8 @@ export async function startHub({
 
   const state = await loadHubState(dataDir)
   await state.acquireLock()
+  // Rotated on every start; the terminal PIN reset needs it (see adminPin.js).
+  const resetToken = await createResetToken(dataDir)
 
   let rooms = null
   let server = null
@@ -129,6 +132,7 @@ export async function startHub({
       state,
       rooms,
       dataDir,
+      resetToken,
       getPort: () => boundPort,
       familyExists,
       onRoomCommitted,

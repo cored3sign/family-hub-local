@@ -15,6 +15,9 @@ export function decideRoute(s, to) {
   }
   if (to.name === 'setup' || to.name === 'connect') return { path: '/' }
   if (!s.memberId) return to.name === 'profiles' ? true : { name: 'profiles' }
+  // An admin with no PIN yet sets one before anything else.
+  if (s.needsAdminPin) return to.name === 'set-pin' ? true : { name: 'set-pin' }
+  if (to.name === 'set-pin') return { path: '/' }
   const key = to.meta?.moduleKey
   if (key && !s.enabledModules.includes(key)) return { path: '/' }
   return true

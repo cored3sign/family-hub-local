@@ -8,6 +8,7 @@ import DashboardPage from './views/DashboardPage.vue'
 import SetupPage from './views/SetupPage.vue'
 import ConnectPage from './views/ConnectPage.vue'
 import ProfilesPage from './views/ProfilesPage.vue'
+import PinSetupPage from './views/PinSetupPage.vue'
 import ModulesPage from './views/ModulesPage.vue'
 import SettingsPage from './views/SettingsPage.vue'
 import HelpPage from './views/HelpPage.vue'
@@ -40,6 +41,7 @@ const router = createRouter({
     // hub, a pending replace, or the hub not running) waits here.
     { path: '/connect', name: 'connect', component: ConnectPage },
     { path: '/profiles', name: 'profiles', component: ProfilesPage },
+    { path: '/set-pin', name: 'set-pin', component: PinSetupPage },
     {
       path: '/',
       component: DashboardLayout,
@@ -83,6 +85,7 @@ router.beforeEach((to) => {
       enabledModules: core.enabledModules,
       canSetUp: sync.canSetUp,
       pendingReplace: sync.pendingReplace,
+      needsAdminPin: core.needsAdminPin,
     },
     to,
   )
