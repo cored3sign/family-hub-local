@@ -2,15 +2,35 @@
 // fade-in state, and it turns animation off for people who prefer reduced motion.
 document.documentElement.classList.add('js')
 
-// A refresh should start at the top, not wherever the browser last left the page.
-// A link to a section (#privacy and so on) keeps its place. The reset is instant,
-// so the page doesn't visibly scroll up from where it was.
+// A reload starts at the top of the page. That covers both the position the browser
+// would restore and a section the URL still names from an earlier nav click. A fresh
+// visit through a link to a section (#privacy and so on) keeps its place.
+const navEntry = performance.getEntriesByType('navigation')[0]
+const reloaded = navEntry?.type === 'reload'
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
-if (!location.hash) {
+if (reloaded && location.hash) history.replaceState(null, '', location.pathname + location.search)
+if (reloaded || !location.hash) {
   const root = document.documentElement
-  root.style.scrollBehavior = 'auto'
-  window.scrollTo(0, 0)
-  root.style.scrollBehavior = ''
+  let settled = false
+  const toTop = () => {
+    if (settled) return
+    root.style.scrollBehavior = 'auto'
+    window.scrollTo(0, 0)
+    root.style.scrollBehavior = ''
+  }
+  toTop()
+  // Browsers can put the position back after the script has run, so reset it as the page loads.
+  window.addEventListener('DOMContentLoaded', toTop)
+  window.addEventListener('load', toTop)
+  window.addEventListener('pageshow', toTop)
+  // Once the reader moves the page, or after two seconds, stop resetting it.
+  const settle = () => {
+    settled = true
+  }
+  ;['wheel', 'touchstart', 'keydown', 'mousedown'].forEach((type) =>
+    window.addEventListener(type, settle, { once: true, passive: true }),
+  )
+  setTimeout(settle, 2000)
 }
 
 const items = document.querySelectorAll('.reveal')
