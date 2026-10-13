@@ -26,8 +26,8 @@ import { bootSync } from './boot.js'
 
 const quietLog = { log() {}, info() {}, warn() {}, error() {} }
 
-// Stands in for the rotate-token route (removed): the hub gets a new token,
-// and every open socket is closed with 4401, as a rotation used to do.
+// Stands in for a token rotation, which the hub doesn't expose as a route: the
+// hub gets a new token, and every open socket is closed with 4401.
 async function rotateHubToken(h) {
   h.state.room.token = randomBytes(32).toString('base64url')
   for (const ws of [...h._debug.wss.clients, ...h._debug.rejectWss.clients]) ws.close(CLOSE.BAD_TOKEN, 'token rotated')

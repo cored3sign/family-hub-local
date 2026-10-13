@@ -46,8 +46,8 @@ The **asset doc** is separate from all of the above — see
 
 ## Key fields per collection
 
-Field names mostly match the legacy PHP/SQLite columns (see "Deviation"
-below). The non-obvious or CRDT-relevant ones:
+Records keep the snake_case column names used since the first release (see
+"Field names" below). The non-obvious or CRDT-relevant ones:
 
 - **`members`** — `name`, `role` (`admin`/`member`), `avatar_color`,
   `avatar_asset_id`, `nav_pinned` (array, max 5, whole-value LWW),
@@ -99,7 +99,7 @@ below). The non-obvious or CRDT-relevant ones:
   `sort_order`, `created_by_member_id`.
 - **`binder_post_images`** — `post_id`, `image_asset_id`, `sort_order`.
 
-## The CRDT rules (from the spec's Global Constraints)
+## The CRDT rules
 
 These apply to every file under `src/data/`, enforced by `collection.js`'s
 helpers (`table`, `all`, `get`, `insert`, `patch`, `remove`,
@@ -151,9 +151,8 @@ helpers (`table`, `all`, `get`, `insert`, `patch`, `remove`,
 
 ## Funds as a transaction log
 
-There is **no `funds_balance` field anywhere**. The legacy schema had a
-mutable balance column that chore payouts incremented and the Funds page
-could overwrite outright — two devices doing either concurrently would
+There is **no `funds_balance` field anywhere**. A mutable balance column
+would let chore payouts increment it and the Funds page overwrite it outright — two devices doing either concurrently would
 lose a write. Instead, `fund_transactions` is an **append-only log**, and
 a member's balance is just the sum of their transactions
 (`funds.js`'s `balances()` / `balanceOf()`). Appends always merge safely
@@ -169,7 +168,7 @@ under CRDT sync, so there's nothing to lose:
 
 ## Device-local state (outside the docs)
 
-Spec §4: connection details are **never** written to a Y.Doc. Writing the
+Connection details are **never** written to a Y.Doc. Writing the
 hub URL into the shared doc would make one device's address change send
 every other device to that address. Each device keeps these per browser
 origin:
@@ -216,15 +215,14 @@ backups/last-backup.json                  fingerprint of the last backup
   Data export & import → Download full backup, so any of them can be
   restored.
 
-## Deviation from spec §3: legacy field names kept
+## Field names
 
-Records keep the **legacy SQL column names** (`title`, `completed`,
-`recipe_id`, `assigned_member_id`, and so on), so the screens read and
-write the same names they always have. For example, a shopping item is
+Records use snake_case column names (`title`, `completed`, `recipe_id`,
+`assigned_member_id`, and so on), and backups keep them, so every
+release reads the same names. For example, a shopping item is
 `{ id, title, completed, category, store, sort_order, recipe_id, list_type,
 created_at, updated_at }`. The structural rules (nested maps, one `Y.Doc`,
-UUID ids) are followed exactly; only the field names differ from the
-original design sketch.
+UUID ids) hold throughout.
 
 ## Related notes
 

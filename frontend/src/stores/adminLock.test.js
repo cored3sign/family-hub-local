@@ -83,7 +83,7 @@ describe('the unlock window for sensitive changes', () => {
     expect(await again).toBe(false)
   })
 
-  it('a cancelled prompt does not unlock anything', async () => {
+  it('a canceled prompt does not unlock anything', async () => {
     const lock = useAdminLockStore()
     const asked = lock.confirmAdmin(admin.id, 'Export the data.')
     lock.cancel()

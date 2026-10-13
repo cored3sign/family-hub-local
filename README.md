@@ -82,7 +82,7 @@ You need a Mac or Windows computer that stays at home, a free
 
 Your family's data is stored in a data folder outside the program folder
 (on a Mac, `~/Library/Application Support/Yggltree`; on Windows,
-`%APPDATA%\Yggltree`), so updating Yggltree never touches it. The first time you start Yggltree, it moves an existing data folder from its old "Family Hub" name, so your data comes with you.
+`%APPDATA%\Yggltree`), so updating Yggltree never touches it.
 
 **➡️ See [`GETTING_STARTED.md`](GETTING_STARTED.md)** for the step-by-step
 guide: installing on Mac and Windows, the family relay, adding devices, keeping

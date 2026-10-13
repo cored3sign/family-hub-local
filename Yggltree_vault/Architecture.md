@@ -6,7 +6,7 @@ updated: 2026-10-09
 
 # Architecture
 
-A high-level map of how Yggltree (v2) is put together: a
+A high-level map of how Yggltree is put together: a
 local-first Vue app on every device, plus a small local server on the family
 computer (the **hub**) that serves the app and keeps the family's copy. Phones
 sync through the **family relay** (`relay/`), a Cloudflare Worker on the
@@ -59,8 +59,7 @@ pair via `setFamilyForTests()` / `openFamily({ persist: false })`.
 
 ## `src/data/` layout
 
-Business logic that used to live in `backend/public/api.php` now lives in
-small, unit-tested modules under `frontend/src/data/`:
+Business logic lives in small, unit-tested modules under `frontend/src/data/`:
 
 ```
 src/data/
@@ -86,7 +85,7 @@ src/data/
     library.js binder.js
 ```
 
-One file per legacy API area, each small enough to review in one sitting.
+One file per feature area, each small enough to review in one sitting.
 Vue pages depend only on `data/vue.js` (`useLive`, `useFamily`) plus the
 specific module functions they call — never on Yjs types directly. See
 [[Data-Model]] for the CRDT rules every one of these files follows.
@@ -180,7 +179,7 @@ hubApi.js     fetch wrappers for the hub's JSON API
 status.js     the five sync states and their copy
 ```
 
-- **Connection config lives only in `localStorage`** (spec §4): hub URL,
+- **Connection config lives only in `localStorage`**: hub URL,
   room id, token and role are never written to a Y.Doc. See [[Data-Model]]
   for the keys.
 - **Phones join through the relay, not the hub.** A phone scans the family QR
@@ -198,7 +197,7 @@ status.js     the five sync states and their copy
   and only after `POST /api/hub/claim` succeeds; two desktop browsers
   racing get exactly one claim. Every other device only pulls.
 - **Adopt.** If the hub's room is empty but the desktop browser already has
-  a family (an earlier local-only install on the same origin), confirming
+  a family (from a local-only install on the same origin), confirming
   on `/connect` claims the hub and then uploads that copy, without wiping.
 
 ## Telling the hub machine from a phone
@@ -315,8 +314,8 @@ the relay still holds their data (see GETTING_STARTED section 10).
 Restoring into the *same* room would let any device that still holds the
 old state merge it straight back in, undoing the restore; a new room makes
 that impossible. Restore is therefore offered only on the hub machine
-(Settings, or "Restore from a backup file instead" on Setup). The old
-in-browser `restoreBackup()` in `backup.js` is no longer used by the UI.
+(Settings, or "Restore from a backup file instead" on Setup). The
+in-browser `restoreBackup()` in `backup.js` is not used by the UI.
 
 ## Secure-context notes
 
@@ -378,8 +377,9 @@ There are no accounts and no passwords. Each **device** picks a profile:
 
 ## Notifications
 
-In-app only — there is no web push in v2 (the v1 backend's VAPID/push
-machinery is gone). `data/notifications.js`'s `notify()` is called by the
+In-app notifications are the lists below. The one push notification is the
+family relay's generic "something changed" message to phones that turned
+notifications on (see `relay/README.md`). `data/notifications.js`'s `notify()` is called by the
 module that causes the event (assigning a to-do, a chore, a goal, a
 wishlist item) and inserts a record addressed to the recipient's member id.
 The **acting device** writes the record; the recipient sees it when sync
@@ -413,14 +413,12 @@ Two separate export paths:
   above). The hub's automatic daily backups use the same format.
 - **JSON export** (`exportJson`) — a human-readable snapshot (settings plus
   every collection from `schema.js`'s `COLLECTIONS`), for reading or
-  archiving outside the app. Not restorable; it replaces the old CSV
-  zip/Markdown archive/SQLite exports (see [[Roadmap-and-Known-Issues]] for
-  what was dropped).
+  archiving outside the app. Not restorable.
 
 ## The service worker
 
 `frontend/public/sw.js` caches the app shell so the PWA can reload
-**fully offline** (spec §6.3). It only registers in a secure context:
+**fully offline**. It only registers in a secure context:
 `localhost` on the family computer, and on phones over the HTTPS listener. The plain-HTTP listener has no service worker (see "Secure-context notes").
 
 - **Navigations:** network-first, so a new deploy is picked up when online;
@@ -435,9 +433,6 @@ Two separate export paths:
   route's `component()` import, so a module nobody has visited yet (e.g.
   Recipes) is still available offline. See [[Roadmap-and-Known-Issues]] for
   the known race on the very first visit.
-
-## What was removed
-
 
 ## Related notes
 

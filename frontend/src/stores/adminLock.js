@@ -41,7 +41,7 @@ export const useAdminLockStore = defineStore('adminLock', {
       return this.ask(memberId, reason, { unlock: true }).then((id) => id !== null)
     },
 
-    // Resolves with the member's id once their PIN is right, or null if cancelled.
+    // Resolves with the member's id once their PIN is right, or null if canceled.
     confirmMember(memberId, reason) {
       return this.ask(memberId, reason, { unlock: false })
     },

@@ -61,7 +61,7 @@ describe('cli argument parsing', () => {
     expect(() => parseCliArgs(['--bogus'], {})).toThrow()
   })
 
-  it('no longer takes the LAN options (--local-only, --https-port, --public-url)', () => {
+  it('does not accept the LAN options (--local-only, --https-port, --public-url)', () => {
     for (const flag of ['--local-only', '--https-port', '--public-url']) {
       expect(() => parseCliArgs([flag, '1'], {}), flag).toThrow()
     }

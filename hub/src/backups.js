@@ -23,7 +23,7 @@ import { PRIVATE_FILE_MODE, ensurePrivateDir, writeFileAtomic } from './fsAtomic
 
 export const BACKUP_KEEP = 14
 export const BACKUP_INTERVAL_MS = 24 * 60 * 60 * 1000
-// Older builds wrote family-hub-<date>.fhub.json; those are still recognized.
+// Backups named with the earlier product name (family-hub-<date>.fhub.json) are still recognized.
 const BACKUP_FILE = /^(?:yggltree|family-hub)-\d{4}-\d{2}-\d{2}\.fhub\.json$/
 const dayOf = (name) => name.match(/\d{4}-\d{2}-\d{2}/)[0]
 const STATE_FILE = 'last-backup.json'

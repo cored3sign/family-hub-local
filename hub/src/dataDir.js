@@ -4,9 +4,9 @@ import { access, readFile, rename } from 'node:fs/promises'
 //   darwin  ~/Library/Application Support/Yggltree
 //   win32   %APPDATA%\Yggltree (falls back to ~/AppData/Roaming/Yggltree)
 //   linux   ${XDG_DATA_HOME:-~/.local/share}/yggltree
-// The folder used to be named after the old product: "Family Hub" on macOS
-// and Windows, "family-hub" on Linux. legacyDataDir() gives that old location
-// so an existing install's data can be moved to the new one.
+// Earlier installs kept their data in a folder named "Family Hub" on macOS and
+// Windows, and "family-hub" on Linux. legacyDataDir() returns that folder, so
+// the first start can move its data to the current location.
 // All inputs are passed in rather than read from `process`/`os` directly, so
 // tests can exercise every platform branch from a single process.
 export function defaultDataDir({ platform, env, homedir }) {

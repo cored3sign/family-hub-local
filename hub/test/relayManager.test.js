@@ -79,7 +79,7 @@ describe('Cloudflare access', () => {
   })
 
   it('login says what to do when the page wasn’t allowed', async () => {
-    const { run } = fakeRunner([{ code: 1, output: 'cancelled' }])
+    const { run } = fakeRunner([{ code: 1, output: 'canceled' }])
     await expect(loginWithWrangler({ relayDir: '/relay', run })).rejects.toBeInstanceOf(RelayError)
   })
 

@@ -38,8 +38,8 @@ updated: 2026-10-10
 
 **Home-screen icons (iPhone)**
 - A home-screen icon keeps its own copy of the app, separate from Safari, so
-  iPhone needs a second scan inside the icon. A clipboard handoff was tried and
-  removed: it added steps, and the clipboard came up empty on a real iPhone.
+  iPhone needs a second scan inside the icon. Copying the family link through
+  the clipboard isn't used: iPhone's clipboard can come up empty.
 - Joining the icon with no second scan is untested. It would need iOS to open the
   icon with the family link already in place.
 

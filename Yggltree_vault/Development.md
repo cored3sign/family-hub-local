@@ -6,7 +6,7 @@ updated: 2026-10-08
 
 # Development
 
-How to run, test, build, and extend Yggltree (v2). For what the
+How to run, test, build, and extend Yggltree. For what the
 code is doing conceptually, see [[Architecture]] and [[Data-Model]].
 
 ## Running
@@ -131,8 +131,7 @@ over `collection.js`'s helpers, one file per module:
   `insert()`/`patch()`/`remove()`, wrapping multi-record writes in
   `doc.transact()`.
 - If two devices could cause the same side effect concurrently, give it a
-  deterministic id (see [[Data-Model#The CRDT rules (from the spec's Global
-  Constraints)]]).
+  deterministic id (see [[Data-Model#The CRDT rules]]).
 - Write `src/data/modules/<name>.test.js` alongside it, following an
   existing module's test file as a template — cover the validation errors,
   a concurrent-edit scenario via `forkDoc`/`syncDocs` if the module has any
@@ -141,7 +140,7 @@ over `collection.js`'s helpers, one file per module:
 **2. The page** (`src/views/<Name>Page.vue`) — follow the same pattern:
 
 ```js
-// Before (legacy, do not write new code like this):
+// Avoid: a direct API call from the page, bypassing the data layer:
 import { api } from '../lib/api'
 const items = ref([])
 async function load() { items.value = await api.thingList() }
@@ -190,8 +189,7 @@ silently corrupting the id. When touching a page:
   amount), never an id.
 
 Booleans are real booleans end to end too — `true`/`false`, never `0`/`1`
-or `"1"`. Replace any `=== 1`/`== 1`/`!!Number(x)` check left over from the
-PHP/SQLite era with plain truthiness when you touch that line.
+or `"1"`. Use plain truthiness for them, not `=== 1`, `== 1` or `!!Number(x)`.
 
 ## Browser checks
 
