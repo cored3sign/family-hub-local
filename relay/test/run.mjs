@@ -10,6 +10,7 @@ import assert from 'node:assert/strict'
 import * as Y from '../../node_modules/yjs/dist/yjs.mjs'
 import { newFamilyKey, deriveRoomId, deriveAuth, toBase64Url } from '../../frontend/src/data/relay/crypto.js'
 import { createRelayRoom } from '../../frontend/src/data/relay/provider.js'
+import { PRESENCE_ORIGIN } from '../../frontend/src/data/origins.js'
 import { memoryOutbox } from '../../frontend/src/data/relay/outbox.js'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
@@ -224,6 +225,27 @@ try {
     assert.equal((await send('https://web.push.apple.com:8443/x')).status, 400, 'a non-standard port is refused')
     assert.equal((await send('https://web.push.apple.com/x')).status, 201, 'Apple is accepted')
     return 'foreign hosts refused, Apple accepted'
+  })
+
+  await scenario('a device-list update is shared, but sends no notification', async () => {
+    if (external) return 'not checked: the relay logs are only visible when this test starts the relay'
+    const auth = toBase64Url(deriveAuth(key))
+    const watch = await fetch(`${HTTP}/room/${deriveRoomId(key, 'main')}/subscribe`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ subscription: { endpoint: 'https://web.push.apple.com/watcher', keys: { p256dh: 'a', auth: 'b' } }, src: 'watcher', auth }),
+    })
+    assert.equal(watch.status, 201, 'a watcher subscribes')
+    const mark = logLines.length
+    const pushed = () => /push (to|failed)/.test(logLines.slice(mark).join(''))
+    const writer = device('device-list-writer')
+    writer.doc.transact(() => writer.doc.getMap('devices').set('probe', { label: 'probe' }), PRESENCE_ORIGIN)
+    await until(() => A.doc.getMap('devices').has('probe'), 'A receives the device-list update')
+    await sleep(1500)
+    assert.equal(pushed(), false, 'a device-list update sent a notification')
+    A.add('a real change')
+    await until(() => pushed(), 'a real change sends a notification')
+    return 'shared, no notification; a real change notified'
   })
 } catch (err) {
   console.log('ERROR', err.message)

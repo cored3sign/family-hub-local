@@ -9,14 +9,16 @@
 //
 // Protocol (JSON text messages over the WebSocket):
 //   client -> relay  {type:'hello', since, auth}      auth = family token (base64url)
-//   client -> relay  {type:'entry', id, data, src}    data = base64 ciphertext; src = device id
+//   client -> relay  {type:'entry', id, data, src, quiet?}  data = base64 ciphertext; src = device id;
+//                                                     quiet = a device-list update (stored, no notification)
 //   relay  -> client {type:'entry', seq, id, data}
 //   relay  -> client {type:'ack', id}                 stored (or already stored)
 //   relay  -> client {type:'caught-up'}               history sent; live from now on
 //   relay  -> client {type:'error', reason}           e.g. 'auth'
 //
 // Notifications: when a change arrives from one device, the other subscribed devices get a
-// generic "New family update" push, at most once per subscription every 20 seconds.
+// generic "New family update" push, at most once per subscription every 20 seconds. Quiet
+// entries (device-list updates) are stored and shared, but they send no push.
 // The push text is encrypted, so Apple's and Google's push services can't read it.
 //
 // The /dump route exists only for the test suite. It needs the secret TEST_DUMP_TOKEN, which
@@ -244,7 +246,8 @@ export class Room extends DurableObject {
       for (const peer of this.ctx.getWebSockets()) {
         if (peer !== ws) peer.send(out)
       }
-      this.notifyOthers(msg.src)
+      // A quiet entry is a device-list update, not a family change, so nobody is notified.
+      if (msg.quiet !== true) this.notifyOthers(msg.src)
     }
   }
 

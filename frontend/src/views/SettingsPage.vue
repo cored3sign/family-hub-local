@@ -3,12 +3,12 @@
 // of its actions), same "platform, not add-on" tier as member
 // management/export -- manually routed in router.js, same precedent as
 // /modules.
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { onBeforeRouteLeave, useRouter } from 'vue-router'
 import {
   Home, UserRound, Users, Database,
   Camera, Download, AlertTriangle, Palette, Check,
-  Smartphone,
+  Smartphone, MonitorSmartphone,
 } from 'lucide-vue-next'
 import { useCoreStore } from '../stores/core'
 import { useSyncStore } from '../stores/sync'
@@ -25,6 +25,7 @@ import { isStandaloneApp, isIosSafariTab } from '../lib/platform.js'
 import { newFamilyKey, deriveRoomId, deriveAuth, toBase64Url } from '../data/relay/crypto'
 import QRCode from 'qrcode'
 import { createHubApi } from '../data/sync/hubApi.js'
+import { listDevices, describeLastSeen } from '../data/presence.js'
 
 const core = useCoreStore()
 const sync = useSyncStore()
@@ -32,6 +33,13 @@ const router = useRouter()
 const { doc, assets, actor } = useFamily()
 
 const members = useLive(listMembers)
+
+const devices = useLive(listDevices)
+const thisDeviceId = relayDeviceId()
+// Ticks once a minute so "10 min ago" stays current while the page is open.
+const clock = ref(new Date())
+const clockTimer = setInterval(() => (clock.value = new Date()), 60 * 1000)
+onUnmounted(() => clearInterval(clockTimer))
 
 function download(filename, text, type) {
   const url = URL.createObjectURL(new Blob([text], { type }))
@@ -821,6 +829,30 @@ function initials(name) {
         </details>
       </AppCard>
 
+      <!-- Devices: every phone and computer that has opened this family's data. -->
+      <AppCard class="settings-card">
+        <div class="settings-card__header">
+          <span class="settings-icon-tile settings-icon-tile--data">
+            <MonitorSmartphone :size="20" />
+          </span>
+          <h3>Devices</h3>
+        </div>
+        <p class="hint">
+          Each phone and computer that has opened this family's Yggltree. You can't remove a device from here yet.
+        </p>
+        <ul v-if="devices.length" class="module-list">
+          <ListRow v-for="d in devices" :key="d.id">
+            <div class="device-row">
+              <span class="device-row__name">{{ d.label || 'Device' }}</span>
+              <span class="hint">
+                <template v-if="d.id === thisDeviceId">This device · </template>{{ describeLastSeen(d.last_seen, clock) }}
+              </span>
+            </div>
+          </ListRow>
+        </ul>
+        <p v-else class="hint">No devices yet.</p>
+      </AppCard>
+
       <!-- Notifications on this phone: only for devices that use the family relay. -->
       <AppCard v-if="relay" class="settings-card">
         <div class="settings-card__header">
@@ -1169,6 +1201,21 @@ function initials(name) {
 .member-role-select {
   flex: none;
   font: var(--type-label);
+}
+
+.device-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+}
+
+.device-row__name {
+  font-weight: 600;
+}
+
+.device-row .hint {
+  margin: 0;
 }
 
 .export-grid {

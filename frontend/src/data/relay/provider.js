@@ -15,6 +15,7 @@ import * as Y from 'yjs'
 import { sha256 } from '@noble/hashes/sha2.js'
 import { randomBytes, bytesToHex } from '@noble/hashes/utils.js'
 import { encryptBytes, decryptBytes, deriveAuth, toBase64, fromBase64, toBase64Url } from './crypto.js'
+import { PRESENCE_ORIGIN } from '../origins.js'
 
 export const CHUNK_BYTES = 192 * 1024
 const REMOTE = 'relay-remote'
@@ -81,7 +82,7 @@ export function createRelayRoom({
 
   function sendRaw(entry) {
     if (ws && ws.readyState === 1) {
-      ws.send(JSON.stringify({ type: 'entry', id: entry.id, data: entry.data, src }))
+      ws.send(JSON.stringify({ type: 'entry', id: entry.id, data: entry.data, src, ...(entry.quiet ? { quiet: true } : {}) }))
       stats.sent++
     }
   }
@@ -96,7 +97,7 @@ export function createRelayRoom({
     if (origin === REMOTE) return
     const base = bytesToHex(randomBytes(12))
     for (const piece of piecesOf(key, update, base)) {
-      const row = { ...piece, room: roomId }
+      const row = { ...piece, room: roomId, quiet: origin === PRESENCE_ORIGIN }
       pending.set(row.id, row)
       outbox.put(row).catch((err) => onError(err))
       if (authed) sendRaw(row)
@@ -153,7 +154,9 @@ export function createRelayRoom({
     if (!fullState) return
     const full = Y.encodeStateAsUpdate(doc)
     const base = bytesToHex(sha256(full)).slice(0, 24) // same content, same id: the relay keeps one copy
-    for (const piece of piecesOf(key, full, base)) sendRaw(piece)
+    // A catch-up, not news: every change inside it was also sent on its own (not quiet), so
+    // reconnecting sends no "something changed" notification.
+    for (const piece of piecesOf(key, full, base)) sendRaw({ ...piece, quiet: true })
     onFullStateSent()
   }
 

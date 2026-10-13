@@ -241,6 +241,10 @@ the family link are shown there. Only admins can see them.
    - To use Yggltree in Safari only, tap **Use in Safari instead** on the
      Step 1 page.
 
+**Check that it joined:** on the family computer, open **Settings → Devices**.
+The phone is listed there once it has the family's data, with its browser and
+when it was last seen.
+
 **Notifications (optional):** In the Home Screen app, open **Settings →
 Notifications on this phone**, then tap **Turn on notifications**. On iPhone,
 this only works from the Home Screen app. The notification says only that
@@ -389,6 +393,7 @@ stays put. Phones keep their family and don't need to join again.
 | **Settings → Family relay** has no relay address | This happens after the browser's data is cleared, or after a restore. Paste the relay address into **Relay address**, click **Start the family relay**, and have each phone scan the new QR code ([section 10](#10-restoring-a-backup)). |
 | You can't find the relay address | It's the address Cloudflare gave you when you deployed the relay. In the Cloudflare dashboard, open **Workers & Pages** and choose the relay; its address is shown on its page. |
 | A notification never arrives | Turn notifications on from the Home Screen app ([section 6](#6-add-phones-and-tablets)). On iPhone, notifications only work from the Home Screen app. |
+| A phone doesn't appear under **Settings → Devices** | It hasn't received the family's data yet. Scan the family QR code again ([section 6](#6-add-phones-and-tablets)). |
 
 ---
 
