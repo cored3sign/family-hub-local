@@ -195,6 +195,9 @@ open **Settings → Family relay**, paste the address into **Relay address**, an
 click **Start the family relay**. Yggltree then sends your family's data to
 the relay, and the QR code for phones appears on the same screen.
 
+Keep the address. You'll need it again if the browser's data on the family
+computer is cleared, or after a restore ([section 10](#10-restoring-a-backup)).
+
 The free plan's limits are in the [relay setup guide](relay/README.md#limits-on-the-free-plan).
 
 ---
@@ -318,6 +321,16 @@ with the backup's contents.
 - If you're setting up a new family computer, restore from the first-run setup
   page instead ([section 4](#4-first-run-setup)).
 
+### After a restore
+
+1. On the family computer, open **Settings → Family relay**. If the relay address
+   is there and the relay shows as running, go on to step 2. If the relay address
+   is empty, paste the address Cloudflare gave you (it ends in `.workers.dev`)
+   into **Relay address**, and click **Start the family relay**.
+2. Starting the relay creates a new family key, so every phone has to join
+   again. Each phone scans the new QR code on the same screen, as in
+   [section 6](#6-add-phones-and-tablets).
+
 ---
 
 ## 11. Updating Yggltree
@@ -354,6 +367,8 @@ stays put. Phones keep their family and don't need to join again.
 | The phone shows **Join your family** after you've joined | Scan the family QR code again from **Settings → Family relay**. |
 | The phone shows **Not syncing** | Check the phone has a connection (Wi-Fi or mobile data). Open the icon again. If it still says **Not syncing**, scan the family QR code again. |
 | A device shows **Your Yggltree was restored or reset. Reload this page.** | Reload the page on the family computer ([section 10](#10-restoring-a-backup)). |
+| **Settings → Family relay** has no relay address | This happens after the browser's data is cleared, or after a restore. Paste the relay address into **Relay address**, click **Start the family relay**, and have each phone scan the new QR code ([section 10](#10-restoring-a-backup)). |
+| You can't find the relay address | It's the address Cloudflare gave you when you deployed the relay. In the Cloudflare dashboard, open **Workers & Pages** and choose the relay; its address is shown on its page. |
 | A notification never arrives | Turn notifications on from the Home Screen app ([section 6](#6-add-phones-and-tablets)). On iPhone, notifications only work from the Home Screen app. |
 
 ---
