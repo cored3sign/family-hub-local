@@ -34,7 +34,11 @@ export function createHubApi({ baseUrl = '', fetchImpl } = {}) {
     } catch {
       // non-JSON answer
     }
-    if (!res.ok) throw new HubApiError(res.status, json?.error)
+    if (!res.ok) {
+      const err = new HubApiError(res.status, json?.error)
+      err.userMessage = json?.message ?? null
+      throw err
+    }
     return json
   }
 
@@ -45,5 +49,12 @@ export function createHubApi({ baseUrl = '', fetchImpl } = {}) {
     claim: (claimId) => call('POST', '/api/hub/claim', { admin: true, body: { claimId } }),
     // backupText: the .fhub.json file's text -> { roomId, token } of the NEW room.
     restore: (backupText) => call('POST', '/api/hub/restore', { admin: true, rawBody: backupText }),
+    // Relay set-up from Settings. The Cloudflare token stays on this computer.
+    relayStatus: () => call('GET', '/api/relay/status', { admin: true }),
+    saveRelayToken: (token) => call('POST', '/api/relay/token', { admin: true, body: { token }, timeoutMs: 60000 }),
+    forgetRelayToken: () => call('POST', '/api/relay/token/forget', { admin: true }),
+    // Creating a relay runs a build and a deploy, so it can take a few minutes.
+    createRelay: ({ name, replace }) => call('POST', '/api/relay/create', { admin: true, body: { name, replace }, timeoutMs: 900000 }),
+    deleteRelay: (address) => call('POST', '/api/relay/delete', { admin: true, body: { address }, timeoutMs: 900000 }),
   }
 }

@@ -74,9 +74,9 @@ You need a Mac or Windows computer that stays at home, a free
    Keep the window open while your family uses Yggltree.
 4. **Open [http://localhost:8787](http://localhost:8787)** on that computer
    (it usually opens by itself) and set up your family.
-5. **Set up the family relay:** follow [`relay/README.md`](relay/README.md) to
-   deploy the relay on your Cloudflare account, then paste its address into
-   **Settings → Family relay** and click **Start the family relay**.
+5. **Set up the family relay:** in **Settings → Family relay**, connect your
+   Cloudflare account and name your relay. Yggltree creates it on your account.
+   [`relay/README.md`](relay/README.md) explains the steps.
 6. **Add phones:** on each phone, open the relay address, add it to the Home
    Screen, and scan the family QR code shown in **Settings → Family relay**.
 

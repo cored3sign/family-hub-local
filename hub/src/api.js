@@ -5,6 +5,11 @@
 //   GET  /api/hub/info           admin
 //   POST /api/hub/claim          admin + mutation
 //   POST /api/hub/restore        admin + mutation, body <= 512 MiB, streamed
+//   GET  /api/relay/status       admin
+//   POST /api/relay/token        admin + mutation (checks the Cloudflare token, then saves it here)
+//   POST /api/relay/token/forget admin + mutation
+//   POST /api/relay/create       admin + mutation (optional: replace an existing relay first)
+//   POST /api/relay/delete       admin + mutation (deletes the relay and everything it stored)
 //
 // Admin routes check the guard (admin.js) before anything else, including
 // the method, and answer 403 with no CORS headers. No route here ever
@@ -21,6 +26,7 @@ import { parseBackup } from '../../frontend/src/data/backupFormat.js'
 import { isAdminMutationAllowed, isLocalAdminRequest } from './admin.js'
 import { BodyError, JSON_BODY_LIMIT, RESTORE_BODY_LIMIT, bodyText, readBody, readJsonBody } from './body.js'
 import { openDocStore } from './persistence.js'
+import { RelayError, deleteRelay, deployRelay, forgetToken, isRelayName, isTokenShape, readToken, saveToken, verifyToken } from './relayManager.js'
 
 const MAX_CLAIM_ID_LENGTH = 200
 
@@ -142,12 +148,89 @@ export function createApi({
     sendJson(res, 200, result)
   }
 
+  // --- relay (Settings) ---------------------------------------------------
+
+  // A RelayError carries a message for the user. Anything else is logged, and the user
+  // gets a general message.
+  function relayFailure(res, err) {
+    if (err instanceof RelayError) return sendJson(res, 502, { error: 'relay', message: err.message })
+    log.error?.(`[hub] relay: ${err?.message ?? err}`)
+    return sendJson(res, 500, { error: 'relay-failed', message: 'Something went wrong with the relay. Try again.' })
+  }
+
+  async function relayStatus(req, res) {
+    const saved = await readToken(dataDir)
+    sendJson(res, 200, { tokenSaved: Boolean(saved), accountName: saved?.accountName ?? null })
+  }
+
+  async function relaySaveToken(req, res) {
+    const body = await readJsonBody(req, { limit: jsonLimit })
+    const token = isPlainObject(body) && typeof body.token === 'string' ? body.token.trim() : ''
+    if (!isTokenShape(token)) {
+      sendJson(res, 400, { error: 'relay', message: 'Paste the whole Cloudflare API token.' })
+      return
+    }
+    try {
+      const account = await verifyToken(token)
+      await exclusive(() => saveToken(dataDir, { token, ...account }))
+      sendJson(res, 200, { tokenSaved: true, accountName: account.accountName })
+    } catch (err) {
+      relayFailure(res, err)
+    }
+  }
+
+  async function relayForgetToken(req, res) {
+    await forgetToken(dataDir)
+    sendJson(res, 200, { tokenSaved: false, accountName: null })
+  }
+
+  async function relayCreate(req, res) {
+    const body = await readJsonBody(req, { limit: jsonLimit })
+    const name = isPlainObject(body) ? body.name : undefined
+    const replace = isPlainObject(body) && typeof body.replace === 'string' ? body.replace : null
+    if (!isRelayName(name)) {
+      sendJson(res, 400, { error: 'relay', message: 'Use 3 to 63 lowercase letters, digits or hyphens for the relay name.' })
+      return
+    }
+    try {
+      const url = await exclusive(async () => {
+        const saved = await readToken(dataDir)
+        if (!saved) throw new RelayError('Connect Cloudflare first, with your API token.')
+        if (replace) await deleteRelay({ address: replace, token: saved.token, accountId: saved.accountId })
+        return deployRelay({ name, token: saved.token, accountId: saved.accountId })
+      })
+      sendJson(res, 200, { url })
+    } catch (err) {
+      relayFailure(res, err)
+    }
+  }
+
+  async function relayDelete(req, res) {
+    const body = await readJsonBody(req, { limit: jsonLimit })
+    const address = isPlainObject(body) && typeof body.address === 'string' ? body.address : ''
+    try {
+      await exclusive(async () => {
+        const saved = await readToken(dataDir)
+        if (!saved) throw new RelayError('Connect Cloudflare first, with your API token.')
+        await deleteRelay({ address, token: saved.token, accountId: saved.accountId })
+      })
+      sendJson(res, 200, { ok: true })
+    } catch (err) {
+      relayFailure(res, err)
+    }
+  }
+
   // [method, handler, access] per path; access is 'admin' (read) or
   // 'mutation'.
   const ROUTES = new Map([
     ['/api/hub/info', ['GET', info, 'admin']],
     ['/api/hub/claim', ['POST', claim, 'mutation']],
     ['/api/hub/restore', ['POST', restore, 'mutation']],
+    ['/api/relay/status', ['GET', relayStatus, 'admin']],
+    ['/api/relay/token', ['POST', relaySaveToken, 'mutation']],
+    ['/api/relay/token/forget', ['POST', relayForgetToken, 'mutation']],
+    ['/api/relay/create', ['POST', relayCreate, 'mutation']],
+    ['/api/relay/delete', ['POST', relayDelete, 'mutation']],
   ])
 
   // -> true if `path` is one of this module's routes (and was answered).

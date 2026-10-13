@@ -9,27 +9,38 @@ Each family's data is encrypted on the phones with a key that never leaves the p
 
 ## Set up (one time, for a family)
 
+The easiest way is from the Yggltree app on the family computer:
+
 1. Create a free Cloudflare account at cloudflare.com and confirm your email address.
-2. Click **Deploy to Cloudflare** below and follow the steps. It creates the relay on your
-   account. Cloudflare then shows the relay's address, which ends in `.workers.dev`.
-3. On the family computer, open Yggltree, go to **Settings → Family relay**, paste that
-   address into **Relay address**, and click **Start the family relay**.
-4. Each phone joins with the family QR code shown on that same screen. See
+2. Create a Cloudflare API token: on the **API Tokens** page, choose **Create Token**,
+   use the **Edit Cloudflare Workers** template if it's offered, or a token that can
+   edit Workers scripts and read account settings.
+3. In Yggltree, open **Settings → Family relay**, paste the token under **Set up a
+   relay from this computer**, and click **Connect Cloudflare**.
+4. Type a name for the relay, such as `smith-family-relay`, and click **Create the
+   relay**. The name becomes the start of the relay's address, for example
+   `smith-family-relay.smith.workers.dev`. Yggltree builds the relay and deploys it to
+   your account. This takes a few minutes.
+5. Each phone joins with the family QR code shown on that same screen. See
    GETTING_STARTED.md, section 6.
 
-**Name your relay.** The name becomes the start of its address, so a relay named
-`smith-family-relay` on an account whose subdomain is `smith` has the address
-`smith-family-relay.smith.workers.dev`. Pick a name your family will recognise.
-If the Deploy button doesn't ask for a name, deploy from the command line with
-your own name instead (after `npx wrangler login`, if you haven't logged in yet):
+To replace or erase a relay later, use the same screen. Replacing deletes the old
+relay and everything it stored. Erasing deletes the relay's stored data. Each phone
+keeps its own copy of the family's data either way.
 
-    cd relay
-    npm run build:app
-    npx wrangler deploy --name smith-family-relay
+**Other ways to set up the relay**
 
-A relay's name can't be changed once it's deployed. To rename it, deploy a new
-relay and paste its address into **Settings → Family relay**. Then each phone scans
-the new QR code.
+- **The Deploy to Cloudflare button**, below. It creates the relay on your account.
+  Cloudflare then shows the relay's address. Paste that address into **Relay address**
+  in **Settings → Family relay**, and click **Start the family relay**.
+- **The command line**, for someone comfortable with a terminal. After `npx wrangler login`:
+
+      cd relay
+      npm run build:app
+      npx wrangler deploy --name smith-family-relay
+
+A relay's name can't be changed once it's deployed. To rename it, create a new relay
+and then replace the old one from Settings.
 
 Keep the address. You'll need it again if the browser's data on the family computer
 is cleared, or after a restore (GETTING_STARTED.md, section 10).

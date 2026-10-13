@@ -181,24 +181,42 @@ no passwords or email invites.
 
 The relay is a small free service on your own Cloudflare account. It keeps your
 family's data in encrypted form, so every phone can sync with the others.
-Set it up once.
+Set it up once, from Settings.
 
 **Step 1: Create a free Cloudflare account** at [cloudflare.com](https://cloudflare.com),
 and confirm your email address.
 
-**Step 2: Deploy the relay.** Open the [relay setup guide](relay/README.md) and
-click **Deploy to Cloudflare**. Follow Cloudflare's steps. Give the relay a name
-you'll recognise, such as `smith-family-relay`. The name becomes the start of its
-address, for example `smith-family-relay.smith.workers.dev`. When it's done,
-Cloudflare shows the relay's address. It ends in `.workers.dev`. Keep it.
+**Step 2: Create a Cloudflare API token.** In Cloudflare, open your profile's
+**API Tokens** page and choose **Create Token**. If Cloudflare offers the
+**Edit Cloudflare Workers** template, use it. Otherwise, create a token that can
+edit Workers scripts and read account settings. Copy the token. Cloudflare shows
+it only once.
 
-**Step 3: Connect the family computer.** In Yggltree on the family computer,
-open **Settings → Family relay**, paste the address into **Relay address**, and
-click **Start the family relay**. Yggltree then sends your family's data to
-the relay, and the QR code for phones appears on the same screen.
+**Step 3: Connect Yggltree.** On the family computer, open **Settings → Family relay**,
+and under **Set up a relay from this computer**, paste the token and click
+**Connect Cloudflare**. Yggltree checks the token and shows the name of your account.
+The token stays on this computer.
 
-Keep the address. You'll need it again if the browser's data on the family
-computer is cleared, or after a restore ([section 10](#10-restoring-a-backup)).
+**Step 4: Create the relay.** Type a name for it, such as `smith-family-relay`. The
+name becomes the start of the relay's address. Click **Create the relay**. Yggltree
+builds the relay and puts it on your Cloudflare account. This takes a few minutes.
+When it's done, the relay's address and the QR code for phones appear on the same
+screen. Keep the address.
+
+You can also set the relay up with the **Deploy to Cloudflare** button in the
+[relay setup guide](relay/README.md), and then paste its address into **Relay address**.
+
+### Replacing or erasing the relay
+
+Everything here is on the same screen, under **Set up a relay from this computer**:
+
+- **Replace the relay with a new one:** type a name, and click the button. Yggltree
+  deletes the old relay, along with everything it stored, and creates the new one.
+  Then each phone scans the new QR code.
+- **Erase the relay:** deletes the relay and everything it stored on Cloudflare.
+  Each phone keeps its own copy of the family's data.
+- **Forget this token:** removes the Cloudflare token from this computer. The relay
+  stays on your Cloudflare account.
 
 The free plan's limits are in the [relay setup guide](relay/README.md#limits-on-the-free-plan).
 
@@ -327,8 +345,9 @@ with the backup's contents.
 
 1. On the family computer, open **Settings → Family relay**. If the relay address
    is there and the relay shows as running, go on to step 2. If the relay address
-   is empty, paste the address Cloudflare gave you (it ends in `.workers.dev`)
-   into **Relay address**, and click **Start the family relay**.
+   is empty, start the relay again: paste the address Cloudflare gave you (it ends
+   in `.workers.dev`) into **Relay address** and click **Start the family relay**.
+   You can also create a new relay from the same screen ([section 5](#5-set-up-the-family-relay)).
 2. Starting the relay creates a new family key, so every phone has to join
    again. Each phone scans the new QR code on the same screen, as in
    [section 6](#6-add-phones-and-tablets).

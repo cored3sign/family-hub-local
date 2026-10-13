@@ -24,6 +24,7 @@ import { loadRelayConfig, saveRelayConfig, clearRelayConfig, relayPairingUrl, re
 import { isStandaloneApp, isIosSafariTab } from '../lib/platform.js'
 import { newFamilyKey, deriveRoomId, deriveAuth, toBase64Url } from '../data/relay/crypto'
 import QRCode from 'qrcode'
+import { createHubApi } from '../data/sync/hubApi.js'
 
 const core = useCoreStore()
 const sync = useSyncStore()
@@ -260,6 +261,89 @@ function startRelay() {
   window.location.reload()
 }
 
+// --- Set up the relay from this computer. The Cloudflare token stays on this computer, and the
+// hub creates or deletes the relay on the family's Cloudflare account.
+const hubRelay = createHubApi({ baseUrl: globalThis.location?.origin ?? '' })
+const cloudflare = ref({ tokenSaved: false, accountName: null })
+const cloudflareToken = ref('')
+const relayNameInput = ref('')
+const relaySetupBusy = ref('') // '' | connect | create | replace | erase
+const relaySetupError = ref('')
+const RELAY_NAME_SHAPE = /^[a-z0-9](?:[a-z0-9-]{1,61}[a-z0-9])$/
+
+function relaySetupFailure(err) {
+  relaySetupError.value = err?.userMessage || 'Something went wrong. Check the connection on this computer, then try again.'
+}
+
+async function loadCloudflareStatus() {
+  if (!core.isAdmin) return
+  try {
+    cloudflare.value = await hubRelay.relayStatus()
+  } catch {
+    cloudflare.value = { tokenSaved: false, accountName: null }
+  }
+}
+
+async function connectCloudflare() {
+  relaySetupError.value = ''
+  relaySetupBusy.value = 'connect'
+  try {
+    cloudflare.value = await hubRelay.saveRelayToken(cloudflareToken.value.trim())
+    cloudflareToken.value = ''
+  } catch (err) {
+    relaySetupFailure(err)
+  } finally {
+    relaySetupBusy.value = ''
+  }
+}
+
+async function forgetCloudflare() {
+  relaySetupError.value = ''
+  try {
+    cloudflare.value = await hubRelay.forgetRelayToken()
+  } catch (err) {
+    relaySetupFailure(err)
+  }
+}
+
+// Creates a relay under the chosen name, or replaces the current one: the old relay is deleted first.
+async function buildRelay({ replacing }) {
+  relaySetupError.value = ''
+  const name = relayNameInput.value.trim()
+  if (!RELAY_NAME_SHAPE.test(name)) {
+    relaySetupError.value = 'Use 3 to 63 lowercase letters, digits or hyphens for the relay name.'
+    return
+  }
+  relaySetupBusy.value = replacing ? 'replace' : 'create'
+  try {
+    const { url } = await hubRelay.createRelay({ name, replace: replacing ? relay.value.url : null })
+    saveRelayConfig({ url, key: newFamilyKey() })
+    window.location.reload()
+  } catch (err) {
+    relaySetupFailure(err)
+  } finally {
+    relaySetupBusy.value = ''
+  }
+}
+
+async function eraseRelay() {
+  relaySetupError.value = ''
+  const sure = window.confirm(
+    "Erase the relay? This deletes everything it has stored on Cloudflare. Each phone keeps its own copy of the family's data. This can't be undone.",
+  )
+  if (!sure) return
+  relaySetupBusy.value = 'erase'
+  try {
+    await hubRelay.deleteRelay(relay.value.url)
+    clearRelayConfig()
+    window.location.reload()
+  } catch (err) {
+    relaySetupFailure(err)
+  } finally {
+    relaySetupBusy.value = ''
+  }
+}
+
 async function turnOffRelay() {
   // Stop this device's notifications first. Once the relay is off, nothing reaches this device from the
   // family. The relay forgets the subscription the next time a push to it fails.
@@ -319,6 +403,7 @@ async function turnOffNotifications() {
 }
 
 onMounted(() => refreshNotify().catch(() => (notifyState.value = 'unsupported')))
+onMounted(loadCloudflareStatus)
 
 const showRestoreModal = ref(false)
 const restoreFile = ref(null)
@@ -637,6 +722,63 @@ function initials(name) {
           <AppButton variant="secondary" @click="startRelay">Start the family relay</AppButton>
           <p v-if="relayError" class="error">{{ relayError }}</p>
         </template>
+
+        <div v-if="core.isAdmin" class="relay-setup">
+          <h4>Set up a relay from this computer</h4>
+          <p class="hint">
+            Yggltree can create the relay on your Cloudflare account for you. You'll need a Cloudflare API token
+            first. The setup guide, section 5, shows how to make one.
+          </p>
+          <template v-if="!cloudflare.tokenSaved">
+            <label class="form-field">
+              <span class="form-field__label">Cloudflare API token</span>
+              <input v-model="cloudflareToken" type="password" autocomplete="off" />
+            </label>
+            <AppButton
+              variant="secondary"
+              :disabled="!cloudflareToken.trim() || relaySetupBusy !== ''"
+              @click="connectCloudflare"
+            >
+              {{ relaySetupBusy === 'connect' ? 'Checking the token…' : 'Connect Cloudflare' }}
+            </AppButton>
+          </template>
+          <template v-else>
+            <p class="hint">Connected to the Cloudflare account <strong>{{ cloudflare.accountName }}</strong>.</p>
+            <AppButton variant="secondary" :disabled="relaySetupBusy !== ''" @click="forgetCloudflare">
+              Forget this token
+            </AppButton>
+            <label class="form-field">
+              <span class="form-field__label">Relay name</span>
+              <input v-model="relayNameInput" type="text" placeholder="smith-family-relay" autocomplete="off" />
+            </label>
+            <p class="hint">
+              The name becomes the start of the relay's address. Use lowercase letters, digits and hyphens.
+            </p>
+            <div class="relay-setup__actions">
+              <AppButton
+                v-if="!relay"
+                variant="secondary"
+                :disabled="relaySetupBusy !== ''"
+                @click="buildRelay({ replacing: false })"
+              >
+                {{ relaySetupBusy === 'create' ? 'Creating the relay… this takes a few minutes' : 'Create the relay' }}
+              </AppButton>
+              <template v-else>
+                <AppButton
+                  variant="secondary"
+                  :disabled="relaySetupBusy !== ''"
+                  @click="buildRelay({ replacing: true })"
+                >
+                  {{ relaySetupBusy === 'replace' ? 'Replacing the relay… this takes a few minutes' : 'Replace the relay with a new one' }}
+                </AppButton>
+                <AppButton variant="danger" :disabled="relaySetupBusy !== ''" @click="eraseRelay">
+                  {{ relaySetupBusy === 'erase' ? 'Erasing…' : 'Erase the relay' }}
+                </AppButton>
+              </template>
+            </div>
+          </template>
+          <p v-if="relaySetupError" class="error">{{ relaySetupError }}</p>
+        </div>
       </AppCard>
 
       <!-- Notifications on this phone: only for devices that use the family relay. -->
@@ -1076,6 +1218,25 @@ function initials(name) {
   text-align: center;
   overflow-wrap: anywhere;
   margin: 0;
+}
+
+.relay-setup {
+  display: grid;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.relay-setup h4 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.relay-setup__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 </style>
