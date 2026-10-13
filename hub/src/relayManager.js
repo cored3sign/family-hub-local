@@ -32,10 +32,11 @@ export function isTokenShape(token) {
   return typeof token === 'string' && TOKEN_SHAPE.test(token)
 }
 
-// A relay's name is the first part of its address: <name>.<account>.workers.dev.
+// A relay's name is the first part of its address: <name>.<account>.workers.dev. Only a
+// valid relay name counts, so nothing that starts with a hyphen can reach a command.
 export function nameFromAddress(address) {
   const m = typeof address === 'string' ? ADDRESS.exec(address.trim().replace(/\/$/, '')) : null
-  return m ? m[1] : null
+  return m && isRelayName(m[1]) ? m[1] : null
 }
 
 export async function readToken(dataDir) {
@@ -106,7 +107,7 @@ export async function deployRelay({ name, token, accountId, relayDir = RELAY_DIR
   const env = cloudflareEnv(token, accountId)
   const build = await run('npm', ['run', 'build:app'], { cwd: relayDir, env })
   if (build.code !== 0) throw new RelayError(`Building the relay failed. ${tail(build.output, token)}`)
-  const deploy = await run('npx', ['--no-install', 'wrangler', 'deploy', '--name', name], { cwd: relayDir, env })
+  const deploy = await run('npx', ['--no-install', 'wrangler', 'deploy', `--name=${name}`], { cwd: relayDir, env })
   if (deploy.code !== 0) throw new RelayError(`Cloudflare didn't create the relay. ${tail(deploy.output, token)}`)
   for (const m of String(deploy.output).matchAll(/https:\/\/([a-z0-9-]+)\.([a-z0-9-]+)\.workers\.dev/g)) {
     if (m[1] === name) return `https://${m[1]}.${m[2]}.workers.dev`
@@ -118,8 +119,8 @@ export async function deployRelay({ name, token, accountId, relayDir = RELAY_DIR
 // already gone counts as deleted.
 export async function deleteRelay({ address, token, accountId, relayDir = RELAY_DIR, run = runCommand }) {
   const name = nameFromAddress(address)
-  if (!name) throw new RelayError("That isn't a relay address this app set up.")
-  const result = await run('npx', ['--no-install', 'wrangler', 'delete', '--name', name, '--force'], {
+  if (!name || !isRelayName(name)) throw new RelayError("That isn't a relay address this app set up.")
+  const result = await run('npx', ['--no-install', 'wrangler', 'delete', `--name=${name}`, '--force'], {
     cwd: relayDir,
     env: cloudflareEnv(token, accountId),
   })

@@ -47,6 +47,12 @@ describe('relay names and addresses', () => {
     expect(nameFromAddress('https://example.com')).toBe(null)
     expect(nameFromAddress('http://localhost:8787')).toBe(null)
   })
+
+  it('never takes a name that starts with a hyphen from an address', () => {
+    expect(nameFromAddress('https://--force.smith.workers.dev')).toBe(null)
+    expect(nameFromAddress('https://-x.smith.workers.dev')).toBe(null)
+    expect(nameFromAddress('https://smith-.smith.workers.dev')).toBe(null)
+  })
 })
 
 describe('the saved Cloudflare token', () => {
@@ -79,7 +85,7 @@ describe('deploying a relay', () => {
     const url = await deployRelay({ name: 'smith-family-relay', token: TOKEN, accountId: 'acc123', relayDir: '/relay', run })
     expect(url).toBe('https://smith-family-relay.smith.workers.dev')
     expect(calls[0].args).toEqual(['run', 'build:app'])
-    expect(calls[1].args).toEqual(['--no-install', 'wrangler', 'deploy', '--name', 'smith-family-relay'])
+    expect(calls[1].args).toEqual(['--no-install', 'wrangler', 'deploy', '--name=smith-family-relay'])
     expect(calls[1].env.CLOUDFLARE_API_TOKEN).toBe(TOKEN)
     expect(calls[1].args.join(' ')).not.toContain(TOKEN)
   })
@@ -102,12 +108,25 @@ describe('deleting a relay', () => {
   it('deletes the worker named in the address, and everything it stored', async () => {
     const { run, calls } = fakeRunner([{ code: 0, output: 'deleted' }])
     await deleteRelay({ address: 'https://old-relay.smith.workers.dev', token: TOKEN, accountId: 'acc123', relayDir: '/relay', run })
-    expect(calls[0].args).toEqual(['--no-install', 'wrangler', 'delete', '--name', 'old-relay', '--force'])
+    expect(calls[0].args).toEqual(['--no-install', 'wrangler', 'delete', '--name=old-relay', '--force'])
   })
 
   it('counts a relay that is already gone as deleted', async () => {
     const { run } = fakeRunner([{ code: 1, output: 'Worker not found (10007)' }])
     await expect(deleteRelay({ address: 'https://old-relay.smith.workers.dev', token: TOKEN, accountId: 'acc123', relayDir: '/relay', run })).resolves.toEqual({ name: 'old-relay' })
+  })
+
+  it('passes the name as one value, so it can never be read as an option', async () => {
+    const { run, calls } = fakeRunner([{ code: 0, output: 'deleted' }])
+    await deleteRelay({ address: 'https://old-relay.smith.workers.dev', token: TOKEN, accountId: 'acc123', relayDir: '/relay', run })
+    expect(calls[0].args).toContain('--name=old-relay')
+    expect(calls[0].args).not.toContain('--name')
+  })
+
+  it('refuses an address whose name looks like an option, before running anything', async () => {
+    const { run, calls } = fakeRunner([])
+    await expect(deleteRelay({ address: 'https://--force.smith.workers.dev', token: TOKEN, accountId: 'acc123', relayDir: '/relay', run })).rejects.toBeInstanceOf(RelayError)
+    expect(calls).toHaveLength(0)
   })
 
   it('refuses an address this app did not set up', async () => {
