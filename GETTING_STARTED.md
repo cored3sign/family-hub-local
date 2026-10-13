@@ -187,7 +187,9 @@ Set it up once.
 and confirm your email address.
 
 **Step 2: Deploy the relay.** Open the [relay setup guide](relay/README.md) and
-click **Deploy to Cloudflare**. Follow Cloudflare's steps. When it's done,
+click **Deploy to Cloudflare**. Follow Cloudflare's steps. Give the relay a name
+you'll recognise, such as `smith-family-relay`. The name becomes the start of its
+address, for example `smith-family-relay.smith.workers.dev`. When it's done,
 Cloudflare shows the relay's address. It ends in `.workers.dev`. Keep it.
 
 **Step 3: Connect the family computer.** In Yggltree on the family computer,

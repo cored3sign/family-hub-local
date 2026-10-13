@@ -17,6 +17,20 @@ Each family's data is encrypted on the phones with a key that never leaves the p
 4. Each phone joins with the family QR code shown on that same screen. See
    GETTING_STARTED.md, section 6.
 
+**Name your relay.** The name becomes the start of its address, so a relay named
+`smith-family-relay` on an account whose subdomain is `smith` has the address
+`smith-family-relay.smith.workers.dev`. Pick a name your family will recognise.
+If the Deploy button doesn't ask for a name, deploy from the command line with
+your own name instead (after `npx wrangler login`, if you haven't logged in yet):
+
+    cd relay
+    npm run build:app
+    npx wrangler deploy --name smith-family-relay
+
+A relay's name can't be changed once it's deployed. To rename it, deploy a new
+relay and paste its address into **Settings → Family relay**. Then each phone scans
+the new QR code.
+
 Keep the address. You'll need it again if the browser's data on the family computer
 is cleared, or after a restore (GETTING_STARTED.md, section 10).
 
