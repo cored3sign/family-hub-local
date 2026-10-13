@@ -12,19 +12,18 @@ Each family's data is encrypted on the phones with a key that never leaves the p
 The easiest way is from the Yggltree app on the family computer:
 
 1. Create a free Cloudflare account at cloudflare.com and confirm your email address.
-2. In Yggltree, open **Settings → Family relay** and click **Connect Cloudflare**. Your
-   browser opens a Cloudflare page. Sign in, click **Allow**, and come back to Yggltree.
-3. Type a name for the relay, such as `smith-family-relay`, and click **Create the
-   relay**. The name becomes the start of the relay's address, for example
-   `smith-family-relay.smith.workers.dev`. Yggltree builds the relay and deploys it to
-   your account. This takes a few minutes.
-4. Each phone joins with the family QR code shown on that same screen. See
+2. In Yggltree, open **Settings → Family relay**, type a name for the relay, such as
+   `smith-family-relay`, and click **Set up my relay**. The name becomes the start of the
+   relay's address, for example `smith-family-relay.smith.workers.dev`. The first time,
+   your browser opens a Cloudflare page: sign in, click **Allow**, and come back to
+   Yggltree. Yggltree then sets up the relay on your account. This takes a few minutes.
+3. Each phone joins with the family QR code shown on that same screen. See
    GETTING_STARTED.md, section 6.
 
-If the browser login doesn't work for you, open **Use an API token instead** on the same
-screen and paste a Cloudflare API token.
+If the browser login doesn't work for you, open **Use a Cloudflare API token instead** on
+the same screen and paste a Cloudflare API token.
 
-To replace or erase a relay later, use the same screen. Replacing deletes the old
+To replace or erase a relay later, open **Manage the relay** on the same screen. Replacing deletes the old
 relay and everything it stored. Erasing deletes the relay's stored data. Each phone
 keeps its own copy of the family's data either way.
 

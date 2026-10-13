@@ -186,28 +186,27 @@ Set it up once, from Settings.
 **Step 1: Create a free Cloudflare account** at [cloudflare.com](https://cloudflare.com),
 and confirm your email address.
 
-**Step 2: Connect Yggltree to Cloudflare.** On the family computer, open
-**Settings → Family relay**, and under **Set up a relay from this computer**, click
-**Connect Cloudflare**. Your browser opens a Cloudflare page. Sign in, click **Allow**,
-and come back to Yggltree. Yggltree shows the name of your Cloudflare account.
-You don't need to create or copy a token.
+**Step 2: Set up the relay.** On the family computer, open **Settings → Family relay**.
+Type a name for the relay, such as `smith-family-relay`, and click **Set up my relay**.
+The name becomes the start of the relay's address, for example
+`smith-family-relay.smith.workers.dev`.
 
-**Step 3: Create the relay.** Type a name for it, such as `smith-family-relay`. The
-name becomes the start of the relay's address. Click **Create the relay**. Yggltree
-builds the relay and puts it on your Cloudflare account. This takes a few minutes.
-When it's done, the relay's address and the QR code for phones appear on the same
-screen. Keep the address.
+The first time, your browser opens a Cloudflare page. Sign in, click **Allow**, and come
+back to Yggltree. Yggltree then sets up the relay on your Cloudflare account. This takes
+a few minutes. When it's done, the relay's address and the QR code for phones appear on
+the same screen. Keep the address.
 
 You can also set the relay up with the **Deploy to Cloudflare** button in the
-[relay setup guide](relay/README.md), and then paste its address into **Relay address**.
+[relay setup guide](relay/README.md). Then open **I already have a relay address** on the
+same screen and paste the address.
 
-**If the browser login doesn't work for you**, open **Use an API token instead** on the
-same screen and paste a Cloudflare API token. Make the token on Cloudflare's **API
+**If the browser login doesn't work for you**, open **Use a Cloudflare API token instead**
+on the same screen and paste a Cloudflare API token. Make the token on Cloudflare's **API
 Tokens** page (in **My Profile**), with the **Edit Cloudflare Workers** template.
 
 ### Replacing or erasing the relay
 
-Everything here is on the same screen, under **Set up a relay from this computer**:
+Everything here is on the same screen, under **Manage the relay**:
 
 - **Replace the relay with a new one:** type a name, and click the button. Yggltree
   deletes the old relay, along with everything it stored, and creates the new one.

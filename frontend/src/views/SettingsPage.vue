@@ -320,6 +320,32 @@ async function forgetCloudflare() {
   }
 }
 
+// A starting name for the relay, from the family's name: "The Smiths" becomes "the-smiths-relay".
+function suggestRelayName(familyName) {
+  const base = String(familyName || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 50)
+  return base.length >= 3 ? `${base}-relay` : 'family-relay'
+}
+
+const setUpLabel = computed(() => {
+  if (relaySetupBusy.value === 'connect') return 'Waiting for the Cloudflare page…'
+  if (relaySetupBusy.value === 'create') return 'Setting up your relay… this takes a few minutes'
+  return 'Set up my relay'
+})
+
+// The one path for a family without a relay: connect Cloudflare if needed, then create the relay.
+async function setUpRelay() {
+  relaySetupError.value = ''
+  if (!RELAY_NAME_SHAPE.test(relayNameInput.value.trim())) {
+    relaySetupError.value = 'Use 3 to 63 lowercase letters, digits or hyphens for the relay name.'
+    return
+  }
+  if (!cloudflare.value.connected) {
+    await connectWithCloudflare()
+    if (!cloudflare.value.connected) return
+  }
+  await buildRelay({ replacing: false })
+}
+
 // Creates a relay under the chosen name, or replaces the current one: the old relay is deleted first.
 async function buildRelay({ replacing }) {
   relaySetupError.value = ''
@@ -418,6 +444,9 @@ async function turnOffNotifications() {
 
 onMounted(() => refreshNotify().catch(() => (notifyState.value = 'unsupported')))
 onMounted(loadCloudflareStatus)
+onMounted(() => {
+  if (!relayNameInput.value) relayNameInput.value = suggestRelayName(core.familyName)
+})
 
 const showRestoreModal = ref(false)
 const restoreFile = ref(null)
@@ -706,14 +735,12 @@ function initials(name) {
           </span>
           <h3>Family relay</h3>
         </div>
+
+        <!-- A relay is set up on this device: show it. -->
         <template v-if="relay">
           <template v-if="core.isAdmin">
-            <p class="hint">
-              A relay lets phones sync when they're away from home, without a home computer. The relay only ever
-              sees encrypted data. Add phones by scanning the QR code below.
-            </p>
+            <p class="hint">Phones sync through this relay. Add a phone by scanning the QR code below.</p>
             <p class="hint">Relay: <strong>{{ relay.url }}</strong></p>
-            <p class="hint">Scan this code with the phone's Camera app. On iPhone, the page then walks you through adding the app to the Home Screen, and you scan once more inside the new icon. Or open this link in Chrome on Android:</p>
             <p class="add-device__url">{{ relayLink }}</p>
             <img v-if="relayQr" :src="relayQr" alt="Family relay link" width="220" height="220" />
             <p class="hint">Keep this private: the link contains the family key.</p>
@@ -724,86 +751,74 @@ function initials(name) {
           </p>
           <AppButton variant="danger" @click="turnOffRelay">Turn off the relay on this device</AppButton>
         </template>
-        <template v-else>
+
+        <!-- No relay yet: one name, one button. -->
+        <div v-else class="relay-setup">
           <p class="hint">
-            A relay lets phones sync when they're away from home, without a home computer. The relay only ever
-            sees encrypted data. Set it up once, then add phones by scanning the QR code below.
+            Phones sync through a relay on your own Cloudflare account. Name it, and Yggltree sets it up for you.
           </p>
           <label class="form-field">
-            <span class="form-field__label">Relay address</span>
-            <input v-model="relayUrlInput" type="url" placeholder="https://your-relay.workers.dev" autocomplete="off" />
+            <span class="form-field__label">Relay name</span>
+            <input v-model="relayNameInput" type="text" autocomplete="off" />
           </label>
-          <AppButton variant="secondary" @click="startRelay">Start the family relay</AppButton>
-          <p v-if="relayError" class="error">{{ relayError }}</p>
-        </template>
-
-        <div v-if="core.isAdmin" class="relay-setup">
-          <h4>Set up a relay from this computer</h4>
-          <p class="hint">Yggltree can create the relay on your Cloudflare account for you. Connect your account first.</p>
-          <template v-if="!cloudflare.connected">
-            <AppButton variant="secondary" :disabled="relaySetupBusy !== ''" @click="connectWithCloudflare">
-              {{ relaySetupBusy === 'connect' ? 'Waiting for the Cloudflare page…' : 'Connect Cloudflare' }}
-            </AppButton>
-            <p class="hint">
-              Your browser opens a Cloudflare page. Sign in there, click Allow, then come back to Yggltree.
-            </p>
-            <details class="relay-setup__advanced">
-              <summary>Use an API token instead</summary>
-              <label class="form-field">
-                <span class="form-field__label">Cloudflare API token</span>
-                <input v-model="cloudflareToken" type="password" autocomplete="off" />
-              </label>
-              <AppButton
-                variant="secondary"
-                :disabled="!cloudflareToken.trim() || relaySetupBusy !== ''"
-                @click="connectWithToken"
-              >
-                {{ relaySetupBusy === 'connect-token' ? 'Checking the token…' : 'Connect with this token' }}
-              </AppButton>
-            </details>
-          </template>
-          <template v-else>
-            <p class="hint">Connected to the Cloudflare account <strong>{{ cloudflare.accountName }}</strong>.</p>
-            <AppButton
-              v-if="cloudflare.method === 'token'"
-              variant="secondary"
-              :disabled="relaySetupBusy !== ''"
-              @click="forgetCloudflare"
-            >
-              Forget this token
-            </AppButton>
-            <label class="form-field">
-              <span class="form-field__label">Relay name</span>
-              <input v-model="relayNameInput" type="text" placeholder="smith-family-relay" autocomplete="off" />
-            </label>
-            <p class="hint">
-              The name becomes the start of the relay's address. Use lowercase letters, digits and hyphens.
-            </p>
-            <div class="relay-setup__actions">
-              <AppButton
-                v-if="!relay"
-                variant="secondary"
-                :disabled="relaySetupBusy !== ''"
-                @click="buildRelay({ replacing: false })"
-              >
-                {{ relaySetupBusy === 'create' ? 'Creating the relay… this takes a few minutes' : 'Create the relay' }}
-              </AppButton>
-              <template v-else>
-                <AppButton
-                  variant="secondary"
-                  :disabled="relaySetupBusy !== ''"
-                  @click="buildRelay({ replacing: true })"
-                >
-                  {{ relaySetupBusy === 'replace' ? 'Replacing the relay… this takes a few minutes' : 'Replace the relay with a new one' }}
-                </AppButton>
-                <AppButton variant="danger" :disabled="relaySetupBusy !== ''" @click="eraseRelay">
-                  {{ relaySetupBusy === 'erase' ? 'Erasing…' : 'Erase the relay' }}
-                </AppButton>
-              </template>
-            </div>
-          </template>
+          <AppButton variant="primary" :disabled="relaySetupBusy !== ''" @click="setUpRelay">{{ setUpLabel }}</AppButton>
+          <p class="hint">The first time, your browser opens a Cloudflare page. Click Allow there, then come back.</p>
           <p v-if="relaySetupError" class="error">{{ relaySetupError }}</p>
+
+          <details class="relay-setup__advanced">
+            <summary>I already have a relay address</summary>
+            <label class="form-field">
+              <span class="form-field__label">Relay address</span>
+              <input v-model="relayUrlInput" type="url" placeholder="https://your-relay.workers.dev" autocomplete="off" />
+            </label>
+            <AppButton variant="secondary" @click="startRelay">Start the family relay</AppButton>
+            <p v-if="relayError" class="error">{{ relayError }}</p>
+          </details>
+
+          <details class="relay-setup__advanced">
+            <summary>Use a Cloudflare API token instead</summary>
+            <label class="form-field">
+              <span class="form-field__label">Cloudflare API token</span>
+              <input v-model="cloudflareToken" type="password" autocomplete="off" />
+            </label>
+            <AppButton
+              variant="secondary"
+              :disabled="!cloudflareToken.trim() || relaySetupBusy !== ''"
+              @click="connectWithToken"
+            >
+              {{ relaySetupBusy === 'connect-token' ? 'Checking the token…' : 'Connect with this token' }}
+            </AppButton>
+          </details>
         </div>
+
+        <!-- A relay exists: manage it from a quiet section. -->
+        <details v-if="core.isAdmin && relay" class="relay-setup">
+          <summary>Manage the relay</summary>
+          <p v-if="cloudflare.connected" class="hint">
+            Cloudflare account: <strong>{{ cloudflare.accountName }}</strong>
+          </p>
+          <label class="form-field">
+            <span class="form-field__label">New relay name</span>
+            <input v-model="relayNameInput" type="text" autocomplete="off" />
+          </label>
+          <div class="relay-setup__actions">
+            <AppButton variant="secondary" :disabled="relaySetupBusy !== ''" @click="buildRelay({ replacing: true })">
+              {{ relaySetupBusy === 'replace' ? 'Replacing the relay… this takes a few minutes' : 'Replace the relay with a new one' }}
+            </AppButton>
+            <AppButton variant="danger" :disabled="relaySetupBusy !== ''" @click="eraseRelay">
+              {{ relaySetupBusy === 'erase' ? 'Erasing…' : 'Erase the relay' }}
+            </AppButton>
+          </div>
+          <AppButton
+            v-if="cloudflare.method === 'token'"
+            variant="secondary"
+            :disabled="relaySetupBusy !== ''"
+            @click="forgetCloudflare"
+          >
+            Forget this token
+          </AppButton>
+          <p v-if="relaySetupError" class="error">{{ relaySetupError }}</p>
+        </details>
       </AppCard>
 
       <!-- Notifications on this phone: only for devices that use the family relay. -->
