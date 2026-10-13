@@ -10,6 +10,7 @@ import { nowStamp } from './time.js'
 const T = 'devices'
 const WRITE_EVERY_MS = 10 * 60 * 1000
 let stopCurrent = null
+let currentWrite = null
 
 // A readable name for a browser, such as "iPhone · Safari" or "Mac · Chrome".
 export function deviceLabel(userAgent = '', { standalone = false } = {}) {
@@ -38,14 +39,16 @@ export function thisDeviceLabel(env = globalThis) {
   return deviceLabel(navigatorLike.userAgent ?? '', { standalone })
 }
 
-// Writes this device's record, unless it was written in the last few minutes. Nothing is
-// written until the family exists on this device, so an unpaired device's doc stays empty.
-export function recordDevice(doc, { id, label, now = new Date() }) {
+// Writes this device's record, unless it was written in the last few minutes and the member
+// using it hasn't changed. Nothing is written until the family exists on this device, so an
+// unpaired device's doc stays empty.
+export function recordDevice(doc, { id, label, memberId = null, now = new Date() }) {
   if (!id || !hasFamily(doc)) return false
   const existing = get(doc, T, id)
   const last = parseStamp(existing?.last_seen)
-  if (last !== null && now.getTime() - last < WRITE_EVERY_MS) return false
-  const fields = { label, last_seen: nowStamp(now) }
+  const memberChanged = existing !== null && (existing.member_id ?? null) !== memberId
+  if (!memberChanged && last !== null && now.getTime() - last < WRITE_EVERY_MS) return false
+  const fields = { label, member_id: memberId, last_seen: nowStamp(now) }
   doc.transact(() => {
     if (existing) patch(doc, T, id, fields)
     else insert(doc, T, fields, id)
@@ -56,15 +59,17 @@ export function recordDevice(doc, { id, label, now = new Date() }) {
 // Keeps this device's record fresh while the page is open. It also writes as soon as the
 // family arrives over sync, so a new phone shows up without waiting ten minutes. Only one
 // device list runs per page; starting another one replaces it. Returns a function that stops it.
-export function startPresence(doc, { id, label }, { timers = globalThis } = {}) {
+// `memberId` is a function that returns the member using this device now (or null).
+export function startPresence(doc, { id, label, memberId = () => null }, { timers = globalThis } = {}) {
   if (stopCurrent) stopCurrent()
   const write = () => {
     try {
-      recordDevice(doc, { id, label })
+      recordDevice(doc, { id, label, memberId: memberId() })
     } catch {
       // The device list is extra. A failed write must never stop the family's sync.
     }
   }
+  currentWrite = write
   doc.on('update', write)
   write()
   const timer = timers.setInterval(write, WRITE_EVERY_MS)
@@ -72,8 +77,14 @@ export function startPresence(doc, { id, label }, { timers = globalThis } = {}) 
   stopCurrent = () => {
     doc.off('update', write)
     timers.clearInterval(timer)
+    if (currentWrite === write) currentWrite = null
   }
   return stopCurrent
+}
+
+// Records this device again straight away, e.g. after someone picks a member on it.
+export function refreshPresence() {
+  currentWrite?.()
 }
 
 // Every device in the family, most recently synced first.

@@ -25,6 +25,7 @@ import { connectRelay } from '../relay/connection.js'
 import { openOutbox } from '../relay/outbox.js'
 import { combineConnections } from './combine.js'
 import { startPresence, thisDeviceLabel } from '../presence.js'
+import { currentMemberId } from '../session.js'
 
 export const HUB_INFO_TIMEOUT_MS = 1500
 
@@ -119,7 +120,7 @@ export async function bootSync({
 
   // This device's entry in the family's device list (Settings → Devices). Same id the
   // relay uses for this device, so Settings can mark it as "This device".
-  startPresence(fam.doc, { id: relayDeviceId(opts), label: thisDeviceLabel() })
+  startPresence(fam.doc, { id: relayDeviceId(opts), label: thisDeviceLabel(), memberId: () => currentMemberId() })
 
   return result
 }

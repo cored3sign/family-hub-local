@@ -302,7 +302,7 @@ describe('status', () => {
     expect(sync.statusCopy.message).toBe("Yggltree isn't running on this computer. Start it with npm start.")
   })
 
-  it('the hub machine after a cancelled adopt: "isn\'t on the hub yet", not "isn\'t running"', async () => {
+  it('the hub machine after a canceled adopt: "isn\'t on the hub yet", not "isn\'t running"', async () => {
     const sync = setup({ bootResult: { role: 'hub-machine', hubInfo: { familyExists: false }, pendingReplace: adoptPending } })
     await sync.boot({})
     sync.cancelReplace()

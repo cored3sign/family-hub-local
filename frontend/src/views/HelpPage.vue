@@ -232,7 +232,7 @@ watch(() => route.hash, scrollToHash)
 .sync-state--yellow { --sync-dot: #f2c230; }
 .sync-state--orange { --sync-dot: #f08a24; }
 .sync-state--red { --sync-dot: #d93025; }
-.sync-state--grey { --sync-dot: #9aa0a6; }
+.sync-state--gray { --sync-dot: #9aa0a6; }
 
 .sync-facts {
   display: grid;

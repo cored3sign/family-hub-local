@@ -9,7 +9,7 @@
 }
 
 :root {
-  /* The app's coral palette (frontend/src/style.css). main.js sets the same tokens for the other colorways. */
+  /* The app's coral palette (frontend/src/style.css). main.js sets the same tokens for the other themes. */
   --bg: #faf3ec;
   --surface: #ffffff;
   --surface-variant: #f2e9df;
@@ -400,7 +400,7 @@ p {
   color: var(--text-muted);
 }
 
-/* Trust strip: four promises on the page's centre line, each with a drawn icon in an outlined circle */
+/* Trust strip: four promises on the page's center line, each with a drawn icon in an outlined circle */
 
 .strip {
   border-block: 1px solid var(--border);

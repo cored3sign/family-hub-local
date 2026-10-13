@@ -73,7 +73,7 @@ src/data/
   session.js       device-local "current member id" (localStorage)
   schema.js        SCHEMA_VERSION, COLLECTIONS, isSetUp(), setUpFamily()
   members.js       members, admin checks, actorFor(), nav pins
-  settings.js      family settings, theme, enabled modules
+  settings.js      family settings, enabled modules
   notifications.js notify() + bell queries
   assets.js        image bytes in the asset doc; resizeImage(); reactive assetUrl()
   backupFormat.js  createBackup/parseBackup/hasFamily -- pure, shared with the hub
@@ -288,7 +288,7 @@ header (`SyncStatus.vue`, which links to the Help page's Sync card):
 | `needs-pairing` | red, "Not syncing" | no config on a non-hub device, or the hub closed with `4401`/`4404`/`4410` (or `4400`: protocol mismatch) |
 | `offline` | orange, "Offline" | `navigator.onLine === false` |
 | `connected` | green, "Synced" | the **main** doc's provider reports `synced` |
-| `connecting` | grey, "Connecting…" | not synced, under 4 s since boot or the last attempt |
+| `connecting` | gray, "Connecting…" | not synced, under 4 s since boot or the last attempt |
 | `waiting` | yellow, "Waiting for hub" | online, configured, not synced for 4 s or more |
 
 A problem beats offline; offline beats everything else. "Synced" is never

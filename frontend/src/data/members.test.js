@@ -22,6 +22,17 @@ describe('members', () => {
     expect(getMember(doc, admin.id).email).toBeUndefined()
   })
 
+  it('stores a member\'s own theme, or none, and refuses an unknown one', () => {
+    const { doc, kid } = newFamilyDoc()
+    expect(getMember(doc, kid.id).theme_preference).toBe(null)
+    updateMember(doc, kid.id, { theme_preference: 'garden' })
+    expect(getMember(doc, kid.id).theme_preference).toBe('garden')
+    updateMember(doc, kid.id, { theme_preference: null })
+    expect(getMember(doc, kid.id).theme_preference).toBe(null)
+    expect(() => updateMember(doc, kid.id, { theme_preference: 'blue' })).toThrow('Unknown theme')
+    expect(getMember(doc, kid.id).theme_preference).toBe(null)
+  })
+
   it('pins, unpins and reorders nav modules with a 5-slot limit', () => {
     const { doc, admin } = newFamilyDoc()
     pinModule(doc, admin.id, 'calendar')

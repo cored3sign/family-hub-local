@@ -7,17 +7,17 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { onBeforeRouteLeave, useRouter } from 'vue-router'
 import {
   Home, UserRound, Users, Database,
-  Camera, Download, AlertTriangle, Palette, Check,
-  Smartphone, MonitorSmartphone,
+  Camera, Download, AlertTriangle, Palette,
+  Smartphone,
 } from 'lucide-vue-next'
 import { useCoreStore } from '../stores/core'
 import { useSyncStore } from '../stores/sync'
 import { firstName } from '../lib/names'
-import { applyColorTheme } from '../lib/theme'
 import { useFamily, useLive } from '../data/vue'
 import { assetUrl, putImageFile, removeAsset } from '../data/assets'
 import { listMembers, addMember as addMemberRecord, updateMember } from '../data/members'
-import { saveSettings as saveSettingsRecord, saveTheme as saveThemeRecord } from '../data/settings'
+import { saveSettings as saveSettingsRecord } from '../data/settings'
+import { effectiveTheme } from '../lib/theme'
 import { createBackup, exportJson } from '../data/backup'
 import { family } from '../data/family'
 import { loadRelayConfig, saveRelayConfig, clearRelayConfig, relayPairingUrl, relayDeviceId } from '../data/relay/config'
@@ -40,6 +40,12 @@ const thisDeviceId = relayDeviceId()
 const clock = ref(new Date())
 const clockTimer = setInterval(() => (clock.value = new Date()), 60 * 1000)
 onUnmounted(() => clearInterval(clockTimer))
+
+// The devices a member is using, and the devices with no one signed in on them.
+function devicesOf(memberId) {
+  return devices.value.filter((d) => (d.member_id ?? null) === memberId)
+}
+const noOneDevices = computed(() => devicesOf(null))
 
 function download(filename, text, type) {
   const url = URL.createObjectURL(new Blob([text], { type }))
@@ -75,36 +81,29 @@ function saveSettings() {
   }
 }
 
-// --- Appearance colorway (admin only, family-wide) ---
-const COLORWAYS = [
-  { key: 'coral', label: 'Coral', swatches: ['#f4633a', '#0ca9d6', '#faf3ec', '#ffffff'] },
-  { key: 'bold', label: 'Bold', swatches: ['#ff6347', '#1e4ca1', '#ffe066', '#ffffff'] },
-  { key: 'garden', label: 'Garden', swatches: ['#556b2f', '#cc5959', '#e6b35a', '#e3dac9'] },
-  { key: 'garage', label: 'Garage', swatches: ['#215f72', '#713d21', '#babcbc', '#f1f0ef'] },
-  { key: 'fruit', label: 'Fruit', swatches: ['#e15335', '#97a868', '#262656', '#c6b98b'] },
-  { key: 'breeze', label: 'Breeze', swatches: ['#1a5fa8', '#2ba38a', '#d99000', '#6a5acd'] },
-  { key: 'carnival', label: 'Carnival', swatches: ['#e0457a', '#2196c9', '#d99000', '#00998a'] },
-  { key: 'meadow', label: 'Meadow', swatches: ['#3a7d43', '#c15f76', '#3167a0', '#c98a3a'] },
+// --- Your theme: each member picks their own; coral is the default. The two colors are the
+// theme's main ones, shown as filled circles on its chip. ---
+const THEME_CHOICES = [
+  { key: 'coral', label: 'Coral', primary: '#f4633a', secondary: '#0ca9d6' },
+  { key: 'bold', label: 'Bold', primary: '#ff6347', secondary: '#1e4ca1' },
+  { key: 'garden', label: 'Garden', primary: '#556b2f', secondary: '#cc5959' },
+  { key: 'garage', label: 'Garage', primary: '#215f72', secondary: '#713d21' },
+  { key: 'fruit', label: 'Fruit', primary: '#e15335', secondary: '#97a868' },
+  { key: 'breeze', label: 'Breeze', primary: '#1a5fa8', secondary: '#2ba38a' },
+  { key: 'carnival', label: 'Carnival', primary: '#e0457a', secondary: '#2196c9' },
+  { key: 'meadow', label: 'Meadow', primary: '#3a7d43', secondary: '#c15f76' },
 ]
-const colorTheme = ref(core.config?.theme?.color_theme ?? 'coral')
-const savingTheme = ref(false)
+const myTheme = computed(() => effectiveTheme(core.memberTheme))
 const themeError = ref('')
 
-function chooseColorTheme(key) {
-  if (key === colorTheme.value || savingTheme.value) return
-  const previous = colorTheme.value
+// Saving changes the doc, and core's store re-applies the theme on this device straight away.
+function chooseTheme(key) {
+  if (key === myTheme.value) return
   themeError.value = ''
-  colorTheme.value = key
-  applyColorTheme(key) // optimistic -- feels instant, whole app re-renders on the token swap
-  savingTheme.value = true
   try {
-    saveThemeRecord(doc, actor(), key)
+    updateMember(doc, core.memberId, { theme_preference: key })
   } catch (e) {
-    colorTheme.value = previous
-    applyColorTheme(previous)
     themeError.value = e.message
-  } finally {
-    savingTheme.value = false
   }
 }
 
@@ -566,32 +565,31 @@ function initials(name) {
         </form>
       </AppCard>
 
-      <!-- Appearance colorway (admin only, family-wide) -->
-      <AppCard v-if="core.isAdmin" class="settings-card">
+      <!-- Your theme: yours alone, and it follows you to every device you sign in on. Applies straight away. -->
+      <AppCard class="settings-card">
         <div class="settings-card__header">
           <span class="settings-icon-tile settings-icon-tile--appearance">
             <Palette :size="20" />
           </span>
-          <h3>Appearance</h3>
+          <h3>Your theme</h3>
         </div>
-        <p class="hint">Choose a colorway for the whole family — everyone sees this on every device.</p>
-        <div class="colorway-grid" role="radiogroup" aria-label="Colorway">
+        <p class="hint">Only you see this. It follows you to every device where you sign in. Applies straight away.</p>
+        <div class="theme-picker" role="radiogroup" aria-label="Your theme">
           <button
-            v-for="c in COLORWAYS"
-            :key="c.key"
+            v-for="t in THEME_CHOICES"
+            :key="t.key"
             type="button"
             role="radio"
-            :aria-checked="colorTheme === c.key"
-            class="colorway-swatch"
-            :class="{ 'colorway-swatch--selected': colorTheme === c.key }"
-            :disabled="savingTheme"
-            @click="chooseColorTheme(c.key)"
+            :aria-checked="myTheme === t.key"
+            class="theme-chip"
+            :class="{ 'theme-chip--selected': myTheme === t.key }"
+            @click="chooseTheme(t.key)"
           >
-            <span class="colorway-swatch__dots">
-              <span v-for="(hex, i) in c.swatches" :key="i" class="colorway-swatch__dot" :style="{ background: hex }" />
+            <span class="theme-chip__dots" aria-hidden="true">
+              <span class="theme-chip__dot" :style="{ background: t.primary }" />
+              <span class="theme-chip__dot" :style="{ background: t.secondary }" />
             </span>
-            <span class="colorway-swatch__label">{{ c.label }}</span>
-            <Check v-if="colorTheme === c.key" :size="16" class="colorway-swatch__check" />
+            <span class="theme-chip__label">{{ t.label }}</span>
           </button>
         </div>
         <p v-if="themeError" class="error">{{ themeError }}</p>
@@ -635,14 +633,15 @@ function initials(name) {
         <AppButton variant="ghost" type="button" @click="switchProfile">Switch profile</AppButton>
       </AppCard>
 
-      <!-- Member management (admin only) -->
-      <AppCard v-if="core.isAdmin" class="settings-card">
+      <!-- Family members & devices: each member, and the devices they're using. Admins manage members. -->
+      <AppCard class="settings-card">
         <div class="settings-card__header">
           <span class="settings-icon-tile settings-icon-tile--members">
             <Users :size="20" />
           </span>
-          <h3>Family members</h3>
+          <h3>Family members &amp; Devices</h3>
         </div>
+        <p class="hint">Who is using each device. You can't remove a device from here yet.</p>
         <ul class="module-list">
           <ListRow v-for="m in members" :key="m.id">
             <div class="member-row">
@@ -656,6 +655,7 @@ function initials(name) {
                 </div>
               </div>
               <select
+                v-if="core.isAdmin"
                 class="member-role-select"
                 :value="m.role"
                 @change="changeRole(m, $event.target.value)"
@@ -663,21 +663,43 @@ function initials(name) {
                 <option value="admin">Admin</option>
                 <option value="member">Member</option>
               </select>
+              <span v-else class="hint">{{ m.role === 'admin' ? 'Admin' : 'Member' }}</span>
             </div>
+            <ul v-if="devicesOf(m.id).length" class="device-list">
+              <li v-for="d in devicesOf(m.id)" :key="d.id" class="device-row">
+                <span class="device-row__name">{{ d.label || 'Device' }}</span>
+                <span class="hint">
+                  <template v-if="d.id === thisDeviceId">This device · </template>{{ describeLastSeen(d.last_seen, clock) }}
+                </span>
+              </li>
+            </ul>
+          </ListRow>
+          <ListRow v-if="noOneDevices.length">
+            <p class="hint">No one signed in</p>
+            <ul class="device-list">
+              <li v-for="d in noOneDevices" :key="d.id" class="device-row">
+                <span class="device-row__name">{{ d.label || 'Device' }}</span>
+                <span class="hint">
+                  <template v-if="d.id === thisDeviceId">This device · </template>{{ describeLastSeen(d.last_seen, clock) }}
+                </span>
+              </li>
+            </ul>
           </ListRow>
         </ul>
         <p v-if="changeRoleError" class="error">{{ changeRoleError }}</p>
 
-        <AppButton v-if="!showAddMember" variant="secondary" @click="showAddMember = true">+ Add member</AppButton>
+        <template v-if="core.isAdmin">
+          <AppButton v-if="!showAddMember" variant="secondary" @click="showAddMember = true">+ Add member</AppButton>
 
-        <AddRow v-else button-label="Add member" @submit="addMember">
-          <FormField v-model="newMemberName" placeholder="Name" required />
-          <select v-model="newMemberRole">
-            <option value="member">Member</option>
-            <option value="admin">Admin</option>
-          </select>
-        </AddRow>
-        <p v-if="addMemberError" class="error">{{ addMemberError }}</p>
+          <AddRow v-else button-label="Add member" @submit="addMember">
+            <FormField v-model="newMemberName" placeholder="Name" required />
+            <select v-model="newMemberRole">
+              <option value="member">Member</option>
+              <option value="admin">Admin</option>
+            </select>
+          </AddRow>
+          <p v-if="addMemberError" class="error">{{ addMemberError }}</p>
+        </template>
       </AppCard>
 
       <!-- Data export + import, admin only -->
@@ -829,30 +851,6 @@ function initials(name) {
         </details>
       </AppCard>
 
-      <!-- Devices: every phone and computer that has opened this family's data. -->
-      <AppCard class="settings-card">
-        <div class="settings-card__header">
-          <span class="settings-icon-tile settings-icon-tile--data">
-            <MonitorSmartphone :size="20" />
-          </span>
-          <h3>Devices</h3>
-        </div>
-        <p class="hint">
-          Each phone and computer that has opened this family's Yggltree. You can't remove a device from here yet.
-        </p>
-        <ul v-if="devices.length" class="module-list">
-          <ListRow v-for="d in devices" :key="d.id">
-            <div class="device-row">
-              <span class="device-row__name">{{ d.label || 'Device' }}</span>
-              <span class="hint">
-                <template v-if="d.id === thisDeviceId">This device · </template>{{ describeLastSeen(d.last_seen, clock) }}
-              </span>
-            </div>
-          </ListRow>
-        </ul>
-        <p v-else class="hint">No devices yet.</p>
-      </AppCard>
-
       <!-- Notifications on this phone: only for devices that use the family relay. -->
       <AppCard v-if="relay" class="settings-card">
         <div class="settings-card__header">
@@ -997,28 +995,22 @@ function initials(name) {
 .settings-icon-tile--data { background: linear-gradient(135deg, var(--tile-library), var(--tile-library-deep)); }
 .settings-icon-tile--appearance { background: linear-gradient(135deg, var(--accent-soft), var(--complement)); }
 
-/* Colorway picker -- a grid of swatch buttons (radiogroup) rather than a
-   native <select>, since this is a visual picker and native controls are
-   avoided app-wide. Each button shows the theme's 4 raw hexes as small
-   dots (so the choice is
-   recognizable before it's applied), independent of the CSS variables the
-   selection actually swaps app-wide. */
-.colorway-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 10px;
+/* Theme picker: a wrapping row of compact chips, each a real button (radiogroup).
+   The two dots are the theme's main colors; the name follows them. */
+.theme-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.colorway-swatch {
-  position: relative;
-  display: flex;
-  flex-direction: column;
+.theme-chip {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-height: var(--control-min);
-  padding: 12px 10px;
-  border: 2px solid var(--border);
-  border-radius: 14px;
+  min-height: 44px;
+  padding: 6px 14px 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
   background: var(--surface);
   font: var(--type-label);
   color: var(--text);
@@ -1026,47 +1018,33 @@ function initials(name) {
   transition: border-color 120ms ease, background-color 120ms ease;
 }
 
-.colorway-swatch:hover {
+.theme-chip:hover {
   border-color: color-mix(in srgb, var(--text) 30%, var(--border));
 }
 
-.colorway-swatch:disabled {
-  cursor: default;
-  opacity: 0.7;
-}
-
-.colorway-swatch--selected {
-  border-color: var(--accent);
+/* A thicker border with less padding keeps the chip the same size when selected. */
+.theme-chip--selected {
+  border: 2px solid var(--accent);
+  padding: 5px 13px 5px 9px;
   background: var(--accent-container);
   color: var(--on-accent-container);
 }
 
-.colorway-swatch__dots {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+.theme-chip__dots {
+  display: inline-flex;
   gap: 3px;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: var(--elevation-1);
   flex: none;
 }
 
-.colorway-swatch__dot {
-  width: 100%;
-  height: 100%;
+.theme-chip__dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  box-shadow: var(--elevation-1);
 }
 
-.colorway-swatch__label {
+.theme-chip__label {
   font-weight: 600;
-}
-
-.colorway-swatch__check {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  color: var(--accent);
 }
 
 .settings-form {
@@ -1216,6 +1194,16 @@ function initials(name) {
 
 .device-row .hint {
   margin: 0;
+}
+
+/* Under a member's row, indented to line up with the name (avatar 40px + 12px gap). */
+.device-list {
+  list-style: none;
+  margin: 8px 0 0 52px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .export-grid {

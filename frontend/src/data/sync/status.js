@@ -15,7 +15,7 @@ export const STATUS_COPY = {
   },
   offline: { label: 'Offline', tone: 'orange', message: 'You are offline. Changes are saved on this device.' },
   connected: { label: 'Synced', tone: 'green', message: 'Connected to your Yggltree.' },
-  connecting: { label: 'Connecting…', tone: 'grey', message: '' },
+  connecting: { label: 'Connecting…', tone: 'gray', message: '' },
   waiting: {
     label: 'Waiting for hub',
     tone: 'yellow',
@@ -30,7 +30,7 @@ export const PROBLEM_COPY = {
 
 const HUB_MACHINE_WAITING = "Yggltree isn't running on this computer. Start it with npm start."
 // The hub answers but this browser has no live connection to it (it kept
-// its own family instead of uploading it, e.g. a cancelled adopt).
+// its own family instead of uploading it, e.g. a canceled adopt).
 export const HUB_MACHINE_NOT_UPLOADED = "This computer's family isn't on the hub yet. Reload to upload it."
 // The hub machine was told its room is gone (4404 / 4410: a restore or a
 // reset hub) or its token is no longer valid: a reload picks up the hub's

@@ -68,7 +68,7 @@ const colorPresets = [
   '#7a9e7e', // sage
   '#4a90d9', // sky blue
   '#9b6bce', // violet
-  '#5c5d67', // neutral grey
+  '#5c5d67', // neutral gray
 ]
 
 // Multi-select assignee filter chips, union semantics — identical

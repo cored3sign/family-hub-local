@@ -29,9 +29,10 @@ one nested `Y.Map` per record (see "CRDT rules" below). Three more
 top-level maps aren't in `COLLECTIONS` because they aren't record lists:
 
 - **`settings`** (`Y.Map`) — flat family-wide settings: `family_name`,
-  `week_start_day` (`sunday` or `monday`), `timezone`, `color_theme`.
-  Read/written by `data/settings.js`'s `getSettings()` / `saveSettings()` /
-  `saveTheme()`.
+  `week_start_day` (`sunday` or `monday`), `timezone`. `color_theme` is a
+  legacy key kept for backup compatibility; the app no longer reads it (each
+  member's theme is `theme_preference`, below). Read/written by
+  `data/settings.js`'s `getSettings()` / `saveSettings()`.
 - **`modules_enabled`** (`Y.Map`, key → `true`) — which modules this family
   has turned on. A map of independent keys rather than one array value on
   purpose: two devices enabling *different* modules at once must both
@@ -50,7 +51,8 @@ below). The non-obvious or CRDT-relevant ones:
 
 - **`members`** — `name`, `role` (`admin`/`member`), `avatar_color`,
   `avatar_asset_id`, `nav_pinned` (array, max 5, whole-value LWW),
-  `theme_preference`, `todo_default_view`, `has_seen_onboarding`.
+  `theme_preference` (one of the eight themes, or `null` for the default,
+  coral; each member's own choice), `todo_default_view`, `has_seen_onboarding`.
 - **`todos`** — `title`, `status` (`todo`/`doing`/`done`),
   `assigned_member_id`, `assigned_by_member_id`, `deadline`,
   `completed_at`, `description`.

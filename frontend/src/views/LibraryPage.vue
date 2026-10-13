@@ -267,7 +267,7 @@ function openEditBook(book) {
 function closeBookModal() {
   showBookModal.value = false
   showScanner.value = false
-  // Cancelling out of "+ Add a new book" (opened from New Loan) goes back to
+  // Canceling out of "+ Add a new book" (opened from New Loan) goes back to
   // the loan modal rather than dropping the person on the bare Catalog tab
   // with no memory of the loan they were mid-way through creating.
   if (bookModalReturnTo.value === 'loan') {
@@ -675,7 +675,7 @@ function convertToOwned(book) {
           </select>
         </label>
         <!-- Loaning out a book that isn't in the catalog yet doesn't
-             require cancelling this whole modal and adding the book on the
+             require canceling this whole modal and adding the book on the
              Catalog tab first: this keeps everything already typed above in
              place. -->
         <AppButton type="button" variant="ghost" class="book-form__inline-add" @click="openAddBookFromLoan">

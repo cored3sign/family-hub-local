@@ -57,7 +57,7 @@ describe('STATUS_COPY', () => {
     })
     expect(STATUS_COPY.offline).toEqual({ label: 'Offline', tone: 'orange', message: 'You are offline. Changes are saved on this device.' })
     expect(STATUS_COPY.connected).toEqual({ label: 'Synced', tone: 'green', message: 'Connected to your Yggltree.' })
-    expect(STATUS_COPY.connecting).toEqual({ label: 'Connecting…', tone: 'grey', message: '' })
+    expect(STATUS_COPY.connecting).toEqual({ label: 'Connecting…', tone: 'gray', message: '' })
     expect(STATUS_COPY.waiting).toEqual({
       label: 'Waiting for hub',
       tone: 'yellow',
@@ -71,7 +71,7 @@ describe('STATUS_COPY', () => {
     expect(statusCopy('connected', { role: 'hub-machine' })).toEqual(STATUS_COPY.connected)
   })
 
-  it('statusCopy: the hub machine with the hub answering but no live connection (adopt cancelled)', () => {
+  it('statusCopy: the hub machine with the hub answering but no live connection (adopt canceled)', () => {
     expect(HUB_MACHINE_NOT_UPLOADED).toBe("This computer's family isn't on the hub yet. Reload to upload it.")
     expect(statusCopy('waiting', { role: 'hub-machine', hubRunning: true, hasConnection: false }).message).toBe(HUB_MACHINE_NOT_UPLOADED)
     // A live connection that can't sync: the hub stopped since it last answered.

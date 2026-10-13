@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import * as Y from 'yjs'
-import { deviceLabel, describeLastSeen, listDevices, recordDevice, startPresence, thisDeviceLabel } from './presence.js'
+import { deviceLabel, describeLastSeen, listDevices, recordDevice, refreshPresence, startPresence, thisDeviceLabel } from './presence.js'
 import { PRESENCE_ORIGIN } from './origins.js'
 
 const IPHONE_SAFARI = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1'
@@ -88,6 +88,41 @@ describe('recording a device', () => {
     expect(listDevices(doc)).toEqual([])
     doc.getMap('meta').set('schema_version', 1)
     expect(listDevices(doc).map((d) => d.label)).toEqual(['Android · Chrome'])
+    stop()
+  })
+})
+
+describe('which member is using a device', () => {
+  it('records the member on the device record', () => {
+    const doc = familyDoc()
+    recordDevice(doc, { id: 'dev-5', label: 'iPhone · Safari', memberId: 'member-kit', now: new Date('2026-10-13T10:00:00Z') })
+    expect(listDevices(doc)[0].member_id).toBe('member-kit')
+  })
+
+  it('records a member change at once, even within the ten minutes', () => {
+    const doc = familyDoc()
+    const start = new Date('2026-10-13T10:00:00Z')
+    recordDevice(doc, { id: 'dev-6', label: 'Mac · Firefox', memberId: 'member-pat', now: start })
+    expect(recordDevice(doc, { id: 'dev-6', label: 'Mac · Firefox', memberId: 'member-kit', now: new Date(start.getTime() + 60000) })).toBe(true)
+    expect(listDevices(doc)[0].member_id).toBe('member-kit')
+  })
+
+  it('still skips an unchanged member within the ten minutes', () => {
+    const doc = familyDoc()
+    const start = new Date('2026-10-13T10:00:00Z')
+    recordDevice(doc, { id: 'dev-7', label: 'Mac · Firefox', memberId: 'member-pat', now: start })
+    expect(recordDevice(doc, { id: 'dev-7', label: 'Mac · Firefox', memberId: 'member-pat', now: new Date(start.getTime() + 60000) })).toBe(false)
+  })
+
+  it('refreshes the record straight away when asked, after a member is picked on the device', () => {
+    const doc = familyDoc()
+    let member = 'member-pat'
+    const timers = { setInterval: () => 1, clearInterval: () => {} }
+    const stop = startPresence(doc, { id: 'dev-8', label: 'iPhone · Safari', memberId: () => member }, { timers })
+    expect(listDevices(doc)[0].member_id).toBe('member-pat')
+    member = 'member-kit'
+    refreshPresence()
+    expect(listDevices(doc)[0].member_id).toBe('member-kit')
     stop()
   })
 })

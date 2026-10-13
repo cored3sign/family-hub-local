@@ -5,7 +5,6 @@ const S = 'settings'
 // Its own Y.Map (key -> true) rather than an array value, so two devices
 // enabling different modules at once both win.
 const MODULES = 'modules_enabled'
-export const COLOR_THEMES = ['coral', 'bold', 'garden', 'garage', 'fruit', 'breeze', 'carnival', 'meadow']
 export const WEEK_START_DAYS = ['sunday', 'monday']
 
 // Returns the config shape that pages read via core.config.*.
@@ -29,12 +28,6 @@ export function saveSettings(doc, actor, { family_name, week_start_day }) {
     doc.getMap(S).set('family_name', name)
     doc.getMap(S).set('week_start_day', week_start_day)
   })
-}
-
-export function saveTheme(doc, actor, colorTheme) {
-  requireAdmin(doc, actor)
-  if (!COLOR_THEMES.includes(colorTheme)) throw new Error('Unknown color theme')
-  doc.getMap(S).set('color_theme', colorTheme)
 }
 
 export function enableModule(doc, actor, key) {

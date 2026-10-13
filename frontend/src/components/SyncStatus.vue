@@ -97,7 +97,7 @@ function openHelp() {
 .sync-status--yellow { --sync-dot: #f2c230; }
 .sync-status--orange { --sync-dot: #f08a24; }
 .sync-status--red { --sync-dot: #d93025; }
-.sync-status--grey { --sync-dot: #9aa0a6; }
+.sync-status--gray { --sync-dot: #9aa0a6; }
 
 .sync-status__label {
   white-space: nowrap;

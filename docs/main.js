@@ -103,7 +103,7 @@ if (toolDialog && typeof toolDialog.showModal === 'function') {
   })
 }
 
-// Color themes: the eight colorways from the app's Settings. Each one sets the
+// Color themes: the eight themes from the app's Settings. Each one sets the
 // page's own tokens, so the text, buttons, dark band and illustrations follow.
 const THEMES = {
   "coral": {

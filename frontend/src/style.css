@@ -106,7 +106,7 @@
   background: var(--bg);
 }
 
-/* Family-wide colorway picker (Settings > Appearance). Each block
+/* Theme overrides (Settings > Your theme). Each block
    below is a full override of the same cross-cutting tokens set on :root
    above (--text/--bg/--surface/--accent* family/--complement* family) --
    never new component CSS, so components don't need multiple versions of
@@ -114,11 +114,10 @@
    intentionally left alone: the themes replace the coral brand color with
    4 hues, not re-skin each module's own icon-tile identity.
 
-   Selected via [data-theme="<key>"] on <html> (set in main.js from the
-   family's config.json theme.color_theme, and live-updated by
-   SettingsPage's Appearance picker) rather than a prefers-color-scheme
-   media query -- this is a family-wide choice, not a per-device/OS
-   preference, so there is no OS-driven (light/dark) branch here.
+   Selected via [data-theme="<key>"] on <html> (set by core's store from the
+   member's own theme, see lib/theme.js) rather than a prefers-color-scheme
+   media query -- this is a per-member choice, not an OS-driven (light/dark)
+   preference, so there is no OS-driven branch here.
 
    Each theme is given exactly 4 hex values, spent
    deliberately rather than force-mapped 1:1 onto --accent/--accent-deep/
@@ -205,7 +204,7 @@
 }
 
 /* Breeze, Carnival and Meadow fill gaps left by Bold's saturated primary
-   triad, Garden's earthy olive/rose, Garage's industrial grey/teal, Fruit's
+   triad, Garden's earthy olive/rose, Garage's industrial gray/teal, Fruit's
    tan/red-orange/navy and the default coral: none of those is blue-forward
    as its PRIMARY hue, none is a bright kid-friendly palette, and none is a
    soft/muted low-saturation option. Each theme's 4 hex values pass
@@ -221,9 +220,9 @@
    tints/shades of the theme's hues (not one of the 4 raw hexes) picked for
    WCAG-reasonable contrast rather than reused verbatim. */
 
-/* Breeze: a cool blue/teal-forward palette -- the current 5 colorways have
+/* Breeze: a cool blue/teal-forward palette -- the current 5 themes have
    blue only as a secondary/complement note (coral's sky complement, bold's
-   navy complement, garage's teal-as-accent-but-industrial-grey-led); this
+   navy complement, garage's teal-as-accent-but-industrial-gray-led); this
    is the first theme where blue IS the primary hue, for a calmer/cooler
    family that doesn't want a warm-forward brand color. Deep blue #1a5fa8 ->
    --accent, teal #2ba38a -> --complement (green-leaning, kept far enough

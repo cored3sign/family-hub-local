@@ -5,8 +5,9 @@ import { blankToNull } from '../data/collection'
 import { getSettings, enableModule } from '../data/settings'
 import { actorFor, getMember, updateMember, pinModule, unpinModule, reorderPinned } from '../data/members'
 import { currentMemberId, setCurrentMemberId } from '../data/session'
+import { refreshPresence } from '../data/presence.js'
 import { firstName } from '../lib/names'
-import { applyColorTheme } from '../lib/theme'
+import { applyTheme, effectiveTheme } from '../lib/theme'
 import { addons } from '../addons/registry'
 import { useOnboardingStore } from './onboarding'
 import { useSyncStore, ALREADY_SET_UP_MESSAGE } from './sync'
@@ -28,6 +29,8 @@ export const useCoreStore = defineStore('core', {
     moduleRegistry: Object.fromEntries(addons.map((a) => [a.key, a])),
     enabledModules: [],
     pinnedModules: [],
+    // This member's own theme pick, or null for the default (coral).
+    memberTheme: null,
     appliedTheme: undefined,
   }),
 
@@ -63,9 +66,10 @@ export const useCoreStore = defineStore('core', {
       this.hasSeenOnboarding = Boolean(member?.has_seen_onboarding)
       this.todoDefaultView = member?.todo_default_view ?? null
       this.pinnedModules = member?.nav_pinned ?? []
-      const theme = this.familyReady ? settings.theme.color_theme : null
+      this.memberTheme = member?.theme_preference ?? null
+      const theme = this.familyReady ? effectiveTheme(this.memberTheme) : null
       if (theme !== this.appliedTheme) {
-        applyColorTheme(theme)
+        applyTheme(theme)
         this.appliedTheme = theme
       }
     },
@@ -95,12 +99,14 @@ export const useCoreStore = defineStore('core', {
 
     selectMember(id) {
       setCurrentMemberId(id)
+      refreshPresence()
       this.refresh()
       if (this.memberId && !this.hasSeenOnboarding) useOnboardingStore().start()
     },
 
     switchProfile() {
       setCurrentMemberId(null)
+      refreshPresence()
       this.refresh()
     },
 

@@ -1,4 +1,5 @@
 import { all, get, insert, patch, table, blankToNull, byText } from './collection'
+import { THEMES } from '../lib/theme.js'
 
 const T = 'members'
 export const AVATAR_COLORS = ['#e76f51', '#2a9d8f', '#e9c46a', '#264653', '#8e7dbe', '#f4a261', '#4d5faf', '#d62828']
@@ -57,6 +58,9 @@ export function updateMember(doc, id, fields) {
     if (!clean.name) throw new Error('name is required')
   }
   if ('role' in clean && !['admin', 'member'].includes(clean.role)) throw new Error('role must be admin or member')
+  if ('theme_preference' in clean && clean.theme_preference !== null && !THEMES.includes(clean.theme_preference)) {
+    throw new Error('Unknown theme')
+  }
   if (clean.role === 'member' && current.role === 'admin' && listMembers(doc).filter((m) => m.role === 'admin').length === 1) {
     throw new Error('The family needs at least one admin')
   }

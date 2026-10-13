@@ -187,7 +187,7 @@ export class Room extends DurableObject {
   }
 
   async sendPush(endpoint, subJson) {
-    if (!isPushEndpoint(endpoint)) return // defence in depth: never send to other hosts
+    if (!isPushEndpoint(endpoint)) return // defense in depth: never send to other hosts
     try {
       const subscription = JSON.parse(subJson)
       const keys = await this.env.CONFIG.get(this.env.CONFIG.idFromName(SERVER_KEY)).vapid()
