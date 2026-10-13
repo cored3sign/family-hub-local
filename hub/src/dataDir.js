@@ -1,4 +1,4 @@
-import { access, rename } from 'node:fs/promises'
+import { access, readFile, rename } from 'node:fs/promises'
 
 // Picks the hub's default data directory:
 //   darwin  ~/Library/Application Support/Yggltree
@@ -42,7 +42,7 @@ export async function migrateLegacyDataDir({ dataDir, legacyDir }) {
   if (legacyDir === dataDir || (await exists(dataDir)) || !(await exists(legacyDir))) {
     return { action: 'none', dir: dataDir }
   }
-  if (await exists(join(legacyDir, 'hub.lock'))) {
+  if (await lockHeldByLiveProcess(join(legacyDir, 'hub.lock'))) {
     return { action: 'in-use', dir: legacyDir }
   }
   try {
@@ -50,6 +50,31 @@ export async function migrateLegacyDataDir({ dataDir, legacyDir }) {
     return { action: 'moved', dir: dataDir, from: legacyDir }
   } catch (error) {
     return { action: 'failed', dir: legacyDir, error }
+  }
+}
+
+// A lock whose process is still running means another copy uses this folder. A lock
+// left by a process that has exited is stale, the same as the hub treats it. A lock
+// that can't be read is treated as in use, to be safe.
+async function lockHeldByLiveProcess(lockPath) {
+  let text
+  try {
+    text = await readFile(lockPath, 'utf8')
+  } catch {
+    return false
+  }
+  let pid
+  try {
+    pid = JSON.parse(text).pid
+  } catch {
+    return true
+  }
+  if (!Number.isInteger(pid)) return true
+  try {
+    process.kill(pid, 0)
+    return true
+  } catch (error) {
+    return error?.code !== 'ESRCH'
   }
 }
 

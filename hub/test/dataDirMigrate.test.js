@@ -54,11 +54,27 @@ describe('migrateLegacyDataDir', () => {
   it('keeps using the old folder while another copy is running from it', async () => {
     const { legacy, next } = await fresh()
     await mkdir(legacy, { recursive: true })
-    await writeFile(join(legacy, 'hub.lock'), '{"pid":123}')
+    await writeFile(join(legacy, 'hub.lock'), JSON.stringify({ pid: process.pid }))
     const result = await migrateLegacyDataDir({ dataDir: next, legacyDir: legacy })
     expect(result).toEqual({ action: 'in-use', dir: legacy })
     expect(await exists(legacy)).toBe(true)
     expect(await exists(next)).toBe(false)
+  })
+
+  it('moves the folder when its lock belongs to a process that has exited', async () => {
+    const { legacy, next } = await fresh()
+    await mkdir(legacy, { recursive: true })
+    await writeFile(join(legacy, 'hub.lock'), JSON.stringify({ pid: 2999999 }))
+    const result = await migrateLegacyDataDir({ dataDir: next, legacyDir: legacy })
+    expect(result).toMatchObject({ action: 'moved', dir: next })
+    expect(await exists(join(next, 'hub.lock'))).toBe(true)
+  })
+
+  it('keeps the old folder when its lock cannot be read', async () => {
+    const { legacy, next } = await fresh()
+    await mkdir(legacy, { recursive: true })
+    await writeFile(join(legacy, 'hub.lock'), '')
+    expect(await migrateLegacyDataDir({ dataDir: next, legacyDir: legacy })).toEqual({ action: 'in-use', dir: legacy })
   })
 
   it('treats identical paths as nothing to move', async () => {
