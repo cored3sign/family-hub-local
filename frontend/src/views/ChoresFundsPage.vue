@@ -1,4 +1,7 @@
 <script setup>
+import { useItemHighlight } from '../lib/highlight'
+
+useItemHighlight()
 import { ref, computed } from 'vue'
 import { Circle, CheckCircle2, Plus } from 'lucide-vue-next'
 import { firstName } from '../lib/names'
@@ -185,7 +188,7 @@ function remove(id) {
           </button>
         </div>
         <ul v-if="entry.chores.length" class="module-list">
-          <ListRow v-for="c in entry.chores" :key="c.id" deletable class="chore-list-row" @delete="remove(c.id)">
+          <ListRow v-for="c in entry.chores" :key="c.id" :data-item-id="c.id" deletable class="chore-list-row" @delete="remove(c.id)">
             <button type="button" class="chore-check" @click="complete(c)" :aria-label="`Mark '${c.title}' done`">
               <Circle :size="22" />
             </button>
@@ -217,7 +220,7 @@ function remove(id) {
           </button>
         </div>
         <ul v-if="unassignedOpenChores.length" class="module-list">
-          <ListRow v-for="c in unassignedOpenChores" :key="c.id" deletable class="chore-list-row" @delete="remove(c.id)">
+          <ListRow v-for="c in unassignedOpenChores" :key="c.id" :data-item-id="c.id" deletable class="chore-list-row" @delete="remove(c.id)">
             <!-- An unassigned chore can't be completed
                  (completeChore throws) -- disable the check and show a short
                  hint instead of letting the click throw silently. -->
@@ -246,7 +249,7 @@ function remove(id) {
       <template v-if="doneChores.length">
         <h3>Completed</h3>
         <ul class="module-list done-list">
-          <ListRow v-for="c in doneChores" :key="c.id" done deletable class="chore-list-row" @delete="remove(c.id)">
+          <ListRow v-for="c in doneChores" :key="c.id" :data-item-id="c.id" done deletable class="chore-list-row" @delete="remove(c.id)">
             <span class="chore-check chore-check--done">
               <CheckCircle2 :size="22" />
             </span>

@@ -1,4 +1,7 @@
 <script setup>
+import { useItemHighlight } from '../lib/highlight'
+
+useItemHighlight()
 import { ref, computed } from 'vue'
 import { Cake, Plus, PartyPopper } from 'lucide-vue-next'
 import { useFamily, useLive } from '../data/vue'

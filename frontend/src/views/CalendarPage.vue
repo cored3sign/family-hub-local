@@ -1,4 +1,7 @@
 <script setup>
+import { useItemHighlight } from '../lib/highlight'
+
+useItemHighlight()
 import { ref, computed } from 'vue'
 import { Plus, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import { useCoreStore } from '../stores/core'
@@ -308,7 +311,7 @@ function remove(id) {
 
         <EmptyState v-if="selectedDayEvents.length === 0" illustration="calendar">No events on this day.</EmptyState>
         <ul v-else class="module-list day-detail__list">
-          <ListRow v-for="e in selectedDayEvents" :key="e.id">
+          <ListRow v-for="e in selectedDayEvents" :key="e.id" :data-item-id="e.id">
             <button type="button" class="day-detail__row-btn" @click="editEvent(e)">
               <span class="day-detail__row-title">{{ e.title }}</span>
               <span class="day-detail__row-tags">

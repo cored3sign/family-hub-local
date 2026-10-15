@@ -1,4 +1,7 @@
 <script setup>
+import { useItemHighlight } from '../lib/highlight'
+
+useItemHighlight()
 import { ref, computed } from 'vue'
 import { Gift, Circle, CheckCircle2, Trash2, Plus } from 'lucide-vue-next'
 import { useCoreStore } from '../stores/core'
@@ -138,7 +141,7 @@ function clearPurchased() {
     <ul class="module-list wishlist-list">
       <li
         v-for="i in filteredItems"
-        :key="i.id"
+        :key="i.id" :data-item-id="i.id"
         class="wishlist-card"
         :class="{ 'wishlist-card--done': i.purchased }"
       >

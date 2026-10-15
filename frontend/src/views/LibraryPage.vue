@@ -1,4 +1,7 @@
 <script setup>
+import { useItemHighlight } from '../lib/highlight'
+
+useItemHighlight()
 import { ref, computed } from 'vue'
 import {
   BookOpen, ScanLine, BookMarked, CheckCircle2, Star, Clock,
@@ -377,7 +380,7 @@ function convertToOwned(book) {
       </div>
 
       <ul class="module-list">
-        <ListRow v-for="b in filteredBooks" :key="b.id" deletable class="book-list-row" @delete="deleteBook(b.id)">
+        <ListRow v-for="b in filteredBooks" :key="b.id" :data-item-id="b.id" deletable class="book-list-row" @delete="deleteBook(b.id)">
           <div class="book-row">
             <!-- This row is a real edit trigger (openEditBook), but
                  cursor:pointer alone is invisible on
@@ -533,7 +536,7 @@ function convertToOwned(book) {
       </div>
 
       <ul class="module-list">
-        <ListRow v-for="l in visibleLoans" :key="l.id" :done="!!l.returned_at" deletable @delete="deleteLoan(l.id)">
+        <ListRow v-for="l in visibleLoans" :key="l.id" :data-item-id="l.id" :done="!!l.returned_at" deletable @delete="deleteLoan(l.id)">
           <div class="loan-row">
             <!-- Non-color signal for returned loans: icon swap (arrow -> check)
                  + desaturated tile + strikethrough (from ListRow's .done, global)

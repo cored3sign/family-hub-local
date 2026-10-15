@@ -1,4 +1,7 @@
 <script setup>
+import { useItemHighlight } from '../lib/highlight'
+
+useItemHighlight()
 // Goals: title + color + mark-complete, with assignee filter chips (the
 // same union-select AssigneeFilterChips component To-Do uses, reused
 // as-is). There is no stock-photo card art (no external image fetch) and
@@ -144,7 +147,7 @@ function remove(id) {
     </AppButton>
 
     <ul class="module-list">
-      <ListRow v-for="g in filteredActiveGoals" :key="g.id" deletable class="goal-row" @delete="remove(g.id)">
+      <ListRow v-for="g in filteredActiveGoals" :key="g.id" :data-item-id="g.id" deletable class="goal-row" @delete="remove(g.id)">
         <div class="goal-row__body" @click="openEditGoal(g)">
           <button type="button" class="goal-row__toggle" @click.stop="toggleComplete(g)">
             <Circle :size="20" />
@@ -162,7 +165,7 @@ function remove(id) {
     <template v-if="filteredCompleteGoals.length">
       <h3>Completed</h3>
       <ul class="module-list done-list">
-        <ListRow v-for="g in filteredCompleteGoals" :key="g.id" done deletable class="goal-row" @delete="remove(g.id)">
+        <ListRow v-for="g in filteredCompleteGoals" :key="g.id" :data-item-id="g.id" done deletable class="goal-row" @delete="remove(g.id)">
           <div class="goal-row__body" @click="openEditGoal(g)">
             <button type="button" class="goal-row__toggle" @click.stop="toggleComplete(g)">
               <CheckCircle2 :size="20" />

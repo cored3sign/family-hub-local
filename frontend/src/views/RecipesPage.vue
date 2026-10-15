@@ -1,4 +1,7 @@
 <script setup>
+import { useItemHighlight } from '../lib/highlight'
+
+useItemHighlight()
 import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
@@ -308,7 +311,7 @@ function deleteMealIdea(id) {
       </AppButton>
 
       <ul class="module-list recipe-list">
-        <ListRow v-for="r in recipes" :key="r.id" deletable class="recipe-list-row" @delete="deleteRecipe(r.id)">
+        <ListRow v-for="r in recipes" :key="r.id" :data-item-id="r.id" deletable class="recipe-list-row" @delete="deleteRecipe(r.id)">
           <div class="recipe-row">
             <AssetImage v-if="r.photo_asset_id" :asset-id="r.photo_asset_id" class="recipe-thumb" />
             <div class="recipe-thumb recipe-thumb--placeholder" v-else>

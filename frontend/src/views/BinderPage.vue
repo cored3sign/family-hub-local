@@ -1,4 +1,7 @@
 <script setup>
+import { useItemHighlight } from '../lib/highlight'
+
+useItemHighlight()
 // Family Binder.
 //
 // Section browsing, plus rich-text post CRUD and reorder within a section
@@ -444,7 +447,7 @@ function inlineFormat(text) {
          not two markup trees. -->
     <div v-else class="binder-body">
       <div class="binder-nav" role="tablist">
-        <div v-for="section in sections" :key="section.id" class="binder-section" :class="{ 'binder-section--open': isOpen(section.id) }">
+        <div v-for="section in sections" :key="section.id" :data-item-id="section.id" class="binder-section" :class="{ 'binder-section--open': isOpen(section.id) }">
           <button
             type="button"
             class="binder-section__header"
@@ -497,7 +500,7 @@ function inlineFormat(text) {
               <div class="binder-posts">
                 <article
                   v-for="post in postsFor(section.id)"
-                  :key="post.id"
+                  :key="post.id" :data-item-id="post.id"
                   class="binder-post"
                   :class="{ 'binder-post--tappable': core.isAdmin }"
                   @click="core.isAdmin && openEditPost(post)"

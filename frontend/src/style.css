@@ -840,3 +840,18 @@ input[type="file"]::file-selector-button {
 input[type="file"]::file-selector-button:hover {
   background: color-mix(in srgb, var(--accent) 8%, transparent);
 }
+
+/* A row a notification or a link points at: ringed for a moment, then the ring fades (see lib/highlight.js). */
+.item-highlight {
+  animation: item-highlight 2.4s ease-out;
+}
+
+@keyframes item-highlight {
+  0%,
+  30% {
+    box-shadow: 0 0 0 3px var(--accent);
+  }
+  100% {
+    box-shadow: 0 0 0 3px transparent;
+  }
+}

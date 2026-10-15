@@ -1,4 +1,7 @@
 <script setup>
+import { useItemHighlight } from '../lib/highlight'
+
+useItemHighlight()
 import { ref, computed } from 'vue'
 import { CheckCircle2, Circle, CalendarClock, Zap, Plus } from 'lucide-vue-next'
 import { useCoreStore } from '../stores/core'
@@ -158,7 +161,7 @@ function isOverdue(todo) {
     <ul class="module-list">
       <ListRow
         v-for="t in filteredTodos"
-        :key="t.id"
+        :key="t.id" :data-item-id="t.id"
         :done="t.status === 'done'"
         deletable
         class="todo-row"

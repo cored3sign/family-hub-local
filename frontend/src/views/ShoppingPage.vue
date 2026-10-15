@@ -1,4 +1,7 @@
 <script setup>
+import { useItemHighlight } from '../lib/highlight'
+
+useItemHighlight()
 import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { Circle, CheckCircle2, ChevronRight, BookOpen, Plus, Trash2 } from 'lucide-vue-next'
@@ -273,7 +276,7 @@ function removeRecipeGroup(recipeId) {
     <ul class="module-list shopping-list">
       <li
         v-for="i in sortedItems"
-        :key="i.id"
+        :key="i.id" :data-item-id="i.id"
         class="shopping-card"
         :class="{ 'shopping-card--done': i.completed }"
       >

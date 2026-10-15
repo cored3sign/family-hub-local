@@ -1,6 +1,9 @@
 <script setup>
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useItemHighlight } from '../lib/highlight'
+
+useItemHighlight()
+import { ref, computed, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import {
   Megaphone, MessageCircle, Users, Pin, Pencil, Trash2, Plus,
 } from 'lucide-vue-next'
@@ -22,6 +25,14 @@ const router = useRouter()
 const tab = ref('announcements') // announcements | checkins | one-on-ones
 const members = useLive(listMembers)
 const oneOnOnes = useLive((d) => oneOnOnesFor(d, core.myMemberId))
+// A notification about a 1:1 opens this page on the 1:1 tab, with that 1:1 in view (see useItemHighlight).
+const route = useRoute()
+function showLinkedOneOnOne(id) {
+  const rows = [...oneOnOnes.value.incoming, ...oneOnOnes.value.outgoing, ...oneOnOnes.value.upcoming]
+  if (id && rows.some((o) => o.id === id)) tab.value = 'one-on-ones'
+}
+showLinkedOneOnOne(route.query.item)
+watch(() => route.query.item, showLinkedOneOnOne)
 const anyOneOnOnes = computed(() => oneOnOnes.value.incoming.length + oneOnOnes.value.outgoing.length + oneOnOnes.value.upcoming.length > 0)
 
 // --- Announcements state ---
@@ -315,7 +326,7 @@ function requestOneOnOne() {
         <ul class="module-list">
           <li
             v-for="a in announcements"
-            :key="a.id"
+            :key="a.id" :data-item-id="a.id"
             class="comm-card"
             :class="{ 'comm-card--unread': !a.is_read, 'comm-card--pinned': a.pinned }"
           >
