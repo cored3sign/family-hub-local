@@ -5,9 +5,7 @@
 import { computed, defineAsyncComponent } from 'vue'
 
 // Lazy per-illustration (not a static import per file): several of these
-// are full character SVGs in the tens-to-hundreds of KB, and EmptyWishlist
-// in particular is ~3.4MB (a vectorizer-traced raster, not hand-drawn --
-// see its own file for why). A static import bundles all of them into
+// are full character SVGs in the tens-to-hundreds of KB. A static import bundles all of them into
 // every page's initial load regardless of which illustration (if any) that
 // page actually uses; defineAsyncComponent gives each one its own chunk,
 // fetched only when a page actually renders that specific illustration key.
@@ -22,6 +20,7 @@ const ILLUSTRATIONS = {
   calendar: defineAsyncComponent(() => import('./illustrations/EmptyCalendar.vue')),
   shopping: defineAsyncComponent(() => import('./illustrations/EmptyCart.vue')),
   wishlist: defineAsyncComponent(() => import('./illustrations/EmptyWishlist.vue')),
+  birthdays: defineAsyncComponent(() => import('./illustrations/EmptyBirthdays.vue')),
   checklist: defineAsyncComponent(() => import('./illustrations/EmptyChecklist.vue')),
   books: defineAsyncComponent(() => import('./illustrations/EmptyBooks.vue')),
   goals: defineAsyncComponent(() => import('./illustrations/EmptyGoals.vue')),
@@ -44,11 +43,11 @@ const ILLUSTRATIONS = {
 // small icon box.
 const FULL_CHARACTER_ILLUSTRATIONS = new Set([
   'goals', 'calendar', 'shopping', 'wishlist', 'checklist', 'books',
-  'chores', 'recipes', 'communication', 'binder', 'funds', 'dashboard',
+  'chores', 'recipes', 'communication', 'binder', 'funds', 'dashboard', 'birthdays',
 ])
 
 const props = defineProps({
-  illustration: { type: String, default: '' }, // calendar | shopping | wishlist | checklist | books | goals | generic | dashboard | chores | recipes | communication | binder | funds
+  illustration: { type: String, default: '' }, // calendar | shopping | wishlist | birthdays | checklist | books | goals | generic | dashboard | chores | recipes | communication | binder | funds
 })
 
 const illustrationComponent = computed(() => ILLUSTRATIONS[props.illustration] || null)

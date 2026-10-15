@@ -117,6 +117,18 @@ describe('birthdays: reminders', () => {
     expect(birthdayReminders(doc, kid.id)).toHaveLength(1)
   })
 
+  it('the birthday person does not get a reminder about their own birthday, but everyone else does', () => {
+    const { doc, admin, kid } = newFamilyDoc()
+    saveBirthday(doc, { name: 'Kit Kid', birth_month: 10, birth_day: 15, birth_year: 2018, member_id: kid.id }, TODAY)
+    expect(birthdayReminders(doc, kid.id)).toEqual([])
+    expect(birthdayReminders(doc, admin.id)).toHaveLength(1)
+  })
+
+  it('a birthday can be linked only to a real family member', () => {
+    const { doc } = newFamilyDoc()
+    expect(() => saveBirthday(doc, { name: 'Ghost', birth_month: 10, birth_day: 15, member_id: 'nobody' }, TODAY)).toThrow('member_id must be a real member of this family')
+  })
+
   it('a birthday without a year still gets a reminder, without an age', () => {
     const { doc, kid } = newFamilyDoc()
     saveBirthday(doc, { name: 'Ben', birth_month: 10, birth_day: 15 }, TODAY)

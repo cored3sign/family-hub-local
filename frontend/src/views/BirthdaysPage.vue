@@ -6,11 +6,13 @@ import { ref, computed } from 'vue'
 import { Cake, Plus, PartyPopper } from 'lucide-vue-next'
 import { useFamily, useLive } from '../data/vue'
 import { listBirthdays, saveBirthday, deleteBirthday, todayIso } from '../data/modules/birthdays'
+import { listMembers } from '../data/members'
 
 const { doc } = useFamily()
 
 // The birthday list: which day each one falls on, and the age that makes when the year born is known.
 const birthdays = useLive((d) => listBirthdays(d))
+const members = useLive(listMembers)
 const today = todayIso()
 const thisYear = Number(today.slice(0, 4))
 
@@ -24,6 +26,7 @@ const formMonth = ref('')
 const formDay = ref('')
 const formYear = ref('')
 const formAge = ref('')
+const formMember = ref('')
 const formError = ref('')
 
 // February is offered in full, since the year born may not be known.
@@ -39,6 +42,7 @@ function clearForm() {
   formDay.value = ''
   formYear.value = ''
   formAge.value = ''
+  formMember.value = ''
   formError.value = ''
 }
 
@@ -56,6 +60,7 @@ function openEdit(b) {
   formMonth.value = String(b.birth_month)
   formDay.value = String(b.birth_day)
   formYear.value = b.birth_year == null ? '' : String(b.birth_year)
+  formMember.value = b.member_id ?? ''
   formOpen.value = true
 }
 
@@ -75,6 +80,7 @@ function save() {
         birth_day: formDay.value,
         birth_year: formYear.value,
         age: formAge.value,
+        member_id: formMember.value,
       },
       today,
     )
@@ -150,13 +156,20 @@ function whenLabel(b) {
       </li>
     </ul>
 
-    <EmptyState v-else>
+    <EmptyState v-else illustration="birthdays">
       No birthdays yet. Add one above, and the family is reminded on the day.
     </EmptyState>
 
     <AppModal :open="formOpen" :title="editingId ? 'Edit birthday' : 'Add a birthday'" @close="closeForm">
       <form class="birthdays-form" @submit.prevent="save">
         <FormField v-model="formName" label="Name" placeholder="Ana, Grandma Rose…" required />
+        <label class="form-field">
+          <span class="form-field__label">In the family? <span class="birthdays-form__optional">(optional)</span></span>
+          <select v-model="formMember">
+            <option value="">Not a family member</option>
+            <option v-for="m in members" :key="m.id" :value="m.id">{{ m.name }}</option>
+          </select>
+        </label>
         <fieldset class="birthdays-form__date">
           <legend class="form-field__label">Birthday</legend>
           <div class="birthdays-form__row">

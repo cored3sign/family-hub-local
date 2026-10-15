@@ -1,5 +1,5 @@
 import { all, byText, get, insert, patch, remove, requireText } from '../collection'
-import { listMembers } from '../members'
+import { getMember, listMembers } from '../members'
 
 const T = 'birthdays'
 const NOTIFICATIONS = 'notifications'
@@ -102,13 +102,14 @@ export function validateBirthday(input, today = todayIso()) {
   }
   if (birthYear !== null && `${birthYear}-${pad(month)}-${pad(day)}` > today) throw new Error("The birthday can't be in the future")
 
-  return { name, birth_month: month, birth_day: day, birth_year: birthYear }
+  return { name, birth_month: month, birth_day: day, birth_year: birthYear, member_id: input.member_id || null }
 }
 
 // Adds or edits a birthday (`input.id` makes it an edit). Any reminder due now is written straight away, so a
 // birthday entered on the day still gets its reminder.
 export function saveBirthday(doc, input, today = todayIso()) {
   const fields = validateBirthday(input, today)
+  if (fields.member_id && !getMember(doc, fields.member_id)) throw new Error('member_id must be a real member of this family')
   let id = input.id
   if (id) {
     if (!get(doc, T, id)) throw new Error('Birthday not found')
@@ -138,6 +139,7 @@ export function listBirthdays(doc, today = todayIso()) {
         birth_month: parts.month,
         birth_day: parts.day,
         birth_year: parts.year,
+        member_id: row.member_id ?? null,
         next_date: date,
         turns: ageOn(parts, date),
         days_until: daysBetween(today, date),
@@ -176,6 +178,7 @@ export function recordBirthdayReminders(doc, today = todayIso()) {
     for (const { row, date, daysAgo, celebrationYear, parts } of due) {
       const message = reminderText(row.name, ageOn(parts, date), daysAgo)
       for (const m of members) {
+        if (m.id === row.member_id) continue // the birthday person doesn't get a reminder about their own birthday
         const id = `birthday-${row.id}-${celebrationYear}-${m.id}`
         if (get(doc, NOTIFICATIONS, id)) continue
         insert(doc, NOTIFICATIONS, { recipient_member_id: m.id, type: REMINDER_TYPE, message, related_id: row.id, read_at: null }, id)
