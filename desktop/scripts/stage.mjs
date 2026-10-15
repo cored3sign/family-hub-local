@@ -7,7 +7,7 @@
 //
 // Run after `npm run build` at the repository root, which builds frontend/dist.
 
-import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
+import { cp, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { execFileSync } from 'node:child_process'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -54,10 +54,25 @@ execFileSync('npm', ['install', '--no-package-lock', '--no-audit', '--no-fund', 
 })
 
 // Trim what the deploy never uses: the image libraries Wrangler doesn't load, and the debug symbols
-// in workerd (about 135 MB to 89 MB, and it still runs).
+// in workerd (about 135 MB to 85 MB, and it still runs).
 const modules = join(out, 'relay', 'node_modules')
 await rm(join(modules, 'sharp'), { recursive: true, force: true })
 await rm(join(modules, '@img'), { recursive: true, force: true })
-execFileSync('strip', ['-x', join(modules, '@cloudflare', `workerd-darwin-${npmArch === 'x64' ? '64' : 'arm64'}`, 'bin', 'workerd')])
+const workerdPackage = join(modules, '@cloudflare', `workerd-darwin-${npmArch === 'x64' ? '64' : 'arm64'}`)
+execFileSync('strip', ['-x', join(workerdPackage, 'bin', 'workerd')])
+
+// workerd's install script copies a binary into workerd/bin for the Node that runs it, so a cross-build
+// (arm64 on an Intel Mac) gets the wrong one, and it also keeps a fetched copy. Wrangler loads the binary
+// from this architecture's package, so drop those copies and check the package's binary is the right one.
+const workerd = join(modules, 'workerd')
+await rm(join(workerd, 'bin'), { recursive: true, force: true })
+await rm(join(modules, '.bin', 'workerd'), { force: true }) // its npm link, which would now dangle
+for (const file of await readdir(join(workerd, 'lib'))) {
+  if (file.startsWith('downloaded-')) await rm(join(workerd, 'lib', file))
+}
+const binaryType = execFileSync('file', ['-b', join(workerdPackage, 'bin', 'workerd')], { encoding: 'utf8' })
+if (!binaryType.includes(npmArch === 'x64' ? 'x86_64' : 'arm64')) {
+  throw new Error(`workerd for ${arch} is the wrong architecture: ${binaryType}`)
+}
 
 console.log(`Staged the app's hub and relay for ${arch} in ${out}`)
