@@ -125,9 +125,11 @@ export function wranglerInvocation(args, env = process.env) {
   return { command: 'npx', args: ['--no-install', 'wrangler', ...args], extraEnv: {} }
 }
 
+// Every Wrangler command runs here. Wrangler's anonymous usage reports go to Cloudflare, and the app
+// promises no outside services beyond the family's own relay, so they're always off.
 function runWrangler(run, args, { cwd, env, timeoutMs }) {
   const inv = wranglerInvocation(args)
-  return run(inv.command, inv.args, { cwd, env: { ...env, ...inv.extraEnv }, timeoutMs })
+  return run(inv.command, inv.args, { cwd, env: { ...env, ...inv.extraEnv, WRANGLER_SEND_METRICS: 'false' }, timeoutMs })
 }
 
 // Where the relay's source is: the bundled copy in the desktop app, or the repo's relay folder.

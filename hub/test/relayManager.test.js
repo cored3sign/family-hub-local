@@ -106,6 +106,18 @@ describe('the saved connection', () => {
 })
 
 describe('deploying a relay', () => {
+  it('every Wrangler command runs with its usage reports off, even when the environment turns them on', async () => {
+    const { run, calls } = fakeRunner([
+      { code: 0, output: '' },
+      { code: 0, output: 'https://smith-family-relay.smith.workers.dev' },
+    ])
+    await deployRelay({ name: 'smith-family-relay', accountId: 'acc123', relayDir: '/relay', run, env: { WRANGLER_SEND_METRICS: 'true' } })
+    expect(calls[1].env.WRANGLER_SEND_METRICS).toBe('false')
+    const login = fakeRunner([whoami()])
+    await wranglerAccount({ relayDir: '/relay', run: login.run })
+    expect(login.calls[0].env.WRANGLER_SEND_METRICS).toBe('false')
+  })
+
   it('builds the app, deploys under the chosen name, and returns the address', async () => {
     const { run, calls } = fakeRunner([
       { code: 0, output: 'built' },
