@@ -7,6 +7,7 @@ import { findAddon, navigableAddons } from '../addons/registry'
 import { assetUrl } from '../data/assets'
 import { useFamily } from '../data/vue'
 import { recordBirthdayReminders } from '../data/modules/birthdays'
+import { appLoadedAt, openAfterPush } from '../lib/pushOpen'
 import DesktopNav from '../components/DesktopNav.vue'
 import YggltreeLogo from '../components/YggltreeLogo.vue'
 import OnboardingCallout from '../components/OnboardingCallout.vue'
@@ -187,6 +188,25 @@ onUnmounted(() => {
   clearInterval(birthdayTimer)
   document.removeEventListener('visibilitychange', onVisibilityChange)
 })
+
+// A phone notification opens the place that changed (lib/pushOpen.js). A cold start from one arrives as
+// /dashboard?from=push and waits for the first change to sync in; a notification tapped while the app is open
+// arrives as a message from the service worker.
+function openFromPush(options) {
+  return openAfterPush({ router, doc: familyDoc, memberId: core.memberId, ...options }).catch(() => {})
+}
+function onServiceWorkerMessage(event) {
+  if (event.data?.type === 'open-latest-change') openFromPush({ since: Date.now() - 2 * 60 * 1000 })
+}
+onMounted(() => {
+  const { from, ...query } = router.currentRoute.value.query
+  if (from === 'push') {
+    router.replace({ path: router.currentRoute.value.path, query })
+    openFromPush({ since: appLoadedAt - 60 * 1000, waitMs: 8000 })
+  }
+  navigator.serviceWorker?.addEventListener('message', onServiceWorkerMessage)
+})
+onUnmounted(() => navigator.serviceWorker?.removeEventListener('message', onServiceWorkerMessage))
 
 // The tour's real step sequence. Anchored entirely to elements that
 // already exist above -- no placeholder UI added for the tour's sake.

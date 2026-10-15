@@ -1,5 +1,7 @@
 import * as Y from 'yjs'
 import { IndexeddbPersistence } from 'y-indexeddb'
+import { COLLECTIONS } from './schema'
+import { watchRemoteChanges } from './recentChanges'
 
 export const DB_NAME = 'family-hub'
 export const ASSETS_DB_NAME = 'family-hub-assets'
@@ -31,6 +33,8 @@ let current = null
 
 export async function initFamily(opts) {
   current = await openFamily(opts)
+  // Before any sync delivers changes, so the first batch from another device is seen.
+  watchRemoteChanges(current.doc, COLLECTIONS)
   return current
 }
 

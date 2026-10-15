@@ -18,6 +18,7 @@
 // (onTerminalClose; bootSync re-fetches the token and calls reconnect()).
 import { WebsocketProvider } from 'y-websocket'
 import { nowStamp } from '../time'
+import { markRemoteOrigin } from '../recentChanges'
 import { CLOSE, roomName, syncBaseUrl } from './protocol.js'
 import { setProblem, clearProblem, loadProblem, setLastSyncedAt, getLastSyncedAt } from './config.js'
 
@@ -56,6 +57,7 @@ export function connectFamily(
       connect: false, // listeners first
     })
   const main = make('main', doc)
+  markRemoteOrigin(main)
   const assetsProvider = make('assets', assets)
   const providers = [main, assetsProvider]
 

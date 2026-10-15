@@ -185,7 +185,8 @@ when it was last seen.
 **Notifications (optional):** In the Home Screen app, open **Settings →
 Notifications on this phone**, then tap **Turn on notifications**. On iPhone,
 this only works from the Home Screen app. The notification says only that
-something changed, and tapping it opens the app.
+something changed. Tapping it opens the app at what changed, once the phone has
+caught up with the family.
 
 **Changes made with no connection** stay on the phone and sync the next time
 it can reach the relay.

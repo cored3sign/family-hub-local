@@ -86,18 +86,21 @@ self.addEventListener('push', (event) => {
   )
 })
 
-// Clicking the notification focuses an already-open tab if one exists,
-// otherwise opens a new one at the app root -- standard PWA notification
-// click pattern, no app-specific deep-linking (the push payload today is
-// just a title/body, no target URL).
+// A tap opens the app at the newest change from another family device. The push carries no content (the relay and
+// the push service can't read it), so the app works out what changed from its own sync (lib/pushOpen.js). An open
+// app is told to go there; otherwise a new window opens on the dashboard, which looks for the change itself.
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
   event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      for (const client of clientList) {
-        if ('focus' in client) return client.focus()
+    (async () => {
+      const clientList = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+      const open = clientList.find((client) => 'focus' in client)
+      if (open) {
+        await open.focus()
+        open.postMessage({ type: 'open-latest-change' })
+        return
       }
-      if (self.clients.openWindow) return self.clients.openWindow('/')
-    })
+      if (self.clients.openWindow) await self.clients.openWindow('/dashboard?from=push')
+    })(),
   )
 })

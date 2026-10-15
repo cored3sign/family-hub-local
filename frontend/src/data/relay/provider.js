@@ -15,10 +15,9 @@ import * as Y from 'yjs'
 import { sha256 } from '@noble/hashes/sha2.js'
 import { randomBytes, bytesToHex } from '@noble/hashes/utils.js'
 import { encryptBytes, decryptBytes, deriveAuth, toBase64, fromBase64, toBase64Url } from './crypto.js'
-import { PRESENCE_ORIGIN } from '../origins.js'
+import { PRESENCE_ORIGIN, RELAY_REMOTE_ORIGIN as REMOTE } from '../origins.js'
 
 export const CHUNK_BYTES = 192 * 1024
-const REMOTE = 'relay-remote'
 const ID_PATTERN = /^([0-9a-f]+)~(\d+)~(\d+)$/
 
 function piecesOf(key, update, base) {

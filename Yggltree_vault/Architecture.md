@@ -388,6 +388,19 @@ delivers the update to their device. `notify()` refuses to notify the
 actor about their own action. `NotificationBell.vue` reads
 `listNotifications()` live via `useLive()`.
 
+**Where a notification takes you.** `lib/notificationTargets.js` maps each type to
+its page and the record as `?item=<id>`; the page scrolls to and flashes that row
+(`lib/highlight.js`, rows marked with `data-item-id`). The bell uses it for every
+type. A 1:1 request opens its answer screen (`views/OneOnOnePage.vue`).
+
+**A tap on a phone's push.** The push text is encrypted and generic, so the
+phone works out the change itself. `data/recentChanges.js` records the records
+that arrive from another device (origins: the relay's and the hub's sync). A tap
+opens the newest such change that has a page (`lib/pushOpen.js`), else the newest
+unread notification from the last two hours. The service worker passes the tap
+on: an open app is told, and a closed one opens `/dashboard?from=push`, which waits
+up to eight seconds for the first change to sync in.
+
 ## Assets
 
 Photos are **resized on the device** before they ever touch a doc:
