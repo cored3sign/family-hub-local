@@ -72,10 +72,33 @@ describe('birthdays: reminders', () => {
     expect(birthdayReminders(doc, kid.id)).toHaveLength(1)
   })
 
-  it('no reminder on any other day', () => {
+  it('no reminder for a birthday that is not in the last six days, or not yet', () => {
     const { doc, kid } = newFamilyDoc()
-    saveBirthday(doc, { name: 'Ben', birth_date: '2018-10-14' }, TODAY)
+    saveBirthday(doc, { name: 'Ben', birth_date: '2018-10-01' }, TODAY)
+    saveBirthday(doc, { name: 'Cal', birth_date: '2018-10-16' }, TODAY)
     expect(birthdayReminders(doc, kid.id)).toEqual([])
+  })
+
+  it('a device that was off on the day writes the reminder when it next opens, within six days', () => {
+    const { doc, kid } = newFamilyDoc()
+    saveBirthday(doc, { name: 'Ana', birth_date: '2018-10-15' }, '2026-10-10')
+    expect(recordBirthdayReminders(doc, '2026-10-18')).toBe(2)
+    expect(recordBirthdayReminders(doc, '2026-10-18')).toBe(0)
+    expect(birthdayReminders(doc, kid.id)).toEqual([expect.objectContaining({ message: 'Ana turned 8 3 days ago.' })])
+  })
+
+  it('nothing is written more than six days after the birthday', () => {
+    const { doc, kid } = newFamilyDoc()
+    saveBirthday(doc, { name: 'Ana', birth_date: '2018-10-15' }, '2026-10-10')
+    expect(recordBirthdayReminders(doc, '2026-10-22')).toBe(0)
+    expect(birthdayReminders(doc, kid.id)).toEqual([])
+  })
+
+  it('a birthday just before New Year is still caught up in January', () => {
+    const { doc, kid } = newFamilyDoc()
+    saveBirthday(doc, { name: 'Ivy', birth_date: '2019-12-30' }, '2026-12-01')
+    expect(recordBirthdayReminders(doc, '2027-01-02')).toBe(2)
+    expect(birthdayReminders(doc, kid.id)).toEqual([expect.objectContaining({ message: 'Ivy turned 7 3 days ago.' })])
   })
 
   it('two devices that both record the day write one reminder per member', () => {

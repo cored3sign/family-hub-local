@@ -101,21 +101,33 @@ export function listBirthdays(doc, today = todayIso()) {
     .sort((a, b) => a.next_date.localeCompare(b.next_date) || byText(a.name, b.name))
 }
 
-// Writes one reminder to each family member for each birthday that falls on `today`. The reminder's id is fixed
-// by the birthday, the year and the member, so two devices that both write it end up with one record, not two.
-// Returns how many were written. Safe to call as often as you like.
+// A reminder is written on the day, and on any of the six days after it. That covers a family whose devices were
+// all off on the birthday: the first device opened in that week writes it.
+const CATCH_UP_DAYS = 6
+
+// Writes one reminder to each family member for each birthday from the last six days (today included). The
+// reminder's id is fixed by the birthday, the celebration year and the member, so two devices that both write it
+// end up with one record, not two, and a reminder is never written twice. Returns how many were written. Safe to
+// call as often as you like.
 export function recordBirthdayReminders(doc, today = todayIso()) {
   const year = Number(today.slice(0, 4))
-  const due = all(doc, T).filter((b) => celebrationDate(b.birth_date, year) === today)
+  const due = []
+  for (const b of all(doc, T)) {
+    for (const celebrationYear of [year - 1, year]) {
+      const date = celebrationDate(b.birth_date, celebrationYear)
+      const daysAgo = daysBetween(date, today)
+      if (daysAgo >= 0 && daysAgo <= CATCH_UP_DAYS) due.push({ b, date, daysAgo, celebrationYear })
+    }
+  }
   if (due.length === 0) return 0
   const members = listMembers(doc)
   let written = 0
   doc.transact(() => {
-    for (const b of due) {
-      const turns = ageOn(b.birth_date, today)
-      const message = `Today is ${b.name}'s birthday${turns >= 1 ? `, turning ${turns}` : ''}.`
+    for (const { b, date, daysAgo, celebrationYear } of due) {
+      const turns = ageOn(b.birth_date, date)
+      const message = reminderText(b.name, turns, daysAgo)
       for (const m of members) {
-        const id = `birthday-${b.id}-${year}-${m.id}`
+        const id = `birthday-${b.id}-${celebrationYear}-${m.id}`
         if (get(doc, NOTIFICATIONS, id)) continue
         insert(doc, NOTIFICATIONS, { recipient_member_id: m.id, type: REMINDER_TYPE, message, related_id: b.id, read_at: null }, id)
         written++
@@ -123,4 +135,10 @@ export function recordBirthdayReminders(doc, today = todayIso()) {
     }
   })
   return written
+}
+
+function reminderText(name, turns, daysAgo) {
+  if (daysAgo === 0) return turns >= 1 ? `Today is ${name}'s birthday, turning ${turns}.` : `Today is ${name}'s birthday.`
+  const when = daysAgo === 1 ? 'yesterday' : `${daysAgo} days ago`
+  return turns >= 1 ? `${name} turned ${turns} ${when}.` : `${name}'s birthday was ${when}.`
 }
