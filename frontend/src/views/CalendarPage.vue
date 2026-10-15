@@ -38,6 +38,8 @@ const formTitle = ref('')
 const formDate = ref('')
 const formTime = ref('')
 const formCategory = ref('event')
+const formLocation = ref('')
+const formNotes = ref('')
 const formAssignee = ref('') // '' = Everyone (the default for unassigned)
 
 function memberName(id) {
@@ -166,6 +168,8 @@ function resetForm(date = '') {
   formDate.value = date
   formTime.value = ''
   formCategory.value = 'event'
+  formLocation.value = ''
+  formNotes.value = ''
   formAssignee.value = ''
 }
 
@@ -198,6 +202,8 @@ function editEvent(e) {
   formDate.value = e.event_date
   formTime.value = e.event_time || ''
   formCategory.value = e.category
+  formLocation.value = e.location || ''
+  formNotes.value = e.description || ''
   formAssignee.value = e.assigned_member_id || ''
   modalMode.value = 'form'
 }
@@ -219,6 +225,8 @@ function save() {
     event_date: formDate.value,
     event_time: formTime.value || null,
     category: formCategory.value,
+    location: formLocation.value,
+    description: formNotes.value,
     assigned_member_id: formAssignee.value || null,
   })
   modalOpen.value = false
@@ -314,6 +322,7 @@ function remove(id) {
           <ListRow v-for="e in selectedDayEvents" :key="e.id" :data-item-id="e.id">
             <button type="button" class="day-detail__row-btn" @click="editEvent(e)">
               <span class="day-detail__row-title">{{ e.title }}</span>
+              <span v-if="e.location" class="day-detail__row-meta">{{ e.location }}</span>
               <span class="day-detail__row-tags">
                 <AppTag v-if="e.event_time">{{ formatEventTime(e.event_time) }}</AppTag>
                 <AppTag class="app-tag--muted">{{ memberName(e.assigned_member_id) }}</AppTag>
@@ -331,6 +340,11 @@ function remove(id) {
         <FormField v-model="formDate" type="date" label="Date" required />
         <FormField v-model="formTime" type="time" label="Time (optional)" />
         <FormField v-model="formCategory" label="Category" placeholder="event, appointment…" />
+        <FormField v-model="formLocation" label="Location (optional)" placeholder="Where is it?" />
+        <label class="form-field">
+          <span class="form-field__label">Notes (optional)</span>
+          <textarea v-model="formNotes" rows="3" placeholder="Anything to bring or remember…"></textarea>
+        </label>
         <label class="form-field">
           <span class="form-field__label">Assignee</span>
           <select v-model="formAssignee">
@@ -648,5 +662,11 @@ function remove(id) {
     max-height: 140px;
     padding: 6px;
   }
+}
+
+.day-detail__row-meta {
+  display: block;
+  font: var(--type-label);
+  color: var(--text-muted);
 }
 </style>

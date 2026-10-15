@@ -21,12 +21,15 @@ export function saveEvent(doc, input) {
       event_time: 'event_time' in input ? blankToNull(input.event_time) : prev.event_time,
       category: 'category' in input ? input.category : prev.category,
       assigned_member_id: 'assigned_member_id' in input ? input.assigned_member_id || null : prev.assigned_member_id,
+      location: 'location' in input ? blankToNull(input.location) : prev.location ?? null,
+      description: 'description' in input ? blankToNull(input.description) : prev.description ?? null,
     })
     return input.id
   }
   return insert(doc, T, {
     title,
-    description: null,
+    description: blankToNull(input.description),
+    location: blankToNull(input.location),
     event_date: eventDate,
     end_date: null,
     event_time: blankToNull(input.event_time),

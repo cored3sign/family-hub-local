@@ -14,4 +14,14 @@ describe('events', () => {
     deleteEvent(doc, late)
     expect(listEvents(doc)).toHaveLength(1)
   })
+
+  it('an event can have a location and notes; an edit keeps them unless it changes them', () => {
+    const { doc } = newFamilyDoc()
+    const id = saveEvent(doc, { title: 'Dentist', event_date: '2026-10-20', location: '  Main St Clinic ', description: 'Bring the insurance card' })
+    expect(listEvents(doc)[0]).toMatchObject({ location: 'Main St Clinic', description: 'Bring the insurance card' })
+    saveEvent(doc, { id, title: 'Dentist', event_date: '2026-10-21' })
+    expect(listEvents(doc)[0]).toMatchObject({ location: 'Main St Clinic', description: 'Bring the insurance card' })
+    saveEvent(doc, { id, title: 'Dentist', event_date: '2026-10-21', location: '', description: '   ' })
+    expect(listEvents(doc)[0]).toMatchObject({ location: null, description: null })
+  })
 })
