@@ -1,6 +1,6 @@
 # Builds the Yggltree Mac app (one DMG per chip) when a version tag is pushed, and publishes the
-# DMGs and their checksums on a GitHub release. Bump the version in the root package.json first:
-# the app reports that number.
+# DMGs and their checksums on a GitHub release, with the release notes from that version's section of
+# CHANGELOG.md. Bump the version in the root package.json first: the app reports that number, and the tag must match it.
 #
 # Only the publish job can write to the repository. The build jobs get a read-only token and don't keep
 # the checkout's credentials. They install with --ignore-scripts: the Mac build needs none of the
@@ -58,6 +58,11 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: The tag must be the app's version
+        run: test "v$(node -p 'require("./package.json").version')" = "${GITHUB_REF_NAME}"
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           path: release
@@ -65,6 +70,11 @@ jobs:
       - name: Checksums
         working-directory: release
         run: sha256sum Yggltree-*.dmg > SHA256SUMS.txt
+      - name: Release notes from CHANGELOG.md
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          awk -v v="$VERSION" '/^## /{ p = ($0 == "## " v || index($0, "## " v " ") == 1) } p' CHANGELOG.md > release/notes.md
+          test -s release/notes.md || { echo "CHANGELOG.md has no section for $VERSION"; exit 1; }
       - name: Publish the release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -72,4 +82,4 @@ jobs:
           gh release create "${GITHUB_REF_NAME}" release/Yggltree-arm64.dmg release/Yggltree-x64.dmg release/SHA256SUMS.txt \
             --repo "${GITHUB_REPOSITORY}" \
             --title "Yggltree ${GITHUB_REF_NAME#v}" \
-            --generate-notes
+            --notes-file release/notes.md
