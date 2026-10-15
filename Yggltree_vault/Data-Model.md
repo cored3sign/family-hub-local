@@ -87,8 +87,12 @@ Records keep the snake_case column names used since the first release (see
   (`scale`/`text`/`emoji`), `active`.
 - **`checkin_responses`** — `prompt_id`, `member_id`, `value`,
   `visibility`.
-- **`one_on_ones`** — scheduling fields plus `happened_at` (null until
-  logged).
+- **`one_on_ones`** — `member_a_id` (the member who asked), `member_b_id` (the
+  member asked), `status` (`requested`, then `scheduled` once accepted or
+  `declined`; rows from before statuses count as `scheduled`), `scheduled_date`,
+  `responded_at`, and `happened_at` (null until logged). An accepted 1:1 also
+  has a calendar event with the fixed id `one-on-one-<id>`, so two devices
+  answering write one entry.
 - **`books`** — bibliographic fields plus `added_by_member_id`.
 - **`reading_progress`** — `book_id`, `member_id`, `status`
   (`want_to_read`/`reading`/`finished`), `progress_pct`, `rating`,

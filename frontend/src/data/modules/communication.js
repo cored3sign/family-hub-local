@@ -1,6 +1,6 @@
 import { all, get, insert, patch, remove, removeWhere, table, requireText, blankToNull } from '../collection'
 import { nowStamp } from '../time'
-import { isAdmin, requireAdmin, memberName } from '../members'
+import { isAdmin, requireAdmin, memberName, getMember } from '../members'
 import { notify } from '../notifications'
 
 const A = 'announcements'
@@ -91,37 +91,92 @@ export function listCheckinResponses(doc, memberId) {
     .sort((a, b) => b.created_at.localeCompare(a.created_at))
 }
 
+// A 1:1 moves from requested (asked, waiting for an answer) to scheduled (accepted, and on the calendar), or to
+// declined. A row written before statuses existed counts as scheduled.
+function oneOnOneStatus(row) {
+  return row.status ?? 'scheduled'
+}
+
+function optionalDate(value) {
+  if (value === '' || value === null || value === undefined) return null
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) throw new Error('The date must look like 2026-10-20')
+  return value
+}
+
 export function listOneOnOnes(doc, view = 'all') {
   const rows = all(doc, O).map((o) => ({ ...o, member_a_name: memberName(doc, o.member_a_id), member_b_name: memberName(doc, o.member_b_id) }))
-  if (view === 'upcoming') return rows.filter((o) => o.scheduled_date && !o.happened_at).sort((a, b) => a.scheduled_date.localeCompare(b.scheduled_date))
+  if (view === 'upcoming') return rows.filter((o) => oneOnOneStatus(o) === 'scheduled' && o.scheduled_date && !o.happened_at).sort((a, b) => a.scheduled_date.localeCompare(b.scheduled_date))
   if (view === 'history') return rows.filter((o) => o.happened_at).sort((a, b) => b.happened_at.localeCompare(a.happened_at))
   const when = (o) => o.happened_at ?? o.scheduled_date ?? o.created_at
   return rows.sort((a, b) => when(b).localeCompare(when(a)))
 }
 
+// The 1:1s a member is part of, in the three groups the Speak page shows: asked of them and waiting for their
+// answer, asked by them and still waiting or declined, and accepted and on the calendar.
+export function oneOnOnesFor(doc, memberId) {
+  const rows = listOneOnOnes(doc)
+  return {
+    incoming: rows.filter((o) => o.member_b_id === memberId && oneOnOneStatus(o) === 'requested'),
+    outgoing: rows.filter((o) => o.member_a_id === memberId && oneOnOneStatus(o) !== 'scheduled'),
+    upcoming: rows
+      .filter((o) => (o.member_a_id === memberId || o.member_b_id === memberId) && oneOnOneStatus(o) === 'scheduled' && o.scheduled_date && !o.happened_at)
+      .sort((a, b) => a.scheduled_date.localeCompare(b.scheduled_date)),
+  }
+}
+
+// Asks another member for a 1:1. The person asked answers it (respondOneOnOne); nothing goes on the calendar until they accept.
 export function saveOneOnOne(doc, actor, input) {
-  if (!input.member_a_id || !input.member_b_id) throw new Error('member_a_id and member_b_id are required')
-  if (input.member_a_id === input.member_b_id) throw new Error('A 1:1 needs two different members')
-  const fields = {
-    member_a_id: input.member_a_id,
-    member_b_id: input.member_b_id,
-    scheduled_date: input.scheduled_date || null,
-    notes: input.notes ?? null,
-  }
-  if (input.id) {
-    if (!patch(doc, O, input.id, fields)) throw new Error('1:1 not found')
-    return input.id
-  }
+  if (!input.member_b_id) throw new Error('member_b_id is required')
+  if (actor.id === input.member_b_id) throw new Error('A 1:1 needs two different members')
+  if (!getMember(doc, input.member_b_id)) throw new Error('member_b_id must be a real member of this family')
+  const scheduled = optionalDate(input.scheduled_date)
   let id
   doc.transact(() => {
-    id = insert(doc, O, { ...fields, happened_at: null })
-    if (input.notify !== false) {
-      const recipientId = actor.id === fields.member_a_id ? fields.member_b_id : fields.member_a_id
-      const when = fields.scheduled_date ? ` on ${fields.scheduled_date}` : ''
-      notify(doc, actor, { recipientId, type: 'one_on_one_requested', message: `${actor.name} requested 1:1 time with you${when}`, relatedId: id })
-    }
+    id = insert(doc, O, {
+      member_a_id: actor.id,
+      member_b_id: input.member_b_id,
+      scheduled_date: scheduled,
+      notes: input.notes ?? null,
+      status: 'requested',
+      responded_at: null,
+      happened_at: null,
+    })
+    const when = scheduled ? ` on ${scheduled}` : ''
+    notify(doc, actor, { recipientId: input.member_b_id, type: 'one_on_one_requested', message: `${actor.name} asked for 1:1 time with you${when}`, relatedId: id })
   })
   return id
+}
+
+// The person asked answers. Accepting puts the 1:1 on the calendar on the agreed date. Either answer tells the
+// person who asked, and a 1:1 can only be answered once.
+export function respondOneOnOne(doc, actor, id, { accept, scheduled_date = null }) {
+  const row = get(doc, O, id)
+  if (!row) throw new Error('1:1 not found')
+  if (row.member_b_id !== actor.id) throw new Error('Only the person asked can answer this 1:1')
+  if (oneOnOneStatus(row) !== 'requested') throw new Error('This 1:1 has already been answered')
+  const date = optionalDate(scheduled_date) ?? row.scheduled_date ?? null
+  if (accept && !date) throw new Error('Pick a date to accept this 1:1')
+  const when = date ? ` on ${date}` : ''
+  doc.transact(() => {
+    patch(doc, O, id, { status: accept ? 'scheduled' : 'declined', scheduled_date: date, responded_at: nowStamp() })
+    if (accept) putOnCalendar(doc, id, `1:1: ${memberName(doc, row.member_a_id)} and ${memberName(doc, row.member_b_id)}`, date)
+    notify(doc, actor, {
+      recipientId: row.member_a_id,
+      type: accept ? 'one_on_one_accepted' : 'one_on_one_declined',
+      message: accept ? `${actor.name} accepted your 1:1${when}` : `${actor.name} can't make the 1:1${when}`,
+      relatedId: id,
+    })
+  })
+}
+
+// The calendar entry for an accepted 1:1. Its id comes from the 1:1, so two devices answering write one entry.
+function putOnCalendar(doc, oneOnOneId, title, date) {
+  const eventId = `one-on-one-${oneOnOneId}`
+  if (get(doc, 'events', eventId)) {
+    patch(doc, 'events', eventId, { title, event_date: date })
+    return
+  }
+  insert(doc, 'events', { title, description: null, event_date: date, end_date: null, event_time: null, all_day: true, category: 'event', assigned_member_id: null }, eventId)
 }
 
 export function logOneOnOne(doc, id, notes) {

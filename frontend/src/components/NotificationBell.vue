@@ -8,35 +8,12 @@ import { Bell, X } from 'lucide-vue-next'
 import { useFamily, useLive } from '../data/vue'
 import { useCoreStore } from '../stores/core'
 import { listNotifications, markNotificationsRead, clearNotifications } from '../data/notifications'
-import { findAddon } from '../addons/registry'
+import { notificationTarget } from '../lib/notificationTargets'
 import { formatTimestamp } from '../lib/formatDate'
 
 const router = useRouter()
 const { doc } = useFamily()
 const core = useCoreStore()
-
-// Maps a notification's `type` to the module-registry key
-// (frontend/src/addons/registry.js) it should navigate to. Keyed on `type`,
-// not on parsing `message` text, since `type` is the structured field
-// every notification sets. one_on_one_requested is the one
-// type with no dedicated list route of its own -- it routes to the
-// Communication module page generally, same as every other module route
-// here (no deep-link to the specific 1:1/todo/chore/etc. row).
-const NOTIFICATION_TYPE_TO_MODULE_KEY = {
-  todo_assigned: 'todos',
-  todo_nudge: 'todos', // a nudge deep-links to the same module as assignment
-  chore_assigned: 'chores_funds',
-  goal_assigned: 'goals',
-  wishlist_assigned: 'wishlist',
-  one_on_one_requested: 'communication',
-  // Completion notifies the assigner, symmetric to the assignment
-  // types above -- same module-key targets as their *_assigned counterpart.
-  todo_completed: 'todos',
-  chore_completed: 'chores_funds',
-  goal_completed: 'goals',
-  // Birthday reminders (written on the day by data/modules/birthdays.js) open the Birthdays page.
-  birthday: 'birthdays',
-}
 
 const notifications = useLive((d) => listNotifications(d, core.memberId))
 const open = ref(false)
@@ -54,24 +31,13 @@ function markRead(n) {
   markNotificationsRead(doc, core.memberId, n.id)
 }
 
-// Tapping a notification (not its own clear button) marks it read,
-// closes the panel, and navigates to the module it's about. Mapped via
-// `type` (see NOTIFICATION_TYPE_TO_MODULE_KEY above), not the `message`
-// text -- `type` is the structured field every notification already
-// sets, so this covers every notification kind without any fragile
-// string-matching.
+// Tapping a notification (not its own clear button) marks it read, closes the panel, and opens the page where the
+// change or new item is, pointed at that item (see lib/notificationTargets.js).
 function openNotification(n) {
   markRead(n)
   open.value = false
-  const moduleKey = NOTIFICATION_TYPE_TO_MODULE_KEY[n.type]
-  const addon = moduleKey && findAddon(moduleKey)
-  if (addon) {
-    router.push(addon.route)
-  }
-  // No mapping (or module was removed from the registry since the
-  // notification was created): mark-read + close still happened above, so
-  // the notification stays visible and correctly marked read -- we just
-  // don't have anywhere sensible left to navigate to.
+  const target = notificationTarget(n)
+  if (target) router.push(target)
 }
 
 function markAllRead() {

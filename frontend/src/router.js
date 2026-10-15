@@ -12,6 +12,7 @@ import PinSetupPage from './views/PinSetupPage.vue'
 import ModulesPage from './views/ModulesPage.vue'
 import SettingsPage from './views/SettingsPage.vue'
 import HelpPage from './views/HelpPage.vue'
+import OneOnOnePage from './views/OneOnOnePage.vue'
 
 // A registry entry without a route or component would crash Vue Router's addRoute() at startup (TypeError: Cannot
 // read properties of undefined), taking the whole app down rather than one page. navigableAddons leaves those out.
@@ -54,6 +55,8 @@ const router = createRouter({
         // and sync status), same non-module-route precedent as /modules and
         // /settings above rather than generated from the addons registry.
         { path: '/help', name: 'help', component: HelpPage },
+        // The answer screen for one 1:1 (a notification's target). Not a module, so it's routed here.
+        { path: '/one-on-one/:id', name: 'one-on-one', component: OneOnOnePage },
         ...addonRoutes,
       ],
     },

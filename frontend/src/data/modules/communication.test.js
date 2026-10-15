@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { newFamilyDoc } from '../testing'
-import { remove } from '../collection'
+import { newFamilyDoc, forkDoc, syncDocs } from '../testing'
+import { all, remove } from '../collection'
 import { listNotifications } from '../notifications'
 import {
   listAnnouncements, saveAnnouncement, deleteAnnouncement, markAnnouncementRead,
   listCheckinPrompts, saveCheckinPrompt, respondCheckin, listCheckinResponses,
-  listOneOnOnes, saveOneOnOne, logOneOnOne,
+  listOneOnOnes, oneOnOnesFor, saveOneOnOne, respondOneOnOne, logOneOnOne,
 } from './communication'
 
 describe('announcements', () => {
@@ -51,12 +51,74 @@ describe('check-ins', () => {
 })
 
 describe('1:1s', () => {
-  it('requests notify the other member; log marks it happened', () => {
+  it('asking needs another real member, tells them, and puts nothing on the calendar until they accept', () => {
     const { doc, admin, kid } = newFamilyDoc()
-    expect(() => saveOneOnOne(doc, admin, { member_a_id: admin.id, member_b_id: admin.id })).toThrow('A 1:1 needs two different members')
-    const id = saveOneOnOne(doc, admin, { member_a_id: admin.id, member_b_id: kid.id, scheduled_date: '2026-10-03' })
-    expect(listNotifications(doc, kid.id)[0].message).toBe('Pat Parent requested 1:1 time with you on 2026-10-03')
-    expect(listOneOnOnes(doc, 'upcoming')[0]).toMatchObject({ member_a_name: 'Pat Parent', member_b_name: 'Kit Kid' })
+    expect(() => saveOneOnOne(doc, admin, { member_b_id: admin.id })).toThrow('A 1:1 needs two different members')
+    expect(() => saveOneOnOne(doc, admin, { member_b_id: 'ghost' })).toThrow('must be a real member')
+    const id = saveOneOnOne(doc, admin, { member_b_id: kid.id, scheduled_date: '2026-10-03' })
+    expect(listNotifications(doc, kid.id)[0]).toMatchObject({ type: 'one_on_one_requested', related_id: id, message: 'Pat Parent asked for 1:1 time with you on 2026-10-03' })
+    expect(oneOnOnesFor(doc, kid.id)).toMatchObject({ incoming: [{ id, member_a_name: 'Pat Parent' }], upcoming: [] })
+    expect(oneOnOnesFor(doc, admin.id)).toMatchObject({ outgoing: [{ id, status: 'requested' }] })
+    expect(all(doc, 'events')).toEqual([])
+  })
+
+  it('accepting schedules it on the calendar and tells the person who asked', () => {
+    const { doc, admin, kid } = newFamilyDoc()
+    const id = saveOneOnOne(doc, admin, { member_b_id: kid.id, scheduled_date: '2026-10-03' })
+    respondOneOnOne(doc, kid, id, { accept: true })
+    expect(oneOnOnesFor(doc, kid.id)).toMatchObject({ incoming: [], upcoming: [{ id, status: 'scheduled', scheduled_date: '2026-10-03' }] })
+    expect(listNotifications(doc, admin.id)[0]).toMatchObject({ type: 'one_on_one_accepted', message: 'Kit Kid accepted your 1:1 on 2026-10-03', related_id: id })
+    expect(all(doc, 'events')).toEqual([expect.objectContaining({ title: '1:1: Pat Parent and Kit Kid', event_date: '2026-10-03', all_day: true })])
+  })
+
+  it('accepting with a different date schedules that date instead', () => {
+    const { doc, admin, kid } = newFamilyDoc()
+    const id = saveOneOnOne(doc, admin, { member_b_id: kid.id, scheduled_date: '2026-10-03' })
+    respondOneOnOne(doc, kid, id, { accept: true, scheduled_date: '2026-10-10' })
+    expect(oneOnOnesFor(doc, admin.id).upcoming).toMatchObject([{ id, scheduled_date: '2026-10-10' }])
+    expect(all(doc, 'events')[0].event_date).toBe('2026-10-10')
+  })
+
+  it('accepting needs a date, either proposed or picked', () => {
+    const { doc, admin, kid } = newFamilyDoc()
+    const id = saveOneOnOne(doc, admin, { member_b_id: kid.id })
+    expect(() => respondOneOnOne(doc, kid, id, { accept: true })).toThrow('Pick a date to accept this 1:1')
+    expect(() => respondOneOnOne(doc, kid, id, { accept: true, scheduled_date: '20 Oct' })).toThrow('The date must look like 2026-10-20')
+    respondOneOnOne(doc, kid, id, { accept: true, scheduled_date: '2026-10-20' })
+    expect(oneOnOnesFor(doc, kid.id).upcoming).toMatchObject([{ id, scheduled_date: '2026-10-20' }])
+  })
+
+  it('declining tells the person who asked and schedules nothing', () => {
+    const { doc, admin, kid } = newFamilyDoc()
+    const id = saveOneOnOne(doc, admin, { member_b_id: kid.id, scheduled_date: '2026-10-03' })
+    respondOneOnOne(doc, kid, id, { accept: false })
+    expect(listNotifications(doc, admin.id)[0]).toMatchObject({ type: 'one_on_one_declined', message: "Kit Kid can't make the 1:1 on 2026-10-03" })
+    expect(oneOnOnesFor(doc, admin.id)).toMatchObject({ outgoing: [{ id, status: 'declined' }], upcoming: [] })
+    expect(all(doc, 'events')).toEqual([])
+  })
+
+  it('only the person asked can answer, and only once', () => {
+    const { doc, admin, kid } = newFamilyDoc()
+    const id = saveOneOnOne(doc, admin, { member_b_id: kid.id, scheduled_date: '2026-10-03' })
+    expect(() => respondOneOnOne(doc, admin, id, { accept: true })).toThrow('Only the person asked can answer this 1:1')
+    respondOneOnOne(doc, kid, id, { accept: false })
+    expect(() => respondOneOnOne(doc, kid, id, { accept: true })).toThrow('This 1:1 has already been answered')
+  })
+
+  it('two devices that both accept write one calendar entry', () => {
+    const { doc, admin, kid } = newFamilyDoc()
+    const id = saveOneOnOne(doc, admin, { member_b_id: kid.id, scheduled_date: '2026-10-03' })
+    const other = forkDoc(doc)
+    respondOneOnOne(doc, kid, id, { accept: true })
+    respondOneOnOne(other, kid, id, { accept: true })
+    syncDocs(doc, other)
+    expect(all(doc, 'events')).toHaveLength(1)
+  })
+
+  it('logging a 1:1 moves it from upcoming to history', () => {
+    const { doc, admin, kid } = newFamilyDoc()
+    const id = saveOneOnOne(doc, admin, { member_b_id: kid.id, scheduled_date: '2026-10-03' })
+    respondOneOnOne(doc, kid, id, { accept: true })
     logOneOnOne(doc, id, 'Went for ice cream')
     expect(listOneOnOnes(doc, 'upcoming')).toEqual([])
     expect(listOneOnOnes(doc, 'history')[0]).toMatchObject({ notes: 'Went for ice cream' })

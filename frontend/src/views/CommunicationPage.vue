@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import {
   Megaphone, MessageCircle, Users, Pin, Pencil, Trash2, Plus,
 } from 'lucide-vue-next'
@@ -11,14 +12,17 @@ import { listMembers } from '../data/members'
 import {
   listAnnouncements, saveAnnouncement, deleteAnnouncement, markAnnouncementRead,
   listCheckinPrompts, saveCheckinPrompt, respondCheckin, listCheckinResponses,
-  saveOneOnOne,
+  saveOneOnOne, oneOnOnesFor,
 } from '../data/modules/communication'
 
 const core = useCoreStore()
 const { doc, actor } = useFamily()
+const router = useRouter()
 
 const tab = ref('announcements') // announcements | checkins | one-on-ones
 const members = useLive(listMembers)
+const oneOnOnes = useLive((d) => oneOnOnesFor(d, core.myMemberId))
+const anyOneOnOnes = computed(() => oneOnOnes.value.incoming.length + oneOnOnes.value.outgoing.length + oneOnOnes.value.upcoming.length > 0)
 
 // --- Announcements state ---
 // No "show expired" toggle in this UI -- expired announcements simply drop
@@ -53,11 +57,9 @@ const showPromptForm = ref(false)
 // charted).
 const checkinView = ref('feed') // 'feed' | 'trends'
 
-// --- 1:1 request state ---
-// 1:1 Time is a single button that opens a drawer to request a 1:1,
-// delivered to the other member via their notifications (saveOneOnOne's
-// notify() call). There are no Upcoming/History feeds and no "log a past
-// 1:1" flow.
+// --- 1:1 state ---
+// Asking for a 1:1 opens a drawer. The person asked answers it on their own answer screen, which is where
+// a notification takes them.
 const showOneOnOneModal = ref(false)
 const newOneOnOneWith = ref('')
 const newOneOnOneDate = ref('')
@@ -232,6 +234,15 @@ function addPrompt() {
 
 const otherMembers = computed(() => members.value.filter((m) => m.id !== core.myMemberId))
 
+function openOneOnOne(id) {
+  router.push(`/one-on-one/${encodeURIComponent(id)}`)
+}
+
+function formatDay(iso) {
+  const [y, m, d] = iso.split('-').map(Number)
+  return new Date(y, m - 1, d).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })
+}
+
 function openOneOnOneModal() {
   showOneOnOneModal.value = true
 }
@@ -243,7 +254,6 @@ function closeOneOnOneModal() {
 function requestOneOnOne() {
   if (!newOneOnOneWith.value) return
   saveOneOnOne(doc, actor(), {
-    member_a_id: core.myMemberId,
     member_b_id: newOneOnOneWith.value,
     scheduled_date: newOneOnOneDate.value || null,
     notes: newOneOnOneNotes.value || null,
@@ -538,16 +548,69 @@ function requestOneOnOne() {
         </AppModal>
       </section>
 
-      <!-- 1c. 1:1 request: a single button that opens a drawer to request a 1:1 with another member,
-           delivered via their notifications -- no Upcoming/History feeds
-           and no "log a past 1:1" flow. -->
+      <!-- 1c. 1:1 time: ask another member for a 1:1, answer the ones asked of you, and see what's on the calendar.
+           Each row opens its answer screen (OneOnOnePage). -->
       <section v-else class="comm-section">
         <AppButton variant="primary" @click="openOneOnOneModal">
-          <Plus :size="16" style="vertical-align: -3px; margin-right: 4px" />Request 1:1
+          <Plus :size="16" style="vertical-align: -3px; margin-right: 4px" />Ask for 1:1
         </AppButton>
-        <p class="comm-hint">Requesting a 1:1 sends the other member a notification — no calendar needed.</p>
+        <p class="comm-hint">Asking sends the other member a notification. Once they accept, the 1:1 goes on the calendar.</p>
 
-        <AppModal :open="showOneOnOneModal" title="Request 1:1" @close="closeOneOnOneModal">
+        <div v-if="oneOnOnes.incoming.length" class="one-on-one-group">
+          <h3>Waiting for your answer</h3>
+          <ul class="one-on-one-list">
+            <li
+              v-for="o in oneOnOnes.incoming"
+              :key="o.id"
+              class="one-on-one-row one-on-one-row--ask"
+              :data-item-id="o.id"
+              @click="openOneOnOne(o.id)"
+            >
+              <span class="one-on-one-row__title">{{ firstName(o.member_a_name) }} asked for 1:1 time</span>
+              <span class="one-on-one-row__meta">{{ o.scheduled_date ? formatDay(o.scheduled_date) : 'No date proposed' }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <div v-if="oneOnOnes.upcoming.length" class="one-on-one-group">
+          <h3>Upcoming</h3>
+          <ul class="one-on-one-list">
+            <li
+              v-for="o in oneOnOnes.upcoming"
+              :key="o.id"
+              class="one-on-one-row"
+              :data-item-id="o.id"
+              @click="openOneOnOne(o.id)"
+            >
+              <span class="one-on-one-row__title">{{ firstName(o.member_a_name) }} and {{ firstName(o.member_b_name) }}</span>
+              <span class="one-on-one-row__meta">{{ formatDay(o.scheduled_date) }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <div v-if="oneOnOnes.outgoing.length" class="one-on-one-group">
+          <h3>Asked by you</h3>
+          <ul class="one-on-one-list">
+            <li
+              v-for="o in oneOnOnes.outgoing"
+              :key="o.id"
+              class="one-on-one-row"
+              :class="{ 'one-on-one-row--muted': o.status === 'declined' }"
+              :data-item-id="o.id"
+              @click="openOneOnOne(o.id)"
+            >
+              <span class="one-on-one-row__title">1:1 with {{ firstName(o.member_b_name) }}</span>
+              <span class="one-on-one-row__meta">
+                {{ o.status === 'declined' ? "Can't make it" : 'Waiting for an answer' }}
+                <template v-if="o.scheduled_date"> · {{ formatDay(o.scheduled_date) }}</template>
+              </span>
+            </li>
+          </ul>
+        </div>
+
+        <EmptyState v-if="!anyOneOnOnes">No 1:1s yet. Ask a family member to find a time.</EmptyState>
+
+        <AppModal :open="showOneOnOneModal" title="Ask for 1:1" @close="closeOneOnOneModal">
           <div class="one-on-one-form">
             <label class="form-field">
               <span class="form-field__label">With</span>
@@ -556,11 +619,11 @@ function requestOneOnOne() {
                 <option v-for="m in otherMembers" :key="m.id" :value="m.id">{{ firstName(m.name) }}</option>
               </select>
             </label>
-            <FormField v-model="newOneOnOneDate" type="date" label="Scheduled date (optional)" />
+            <FormField v-model="newOneOnOneDate" type="date" label="Proposed date (optional)" />
             <FormField v-model="newOneOnOneNotes" label="Notes (optional)" placeholder="What's this about?" />
 
             <div class="one-on-one-form__actions">
-              <AppButton variant="primary" :disabled="!newOneOnOneWith" @click="requestOneOnOne">Request 1:1</AppButton>
+              <AppButton variant="primary" :disabled="!newOneOnOneWith" @click="requestOneOnOne">Ask for 1:1</AppButton>
               <AppButton variant="ghost" @click="closeOneOnOneModal">Cancel</AppButton>
             </div>
           </div>
@@ -1028,5 +1091,51 @@ function requestOneOnOne() {
 .one-on-one-form__actions {
   display: flex;
   gap: 8px;
+}
+
+.one-on-one-group {
+  margin-top: 18px;
+}
+
+.one-on-one-group h3 {
+  margin: 0 0 8px;
+}
+
+.one-on-one-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.one-on-one-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--surface);
+  border-radius: 14px;
+  box-shadow: var(--elevation-1);
+  padding: 12px 14px;
+  cursor: pointer;
+}
+
+.one-on-one-row--ask {
+  box-shadow: inset 4px 0 0 var(--accent), var(--elevation-1);
+}
+
+.one-on-one-row--muted {
+  background: var(--surface-variant);
+  box-shadow: none;
+}
+
+.one-on-one-row__title {
+  font-weight: 600;
+}
+
+.one-on-one-row__meta {
+  font: var(--type-label);
+  color: var(--text-muted);
 }
 </style>
