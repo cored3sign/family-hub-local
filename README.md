@@ -46,8 +46,8 @@ family account to create and no subscription.
 ## What's in it
 
 Shared calendar, to-dos, shopping lists, chores and allowance funds, meal
-planning and recipes, goals, wishlists, family messages and check-ins, a
-book library, and a family binder. It all lives in one app that works
+planning and recipes, goals, wishlists, birthdays, family messages and
+check-ins, a book library, and a family binder. It all lives in one app that works
 offline and syncs when it can.
 
 ## Quick start

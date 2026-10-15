@@ -5,6 +5,8 @@ import { useCoreStore } from '../stores/core'
 import { useOnboardingStore } from '../stores/onboarding'
 import { findAddon } from '../addons/registry'
 import { assetUrl } from '../data/assets'
+import { useFamily } from '../data/vue'
+import { recordBirthdayReminders } from '../data/modules/birthdays'
 import DesktopNav from '../components/DesktopNav.vue'
 import YggltreeLogo from '../components/YggltreeLogo.vue'
 import OnboardingCallout from '../components/OnboardingCallout.vue'
@@ -13,7 +15,7 @@ import {
   LayoutGrid, LayoutDashboard, Settings as SettingsIcon, LogOut,
   Grid2x2Plus, Plus, X, RotateCw, ChevronDown, HelpCircle,
   CheckCircle2, Calendar, ShoppingCart, Coins, ChefHat,
-  Megaphone, Target, Gift, Library, BookOpen,
+  Megaphone, Target, Gift, Library, BookOpen, Cake,
 } from 'lucide-vue-next'
 
 // Explicit map, not a `import * as` wildcard -- keeps every module's icon
@@ -23,7 +25,7 @@ import {
 // Keys match addons/registry.js's `lucideIcon` field 1:1.
 const ICONS = {
   CheckCircle2, Calendar, ShoppingCart, Coins, ChefHat,
-  Megaphone, Target, Gift, Library, BookOpen,
+  Megaphone, Target, Gift, Library, BookOpen, Cake,
 }
 
 const core = useCoreStore()
@@ -177,6 +179,26 @@ function onDesktopChange(e) {
 }
 onMounted(() => desktopMql.addEventListener('change', onDesktopChange))
 onUnmounted(() => desktopMql.removeEventListener('change', onDesktopChange))
+
+// Birthday reminders are written by whichever family device is open on the day (data/modules/birthdays.js
+// makes the writes idempotent). Checked on load, every 30 minutes, and when the app comes back into view.
+const { doc: familyDoc } = useFamily()
+function checkBirthdays() {
+  recordBirthdayReminders(familyDoc)
+}
+function onVisibilityChange() {
+  if (document.visibilityState === 'visible') checkBirthdays()
+}
+let birthdayTimer = null
+onMounted(() => {
+  checkBirthdays()
+  birthdayTimer = setInterval(checkBirthdays, 30 * 60_000)
+  document.addEventListener('visibilitychange', onVisibilityChange)
+})
+onUnmounted(() => {
+  clearInterval(birthdayTimer)
+  document.removeEventListener('visibilitychange', onVisibilityChange)
+})
 
 // The tour's real step sequence. Anchored entirely to elements that
 // already exist above -- no placeholder UI added for the tour's sake.

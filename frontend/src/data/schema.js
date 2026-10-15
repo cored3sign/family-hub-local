@@ -11,7 +11,7 @@ export const COLLECTIONS = [
   'members', 'todos', 'events', 'shopping_items', 'chores', 'fund_transactions', 'budget_items',
   'notifications', 'announcements', 'announcement_reads', 'checkin_prompts', 'checkin_responses',
   'one_on_ones', 'goals', 'recipes', 'meal_library', 'wishlist_items', 'books', 'reading_progress',
-  'loans', 'binder_sections', 'binder_posts', 'binder_post_images',
+  'loans', 'binder_sections', 'binder_posts', 'binder_post_images', 'birthdays',
 ]
 
 // Deterministic ids: if two devices ever both seed, the writes land on the

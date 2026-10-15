@@ -122,6 +122,17 @@ export const addons = [
     component: () => import('../views/LibraryPage.vue'),
   },
   {
+    key: 'birthdays',
+    label: 'Birthdays',
+    icon: '🎂',
+    lucideIcon: 'Cake',
+    category: 'family_life',
+    short_description: 'Names and birthdays. Everyone in the family is reminded on the day.',
+    lifecycle: 'available',
+    route: '/birthdays',
+    component: () => import('../views/BirthdaysPage.vue'),
+  },
+  {
     key: 'family_binder',
     label: 'Binder',
     icon: '📔',

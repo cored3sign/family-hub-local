@@ -34,6 +34,8 @@ const NOTIFICATION_TYPE_TO_MODULE_KEY = {
   todo_completed: 'todos',
   chore_completed: 'chores_funds',
   goal_completed: 'goals',
+  // Birthday reminders (written on the day by data/modules/birthdays.js) open the Birthdays page.
+  birthday: 'birthdays',
 }
 
 const notifications = useLive((d) => listNotifications(d, core.memberId))

@@ -80,6 +80,10 @@
   --tile-binder: #5c9aa1;
   --tile-binder-deep: #3a636a;
 
+  /* Module icon-tile accent (Birthdays): a sunny yellow to pink party gradient, distinct from Goals' flat rose. */
+  --tile-birthday-start: #ffd166;
+  --tile-birthday-end: #ef8fb0;
+
   /* Elevation: soft, warm-tinted shadow plus a faint surface lift reads as
      "raised" without a hard block-shadow costume. */
   --elevation-1: 0 1px 2px rgba(40, 25, 15, 0.08), 0 1px 3px 1px rgba(40, 25, 15, 0.08);
