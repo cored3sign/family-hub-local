@@ -11,6 +11,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { HubProcess, HUB_PORT } from './hubProcess.js'
+import { externalLinkOf } from './links.js'
 import { buildMenu, needsAttention } from './trayMenu.js'
 import { DOWNLOAD_PAGE, checkForUpdate, dailyCheckDue } from './updates.js'
 
@@ -101,6 +102,12 @@ function isLocal(url) {
   }
 }
 
+// Hands a link to the family's browser or mail app, but only for the kinds of link externalLinkOf allows.
+function openExternal(url) {
+  const link = externalLinkOf(url)
+  if (link) shell.openExternal(link)
+}
+
 function openWindow(route = '/') {
   pendingRoute = route
   if (!win || win.isDestroyed()) {
@@ -123,13 +130,13 @@ function openWindow(route = '/') {
       win = null
     })
     win.webContents.setWindowOpenHandler(({ url }) => {
-      shell.openExternal(url)
+      openExternal(url)
       return { action: 'deny' }
     })
     win.webContents.on('will-navigate', (event, url) => {
       if (!isLocal(url)) {
         event.preventDefault()
-        shell.openExternal(url)
+        openExternal(url)
       }
     })
   }
@@ -316,7 +323,7 @@ const actions = {
   showData: () => shell.openPath(dataDir),
   showLog: () => shell.openPath(join(logDir, 'hub.log')),
   help: () => openWindow('/help'),
-  download: () => shell.openExternal(updateAvailable?.url ?? DOWNLOAD_PAGE),
+  download: () => openExternal(updateAvailable?.url ?? DOWNLOAD_PAGE),
   checkUpdates: () => checkUpdatesNow({ manual: true }),
   toggleDailyUpdates: async () => {
     prefs.dailyUpdateCheck = !prefs.dailyUpdateCheck
