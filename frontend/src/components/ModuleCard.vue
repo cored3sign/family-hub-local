@@ -13,8 +13,8 @@
 // here, once, at the shared root, rather than per-caller.
 //
 // One affordance per job: the whole card is the "open this module" target,
-// the corner is a single pin/unpin toggle (admin-managed nav, see
-// canManage), and the purchase badge is its own spot next to Add --
+// the corner is a single pin/unpin toggle (each member's own nav), and the
+// purchase badge is its own spot next to Add --
 // unrelated to pin state, so it doesn't share the corner spot. The badge is
 // a single "Purchased" label across every module -- see tierBadge prop doc.
 import { Pin, PinOff, ChevronUp, ChevronDown } from 'lucide-vue-next'
@@ -41,10 +41,6 @@ const props = defineProps({
   lifecycle: { type: String, default: 'available' }, // available | coming_soon | flagged
   enabled: { type: Boolean, default: false },
   busy: { type: Boolean, default: false },
-  // pin/unpin/reorder are admin-managed, same gate Settings
-  // already applies to its own admin-only sections (core.isAdmin) -- a
-  // member sees their pin state read-only, no controls rendered at all.
-  canManage: { type: Boolean, default: true },
   // isPinned reflects THIS member's own nav_pinned (per-member, not
   // account-wide). slotsFull disables the pin action once the member
   // already has 4 pinned, matching the bottom nav's actual rendered slot
@@ -53,8 +49,7 @@ const props = defineProps({
   slotsFull: { type: Boolean, default: false },
   pinBusy: { type: Boolean, default: false },
   // Position within the member's pinned order, for the up/down reorder
-  // buttons (-1 when not pinned -- both buttons stay hidden in that case
-  // since v-if="isPinned" already covers it, this only decides disabled).
+  // buttons (-1 when not pinned; the reorder row is hidden then).
   pinnedIndex: { type: Number, default: -1 },
   pinnedCount: { type: Number, default: 0 },
 })
@@ -96,7 +91,6 @@ function openIfEnabled() {
           <AppTag v-if="lifecycle === 'coming_soon'" class="app-tag--muted">Coming soon</AppTag>
           <template v-else-if="lifecycle === 'available' && enabled">
             <button
-              v-if="canManage"
               type="button"
               class="module-card__pin-toggle"
               :class="{ 'module-card__pin-toggle--active': isPinned }"
@@ -108,35 +102,32 @@ function openIfEnabled() {
               <PinOff v-if="isPinned" :size="16" />
               <Pin v-else :size="16" />
             </button>
-            <AppTag v-else-if="isPinned" class="app-tag--muted">Pinned</AppTag>
           </template>
         </div>
       </div>
       <p class="module-card__desc">{{ shortDescription }}</p>
       <div v-if="lifecycle === 'available' && enabled && isPinned" class="module-card__pin-order">
         <span class="module-card__pin-hint">Nav position</span>
-        <template v-if="canManage">
-          <button
-            type="button"
-            class="module-card__icon-btn"
-            :disabled="pinBusy || pinnedIndex <= 0"
-            title="Move up"
-            aria-label="Move up in nav"
-            @click.stop="$emit('move-up')"
-          >
-            <ChevronUp :size="16" />
-          </button>
-          <button
-            type="button"
-            class="module-card__icon-btn"
-            :disabled="pinBusy || pinnedIndex < 0 || pinnedIndex >= pinnedCount - 1"
-            title="Move down"
-            aria-label="Move down in nav"
-            @click.stop="$emit('move-down')"
-          >
-            <ChevronDown :size="16" />
-          </button>
-        </template>
+        <button
+          type="button"
+          class="module-card__icon-btn"
+          :disabled="pinBusy || pinnedIndex <= 0"
+          title="Move up"
+          aria-label="Move up in nav"
+          @click.stop="$emit('move-up')"
+        >
+          <ChevronUp :size="16" />
+        </button>
+        <button
+          type="button"
+          class="module-card__icon-btn"
+          :disabled="pinBusy || pinnedIndex < 0 || pinnedIndex >= pinnedCount - 1"
+          title="Move down"
+          aria-label="Move down in nav"
+          @click.stop="$emit('move-down')"
+        >
+          <ChevronDown :size="16" />
+        </button>
       </div>
     </div>
     <div class="module-card__action" @click.stop>

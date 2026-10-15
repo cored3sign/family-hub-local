@@ -12,7 +12,7 @@ import { useRouter } from 'vue-router'
 import {
   LayoutGrid,
   CheckCircle2, Calendar, ShoppingCart, Coins, ChefHat,
-  Megaphone, Target, Gift, Library, BookOpen, Compass,
+  Megaphone, Target, Gift, Library, BookOpen, Compass, Cake,
 } from 'lucide-vue-next'
 import { useCoreStore } from '../stores/core'
 import { findAddon, categoryLabels, categoryOrder } from '../addons/registry'
@@ -23,7 +23,7 @@ import { findAddon, categoryLabels, categoryOrder } from '../addons/registry'
 // module's real icon as a tile instead of a plain emoji span.
 const ICONS = {
   CheckCircle2, Calendar, ShoppingCart, Coins, ChefHat,
-  Megaphone, Target, Gift, Library, BookOpen, Compass,
+  Megaphone, Target, Gift, Library, BookOpen, Compass, Cake,
 }
 
 function iconFor(addon) {
@@ -48,6 +48,7 @@ const TILE_TINT = {
   wishlist: 'linear-gradient(135deg, var(--complement-mid), var(--tile-wishlist))',
   library: 'linear-gradient(135deg, var(--tile-library), var(--tile-library-deep))',
   family_binder: 'linear-gradient(135deg, var(--tile-binder), var(--tile-binder-deep))',
+  birthdays: 'linear-gradient(135deg, var(--tile-birthday-start), var(--tile-birthday-end))',
 }
 
 const core = useCoreStore()
@@ -65,11 +66,8 @@ const error = ref('')
 const MAX_PINNED = 4
 const slotsFull = computed(() => core.pinnedModules.length >= MAX_PINNED)
 
-// Pin/unpin/reorder are role-gated: Settings gates its admin-only sections
-// the same way (core.isAdmin). Pin state itself is per-member (not
-// family-wide), but a member's own nav is still presented here as an
-// admin-controlled surface -- members see their pins read-only, with a
-// note pointing them at an admin.
+// Turning modules on or off is admin-only (enableModule enforces it). Pins
+// are per-member, so every member pins, unpins and reorders their own nav.
 const canManage = computed(() => core.isAdmin)
 
 // Reordering uses up/down buttons, not drag-and-drop -- matches this codebase's one other
@@ -78,7 +76,7 @@ const canManage = computed(() => core.isAdmin)
 // dance (reorderPinnedModules).
 const reorderBusy = ref(false)
 function movePinned(key, direction) {
-  if (!canManage.value || reorderBusy.value) return
+  if (reorderBusy.value) return
   const order = core.pinnedModules.slice()
   const idx = order.indexOf(key)
   const swapWith = idx + direction
@@ -204,7 +202,7 @@ function unpinModule(key) {
     </div>
 
     <p v-if="!canManage" class="modules-readonly-note">
-      Ask a family admin to change enabled modules or pinned nav shortcuts.
+      Only a family admin can turn modules on or off.
     </p>
 
     <p v-if="error" class="error">{{ error }}</p>
@@ -223,7 +221,6 @@ function unpinModule(key) {
           :lifecycle="mod.lifecycle"
           :enabled="isEnabled(mod.key)"
           :busy="addingKey === mod.key"
-          :can-manage="canManage"
           :is-pinned="isPinned(mod.key)"
           :pinned-index="pinnedIndex(mod.key)"
           :pinned-count="core.pinnedModules.length"
@@ -286,8 +283,8 @@ function unpinModule(key) {
   padding: 24px 0;
 }
 
-/* Brief explanatory note shown to non-admin members in place of
-   the (now hidden) pin/unpin/reorder controls -- same muted-text treatment
+/* Brief explanatory note shown to non-admin members, who can't turn modules
+   on or off -- same muted-text treatment
    as .modules-header__subtitle above, not a full alert/banner since this
    isn't an error state. */
 .modules-readonly-note {
