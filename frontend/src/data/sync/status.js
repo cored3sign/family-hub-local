@@ -5,6 +5,8 @@
 // never just "the socket is open" (the hub accepts the upgrade and only
 // then may close with 4401). The assets doc is not part of it.
 
+import { inDesktopApp } from '../../lib/platform.js'
+
 export const CONNECTING_GRACE_MS = 4000
 
 export const STATUS_COPY = {
@@ -29,6 +31,9 @@ export const PROBLEM_COPY = {
 }
 
 const HUB_MACHINE_WAITING = "Yggltree isn't running on this computer. Start it with npm start."
+const HUB_MACHINE_WAITING_APP = "Yggltree isn't running. Open it from the leaf in your menu bar, or from Applications."
+// The desktop app's own window says the app's way; a source checkout keeps the npm wording.
+const hubMachineWaiting = () => (inDesktopApp() ? HUB_MACHINE_WAITING_APP : HUB_MACHINE_WAITING)
 // The hub answers but this browser has no live connection to it (it kept
 // its own family instead of uploading it, e.g. a canceled adopt).
 export const HUB_MACHINE_NOT_UPLOADED = "This computer's family isn't on the hub yet. Reload to upload it."
@@ -62,6 +67,6 @@ export function statusCopy(state, { role, problem, hubRunning = false, hasConnec
     return { ...copy, message: HUB_MACHINE_ROOM_GONE }
   }
   if (state === 'waiting' && role === 'hub-machine' && hubRunning && !hasConnection) return { ...copy, message: HUB_MACHINE_NOT_UPLOADED }
-  if (state === 'waiting' && role === 'hub-machine') return { ...copy, message: HUB_MACHINE_WAITING }
+  if (state === 'waiting' && role === 'hub-machine') return { ...copy, message: hubMachineWaiting() }
   return copy
 }

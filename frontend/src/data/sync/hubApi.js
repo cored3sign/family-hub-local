@@ -47,7 +47,7 @@ export function createHubApi({ baseUrl = '', fetchImpl } = {}) {
     info: ({ timeoutMs } = {}) => call('GET', '/api/hub/info', { timeoutMs }),
     // 200 { ok } or HubApiError 409 when the family exists / another claim is fresh.
     claim: (claimId) => call('POST', '/api/hub/claim', { admin: true, body: { claimId } }),
-    // backupText: the .fhub.json file's text -> { roomId, token } of the NEW room.
+    // backupText: the .yggltree.json file's text -> { roomId, token } of the NEW room.
     restore: (backupText) => call('POST', '/api/hub/restore', { admin: true, rawBody: backupText }),
     // Relay set-up from Settings. The Cloudflare token stays on this computer.
     relayStatus: () => call('GET', '/api/relay/status', { admin: true }),
@@ -60,5 +60,7 @@ export function createHubApi({ baseUrl = '', fetchImpl } = {}) {
     // Creating a relay runs a build and a deploy, so it can take a few minutes.
     createRelay: ({ name, replace }) => call('POST', '/api/relay/create', { admin: true, body: { name, replace }, timeoutMs: 900000 }),
     deleteRelay: (address) => call('POST', '/api/relay/delete', { admin: true, body: { address }, timeoutMs: 900000 }),
+    relayVersion: (address) => call('GET', `/api/relay/version?url=${encodeURIComponent(address)}`, { admin: true, timeoutMs: 20000 }),
+    updateRelay: (name) => call('POST', '/api/relay/update', { admin: true, body: { name }, timeoutMs: 900000 }),
   }
 }

@@ -1,6 +1,12 @@
 // Browser checks for the join flow. Each takes the globals it reads as an
 // argument, so tests can pass fakes; the defaults are the real browser.
 
+// True inside the Yggltree desktop app (its own window and menu bar). The app's preload sets
+// window.yggltreeDesktop; a page opened in a browser has no such flag.
+export function inDesktopApp(env = globalThis) {
+  return env.yggltreeDesktop?.desktop === true
+}
+
 // True when the page runs as a Home Screen app (iPhone or Android).
 export function isStandaloneApp(env = globalThis) {
   return env.matchMedia?.('(display-mode: standalone)').matches || env.navigator?.standalone === true

@@ -10,6 +10,12 @@ import { parseRelayLink } from '../data/relay/config.js'
 import { offerRelayJoin } from '../data/relay/pending.js'
 import { isIosDevice, isIosSafariTab, isStandaloneApp } from '../lib/platform.js'
 import IosInstallGuide from '../components/IosInstallGuide.vue'
+import { inDesktopApp } from '../lib/platform.js'
+
+// The desktop app's window says the app's way; a browser on a source checkout keeps the npm wording.
+const notRunningHint = inDesktopApp()
+  ? 'Open Yggltree from the leaf in your menu bar, then reload.'
+  : 'Start Yggltree on this computer (npm start), then reload.'
 
 // Where a device waits while it has no family yet (joining it, pulling the
 // family from the hub, the hub not running), and where it confirms
@@ -125,7 +131,7 @@ function downloadBackup() {
   backupError.value = ''
   try {
     const url = URL.createObjectURL(new Blob([createBackup(family())], { type: 'application/json' }))
-    const a = Object.assign(document.createElement('a'), { href: url, download: `yggltree-backup-${todayStamp()}.fhub.json` })
+    const a = Object.assign(document.createElement('a'), { href: url, download: `yggltree-backup-${todayStamp()}.yggltree.json` })
     a.click()
     setTimeout(() => URL.revokeObjectURL(url), 1000)
   } catch (err) {
@@ -192,7 +198,7 @@ function reload() {
 
     <template v-else-if="state === 'hub-not-running'">
       <h1>Yggltree isn't running</h1>
-      <p class="subtitle">Start Yggltree on this computer (npm start), then reload.</p>
+      <p class="subtitle">{{ notRunningHint }}</p>
       <div class="connect-actions">
         <AppButton variant="primary" @click="reload">Reload</AppButton>
       </div>

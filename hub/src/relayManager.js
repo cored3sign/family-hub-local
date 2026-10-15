@@ -1,4 +1,4 @@
-// Creates, replaces and erases the family's relay on the family's own Cloudflare
+// Creates, replaces, updates and erases the family's relay on the family's own Cloudflare
 // account, from Settings. Cloudflare access comes from one of two places:
 //   - Wrangler's own login on this computer (`wrangler login`, which opens a Cloudflare
 //     page where the family clicks Allow). No token is stored by Yggltree.
@@ -6,9 +6,14 @@
 //     readable only by this computer's user, and passed to wrangler only through its
 //     environment. It is never sent to the browser or the relay, and it's removed from
 //     any text shown to the user.
+//
+// Where Wrangler runs. From source, it's `npx wrangler` in the relay folder. The desktop
+// app sets three variables instead: where its own Node is, where Wrangler is bundled, and
+// where the prebuilt relay source is. The app's files are read-only, so Wrangler then works
+// in a copy under the data folder.
 
 import { spawn } from 'node:child_process'
-import { chmod, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
+import { chmod, cp, mkdir, readFile, rename, rm, symlink, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -107,9 +112,46 @@ export function runCommand(command, args, { cwd, env, timeoutMs, spawnImpl = spa
   })
 }
 
+// How to run Wrangler with `args`. The desktop app bundles it and runs it with the app's own
+// Node (ELECTRON_RUN_AS_NODE). From source it's npx, as before.
+export function wranglerInvocation(args, env = process.env) {
+  if (env.YGGLTREE_WRANGLER_BIN) {
+    return {
+      command: env.YGGLTREE_NODE_BIN || process.execPath,
+      args: [env.YGGLTREE_WRANGLER_BIN, ...args],
+      extraEnv: { ELECTRON_RUN_AS_NODE: '1' },
+    }
+  }
+  return { command: 'npx', args: ['--no-install', 'wrangler', ...args], extraEnv: {} }
+}
+
+function runWrangler(run, args, { cwd, env, timeoutMs }) {
+  const inv = wranglerInvocation(args)
+  return run(inv.command, inv.args, { cwd, env: { ...env, ...inv.extraEnv }, timeoutMs })
+}
+
+// Where the relay's source is: the bundled copy in the desktop app, or the repo's relay folder.
+export function relaySourceDir(env = process.env) {
+  return env.YGGLTREE_RELAY_DIR || RELAY_DIR
+}
+
+// The folder Wrangler runs in. In the desktop app the bundled relay is read-only, so it's copied
+// under the data folder, with node_modules linked to the bundled copy.
+export async function relayWorkDir({ sourceDir, dataDir, env = process.env }) {
+  if (!env.YGGLTREE_RELAY_DIR || !dataDir) return sourceDir
+  const work = join(dataDir, 'relay-tools')
+  await rm(work, { recursive: true, force: true })
+  await mkdir(work, { recursive: true })
+  for (const entry of ['wrangler.jsonc', 'package.json', 'src', 'public']) {
+    await cp(join(sourceDir, entry), join(work, entry), { recursive: true })
+  }
+  await symlink(join(sourceDir, 'node_modules'), join(work, 'node_modules'))
+  return work
+}
+
 // The account Wrangler is logged in to on this computer, or null if it isn't logged in.
-export async function wranglerAccount({ relayDir = RELAY_DIR, run = runCommand } = {}) {
-  const res = await run('npx', ['--no-install', 'wrangler', 'whoami', '--json'], { cwd: relayDir })
+export async function wranglerAccount({ relayDir = relaySourceDir(), run = runCommand } = {}) {
+  const res = await runWrangler(run, ['whoami', '--json'], { cwd: relayDir, env: process.env })
   if (res.code !== 0) return null
   let data
   try {
@@ -123,8 +165,8 @@ export async function wranglerAccount({ relayDir = RELAY_DIR, run = runCommand }
 }
 
 // Opens Cloudflare's login page in the browser, and waits for the family to click Allow.
-export async function loginWithWrangler({ relayDir = RELAY_DIR, run = runCommand } = {}) {
-  const res = await run('npx', ['--no-install', 'wrangler', 'login'], { cwd: relayDir, timeoutMs: LOGIN_TIMEOUT_MS })
+export async function loginWithWrangler({ relayDir = relaySourceDir(), run = runCommand } = {}) {
+  const res = await runWrangler(run, ['login'], { cwd: relayDir, env: process.env, timeoutMs: LOGIN_TIMEOUT_MS })
   if (res.code !== 0) {
     throw new RelayError("Cloudflare login didn't finish. Click Connect Cloudflare again, then click Allow on the Cloudflare page.")
   }
@@ -148,15 +190,20 @@ function tail(output, token) {
   return text.split('\n').slice(-6).join('\n').slice(-500)
 }
 
-// Builds the app into the relay, then deploys the relay under the name the family chose.
-export async function deployRelay({ name, token = null, accountId = null, relayDir = RELAY_DIR, run = runCommand }) {
+// Builds the app into the relay (not needed when the app ships it prebuilt), then deploys the
+// relay under the name the family chose.
+export async function deployRelay({ name, token = null, accountId = null, relayDir = relaySourceDir(), dataDir = null, run = runCommand, env = process.env }) {
   if (!isRelayName(name)) {
     throw new RelayError('Use 3 to 63 lowercase letters, digits or hyphens for the relay name.')
   }
-  const env = cloudflareEnv({ token, accountId })
-  const build = await run('npm', ['run', 'build:app'], { cwd: relayDir, env })
-  if (build.code !== 0) throw new RelayError(`Building the relay failed. ${tail(build.output, token)}`)
-  const deploy = await run('npx', ['--no-install', 'wrangler', 'deploy', `--name=${name}`], { cwd: relayDir, env })
+  const cfEnv = cloudflareEnv({ token, accountId })
+  const prebuilt = env.YGGLTREE_RELAY_PREBUILT === '1'
+  if (!prebuilt) {
+    const build = await run('npm', ['run', 'build:app'], { cwd: relayDir, env: cfEnv })
+    if (build.code !== 0) throw new RelayError(`Building the relay failed. ${tail(build.output, token)}`)
+  }
+  const workDir = await relayWorkDir({ sourceDir: relayDir, dataDir, env })
+  const deploy = await runWrangler(run, ['deploy', `--name=${name}`], { cwd: workDir, env: cfEnv })
   if (deploy.code !== 0) throw new RelayError(`Cloudflare didn't create the relay. ${tail(deploy.output, token)}`)
   for (const m of String(deploy.output).matchAll(/https:\/\/([a-z0-9-]+)\.([a-z0-9-]+)\.workers\.dev/g)) {
     if (m[1] === name) return `https://${m[1]}.${m[2]}.workers.dev`
@@ -164,12 +211,19 @@ export async function deployRelay({ name, token = null, accountId = null, relayD
   throw new RelayError("The relay was created, but its address wasn't found. Check the Cloudflare dashboard for the address.")
 }
 
+// Sends the current relay source to an existing relay, under the same name. Nothing is deleted.
+// The relay's stored data and the family's pairing stay as they are.
+export async function updateRelay({ name, token = null, accountId = null, relayDir = relaySourceDir(), dataDir = null, run = runCommand, env = process.env }) {
+  const address = await deployRelay({ name, token, accountId, relayDir, dataDir, run, env })
+  return { name, address }
+}
+
 // Deletes the relay's worker, and with it everything the relay stored. A relay that is
 // already gone counts as deleted.
-export async function deleteRelay({ address, token = null, accountId = null, relayDir = RELAY_DIR, run = runCommand }) {
+export async function deleteRelay({ address, token = null, accountId = null, relayDir = relaySourceDir(), run = runCommand }) {
   const name = nameFromAddress(address)
   if (!name || !isRelayName(name)) throw new RelayError("That isn't a relay address this app set up.")
-  const result = await run('npx', ['--no-install', 'wrangler', 'delete', `--name=${name}`, '--force'], {
+  const result = await runWrangler(run, ['delete', `--name=${name}`, '--force'], {
     cwd: relayDir,
     env: cloudflareEnv({ token, accountId }),
   })

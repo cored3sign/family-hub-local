@@ -25,7 +25,7 @@ function familyDocs() {
 
 async function backupFiles(dataDir) {
   try {
-    return (await readdir(join(dataDir, 'backups'))).filter((f) => f.endsWith('.fhub.json')).sort()
+    return (await readdir(join(dataDir, 'backups'))).filter((f) => f.endsWith('.yggltree.json')).sort()
   } catch (err) {
     if (err.code === 'ENOENT') return []
     throw err
@@ -34,7 +34,7 @@ async function backupFiles(dataDir) {
 
 describe('backupFileName', () => {
   it('uses the local calendar date', () => {
-    expect(backupFileName(new Date(2026, 0, 5, 23, 59))).toBe('yggltree-2026-01-05.fhub.json')
+    expect(backupFileName(new Date(2026, 0, 5, 23, 59))).toBe('yggltree-2026-01-05.yggltree.json')
   })
 })
 
@@ -46,8 +46,8 @@ describe('createBackups', () => {
     let t = T0
     const backups = createBackups({ dataDir, getDocs: async () => docs, now: () => t, log: fx.quietLog })
 
-    expect(await backups.runOnce()).toEqual({ written: 'yggltree-2026-10-07.fhub.json' })
-    const parsed = parseBackup(await readFile(join(dataDir, 'backups', 'yggltree-2026-10-07.fhub.json'), 'utf8'))
+    expect(await backups.runOnce()).toEqual({ written: 'yggltree-2026-10-07.yggltree.json' })
+    const parsed = parseBackup(await readFile(join(dataDir, 'backups', 'yggltree-2026-10-07.yggltree.json'), 'utf8'))
     const restored = new Y.Doc()
     Y.applyUpdate(restored, parsed.main)
     expect(restored.getMap('m').get('k')).toBe('v1')
@@ -57,14 +57,14 @@ describe('createBackups', () => {
 
     t += DAY
     expect(await backups.runOnce()).toEqual({ skipped: 'unchanged' })
-    expect(await backupFiles(dataDir)).toEqual(['yggltree-2026-10-07.fhub.json'])
+    expect(await backupFiles(dataDir)).toEqual(['yggltree-2026-10-07.yggltree.json'])
 
     // A change in either doc counts.
     docs.assets.getMap('blobs').set('q', 'more')
-    expect(await backups.runOnce()).toEqual({ written: 'yggltree-2026-10-08.fhub.json' })
+    expect(await backups.runOnce()).toEqual({ written: 'yggltree-2026-10-08.yggltree.json' })
     t += DAY
     docs.doc.getMap('m').set('k', 'v2')
-    expect(await backups.runOnce()).toEqual({ written: 'yggltree-2026-10-09.fhub.json' })
+    expect(await backups.runOnce()).toEqual({ written: 'yggltree-2026-10-09.yggltree.json' })
     expect(await backupFiles(dataDir)).toHaveLength(3)
   })
 
@@ -76,7 +76,7 @@ describe('createBackups', () => {
     await backups.runOnce()
     t += DAY
     docs.doc.getMap('m').delete('k')
-    expect(await backups.runOnce()).toEqual({ written: 'yggltree-2026-10-08.fhub.json' })
+    expect(await backups.runOnce()).toEqual({ written: 'yggltree-2026-10-08.yggltree.json' })
   })
 
   it('remembers the last backup across restarts, but writes again if that file is gone', async () => {
@@ -89,8 +89,8 @@ describe('createBackups', () => {
     expect(await restarted.runOnce()).toEqual({ skipped: 'unchanged' })
 
     const { rm } = await import('node:fs/promises')
-    await rm(join(dataDir, 'backups', 'yggltree-2026-10-07.fhub.json'))
-    expect(await restarted.runOnce()).toEqual({ written: 'yggltree-2026-10-08.fhub.json' })
+    await rm(join(dataDir, 'backups', 'yggltree-2026-10-07.yggltree.json'))
+    expect(await restarted.runOnce()).toEqual({ written: 'yggltree-2026-10-08.yggltree.json' })
   })
 
   it('skips a room with no family', async () => {
@@ -104,15 +104,15 @@ describe('createBackups', () => {
     const dataDir = await fx.tmpDir()
     await mkdir(join(dataDir, 'backups'), { recursive: true })
     for (let i = 1; i <= 16; i++) {
-      await writeFile(join(dataDir, 'backups', `yggltree-2026-09-${String(i).padStart(2, '0')}.fhub.json`), '{}')
+      await writeFile(join(dataDir, 'backups', `yggltree-2026-09-${String(i).padStart(2, '0')}.yggltree.json`), '{}')
     }
     await writeFile(join(dataDir, 'backups', 'notes.txt'), 'keep me')
     const backups = createBackups({ dataDir, getDocs: async () => familyDocs(), now: () => T0, log: fx.quietLog })
     await backups.runOnce()
     const files = await backupFiles(dataDir)
     expect(files).toHaveLength(14)
-    expect(files[files.length - 1]).toBe('yggltree-2026-10-07.fhub.json')
-    expect(files[0]).toBe('yggltree-2026-09-04.fhub.json')
+    expect(files[files.length - 1]).toBe('yggltree-2026-10-07.yggltree.json')
+    expect(files[0]).toBe('yggltree-2026-09-04.yggltree.json')
     expect(await readFile(join(dataDir, 'backups', 'notes.txt'), 'utf8')).toBe('keep me')
   })
 
@@ -137,7 +137,7 @@ describe('createBackups', () => {
     const after = calls
     await delay(80)
     expect(calls).toBe(after)
-    expect(await backupFiles(dataDir)).toEqual(['yggltree-2026-10-07.fhub.json'])
+    expect(await backupFiles(dataDir)).toEqual(['yggltree-2026-10-07.yggltree.json'])
   })
 })
 
@@ -158,7 +158,7 @@ describe('hub backups', () => {
 
     const hub = await fx.hub({ dataDir, now: () => t, backupIntervalMs: 25 })
     await waitFor(async () => (await backupFiles(dataDir)).length === 1)
-    expect(await backupFiles(dataDir)).toEqual(['yggltree-2026-10-07.fhub.json'])
+    expect(await backupFiles(dataDir)).toEqual(['yggltree-2026-10-07.yggltree.json'])
 
     // Next "day", a change: the interval picks it up.
     t += DAY
@@ -200,7 +200,7 @@ describe('hub backups', () => {
     await backups.runOnce()
     const mode = async (path) => (await stat(path)).mode & 0o777
     expect(await mode(join(dataDir, 'backups'))).toBe(0o700)
-    expect(await mode(join(dataDir, 'backups', 'yggltree-2026-10-07.fhub.json'))).toBe(0o600)
+    expect(await mode(join(dataDir, 'backups', 'yggltree-2026-10-07.yggltree.json'))).toBe(0o600)
     expect(await mode(join(dataDir, 'backups', 'last-backup.json'))).toBe(0o600)
   })
 })

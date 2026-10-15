@@ -27,6 +27,7 @@ import { isStandaloneApp, isIosSafariTab } from '../lib/platform.js'
 import { newFamilyKey, deriveRoomId, deriveAuth, toBase64Url } from '../data/relay/crypto'
 import QRCode from 'qrcode'
 import { createHubApi } from '../data/sync/hubApi.js'
+import { relayNameOf, relayVersionState } from '../data/relay/version.js'
 import { listDevices, describeLastSeen, thisDeviceLabel } from '../data/presence.js'
 
 const core = useCoreStore()
@@ -252,7 +253,7 @@ async function downloadBackup() {
   exportError.value = ''
   if (!(await adminLock.confirmAdmin(core.memberId, 'Enter your PIN to download a backup.'))) return
   try {
-    download(`yggltree-backup-${todayStamp()}.fhub.json`, createBackup(family()), 'application/json')
+    download(`yggltree-backup-${todayStamp()}.yggltree.json`, createBackup(family()), 'application/json')
   } catch (e) {
     exportError.value = e.message
   }
@@ -292,6 +293,36 @@ function startRelay() {
 // --- Set up the relay from this computer. The Cloudflare token stays on this computer, and the
 // hub creates or deletes the relay on the family's Cloudflare account.
 const hubRelay = createHubApi({ baseUrl: globalThis.location?.origin ?? '' })
+
+// --- Relay version: phones get the app from the relay, so an older relay means older phones.
+// Updating sends this app's build to the relay under the same name. Nothing is deleted.
+const relayVersion = ref(null) // 'current' | 'outdated' | 'unknown' | null (not checked yet)
+const relayUpdateBusy = ref(false)
+const relayUpdateMessage = ref('')
+
+async function checkRelayVersion() {
+  if (!relay.value) return
+  try {
+    relayVersion.value = relayVersionState(await hubRelay.relayVersion(relay.value.url))
+  } catch {
+    relayVersion.value = 'unknown'
+  }
+}
+
+async function updateRelayNow() {
+  relayUpdateMessage.value = ''
+  if (!(await adminLock.confirmAdmin(core.memberId, 'Enter your PIN to update the relay.'))) return
+  relayUpdateBusy.value = true
+  try {
+    await hubRelay.updateRelay(relayNameOf(relay.value.url))
+    relayUpdateMessage.value = 'Done. Open Yggltree on each phone to get the new version.'
+    await checkRelayVersion()
+  } catch (e) {
+    relayUpdateMessage.value = e.userMessage ?? e.message
+  } finally {
+    relayUpdateBusy.value = false
+  }
+}
 const cloudflare = ref({ connected: false, method: null, accountName: null })
 const cloudflareToken = ref('')
 const relayNameInput = ref('')
@@ -475,6 +506,7 @@ async function turnOffNotifications() {
 
 onMounted(() => refreshNotify().catch(() => (notifyState.value = 'unsupported')))
 onMounted(loadCloudflareStatus)
+onMounted(checkRelayVersion)
 onMounted(() => {
   if (!relayNameInput.value) relayNameInput.value = suggestRelayName(core.familyName)
 })
@@ -873,6 +905,24 @@ function initials(name) {
         <!-- A relay is set up on this device: show its status. Admins can add a device from here. -->
         <template v-if="relay">
           <p class="hint">Syncing through your relay.</p>
+          <template v-if="core.isAdmin">
+            <p v-if="relayVersion === 'current'" class="hint">
+              Phones get this version of Yggltree from your relay. It's up to date.
+            </p>
+            <p v-else-if="relayVersion === 'outdated'" class="hint">
+              Phones still get an older version of Yggltree from your relay. Update the relay so they get this one.
+              It takes a few minutes, and phones keep working meanwhile.
+            </p>
+            <AppButton
+              v-if="relayVersion === 'outdated'"
+              variant="secondary"
+              :disabled="relayUpdateBusy"
+              @click="updateRelayNow"
+            >
+              {{ relayUpdateBusy ? 'Updating the relay… this takes a few minutes' : 'Update the relay' }}
+            </AppButton>
+            <p v-if="relayUpdateMessage" class="hint">{{ relayUpdateMessage }}</p>
+          </template>
           <details v-if="core.isAdmin" class="relay-setup">
             <summary>Add a device</summary>
             <p class="hint">
@@ -994,8 +1044,8 @@ function initials(name) {
           Other browsers on this computer just need to reload.
         </p>
         <label class="form-field">
-          <span class="form-field__label">Backup file (.fhub.json)</span>
-          <input ref="restoreInputEl" type="file" accept=".json,.fhub.json,application/json" @change="onRestoreFileChange" />
+          <span class="form-field__label">Backup file (.yggltree.json)</span>
+          <input ref="restoreInputEl" type="file" accept=".json,.yggltree.json,application/json" @change="onRestoreFileChange" />
         </label>
         <FormField
           v-model="restoreConfirmText"

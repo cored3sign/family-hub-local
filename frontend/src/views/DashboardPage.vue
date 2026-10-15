@@ -16,6 +16,7 @@
 // genuinely share one chart, and hover/tap tooltips.
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import FinishSetup from '../components/FinishSetup.vue'
 import {
   Circle, Calendar, ShoppingCart, Target, Wallet, PiggyBank, ChevronRight, Flame,
 } from 'lucide-vue-next'
@@ -303,6 +304,7 @@ function cardStyle(key) {
 
 <template>
   <div class="dashboard">
+    <FinishSetup v-if="core.isAdmin" />
     <div class="dash-greeting">
       <span class="dash-greeting__title">Good {{ greetingPart }}, {{ core.myFirstName }}</span>
       <span v-if="showStreak" class="streak-badge" :title="`${completionStreak}-day completion streak`">

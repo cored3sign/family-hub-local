@@ -13,6 +13,8 @@
 //   POST /api/relay/create       admin + mutation (optional: replace an existing relay first)
 //   POST /api/relay/delete       admin + mutation (deletes the relay and everything it stored)
 //   POST /api/admin/reset-pin    admin + mutation + the reset token (clears every admin PIN; see adminPin.js)
+//   POST /api/relay/update       admin + mutation (sends this app's relay source to the relay; deletes nothing)
+//   GET  /api/relay/version      admin (asks the relay which build it serves, and compares it with this app)
 //
 // Admin routes check the guard (admin.js) before anything else, including
 // the method, and answer 403 with no CORS headers. No route here ever
@@ -38,11 +40,14 @@ import {
   isRelayName,
   isTokenShape,
   loginWithWrangler,
+  nameFromAddress,
   readConnection,
   saveConnection,
+  updateRelay,
   verifyToken,
   wranglerAccount,
 } from './relayManager.js'
+import { appVersion, buildStamp, relayBuildStamp } from './appInfo.js'
 
 const MAX_CLAIM_ID_LENGTH = 200
 
@@ -64,6 +69,7 @@ export function createApi({
   rooms,
   dataDir,
   resetToken = null,
+  distDir = null,
   getPort,
   familyExists,
   onRoomCommitted,
@@ -84,14 +90,45 @@ export function createApi({
 
   // --- admin ----------------------------------------------------------
 
-  function info(req, res) {
+  async function info(req, res) {
     sendJson(res, 200, {
       roomId: state.room.id,
       token: state.room.token,
       familyExists: familyExists(),
       port: getPort(),
       dataDir,
+      appVersion: await appVersion(),
+      devices: rooms.devicesConnected(),
     })
+  }
+
+  // Sends this app's relay source to the family's relay, under the same name. Nothing is deleted:
+  // the relay keeps its stored data, and phones keep their pairing.
+  async function relayUpdate(req, res) {
+    const body = await readJsonBody(req, { limit: jsonLimit })
+    const name = isPlainObject(body) ? body.name : undefined
+    if (!isRelayName(name)) {
+      sendJson(res, 400, { error: 'relay', message: "That isn't a relay name this app set up." })
+      return
+    }
+    try {
+      const result = await exclusive(async () => updateRelay({ name, dataDir, ...(await cloudflareAuth()) }))
+      sendJson(res, 200, { ok: true, address: result.address })
+    } catch (err) {
+      relayFailure(res, err)
+    }
+  }
+
+  // Whether the family's relay serves this app's build. The hub asks the relay, because a browser
+  // page can't read another site's version file. Only a relay address this app sets up is asked.
+  async function relayVersion(req, res) {
+    const address = new URL(req.url, 'http://localhost').searchParams.get('url')?.trim().replace(/\/$/, '') ?? ''
+    if (!nameFromAddress(address)) {
+      sendJson(res, 400, { error: 'relay', message: "That isn't a relay address this app set up." })
+      return
+    }
+    const [relayBuild, localBuild] = await Promise.all([relayBuildStamp(address), buildStamp(distDir)])
+    sendJson(res, 200, { relayBuild, localBuild, upToDate: relayBuild !== null && relayBuild === localBuild })
   }
 
   // Clears every admin's PIN. The reset token (written to the data folder when
@@ -304,6 +341,8 @@ export function createApi({
     ['/api/relay/create', ['POST', relayCreate, 'mutation']],
     ['/api/relay/delete', ['POST', relayDelete, 'mutation']],
     ['/api/admin/reset-pin', ['POST', resetPin, 'mutation']],
+    ['/api/relay/update', ['POST', relayUpdate, 'mutation']],
+    ['/api/relay/version', ['GET', relayVersion, 'admin']],
   ])
 
   // -> true if `path` is one of this module's routes (and was answered).

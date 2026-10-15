@@ -133,6 +133,7 @@ export async function startHub({
       rooms,
       dataDir,
       resetToken,
+      distDir,
       getPort: () => boundPort,
       familyExists,
       onRoomCommitted,

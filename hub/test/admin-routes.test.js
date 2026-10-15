@@ -94,6 +94,8 @@ describe('hub info', () => {
       familyExists: false,
       port: hub.port,
       dataDir: expect.any(String),
+      appVersion: expect.any(String),
+      devices: 1,
     })
   })
 

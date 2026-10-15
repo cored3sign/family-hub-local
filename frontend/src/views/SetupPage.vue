@@ -105,7 +105,7 @@ function downloadBackup() {
   try {
     const url = URL.createObjectURL(new Blob([createBackup(family())], { type: 'application/json' }))
     const stamp = new Date().toISOString().slice(0, 10)
-    const a = Object.assign(document.createElement('a'), { href: url, download: `yggltree-backup-${stamp}.fhub.json` })
+    const a = Object.assign(document.createElement('a'), { href: url, download: `yggltree-backup-${stamp}.yggltree.json` })
     a.click()
     setTimeout(() => URL.revokeObjectURL(url), 1000)
   } catch (err) {
@@ -156,12 +156,12 @@ function closeRestore() {
     </div>
     <div v-else class="setup-restore">
       <p>
-        Your family is created from the backup file (a <code>.fhub.json</code> file from Settings → Data export
+        Your family is created from the backup file (a <code>.yggltree.json</code> file from Settings → Data export
         &amp; import → Download full backup), including photos.
       </p>
       <label class="form-field">
-        <span class="form-field__label">Backup file (.fhub.json)</span>
-        <input type="file" accept=".json,.fhub.json,application/json" @change="onRestoreFileChange" />
+        <span class="form-field__label">Backup file (.yggltree.json)</span>
+        <input type="file" accept=".json,.yggltree.json,application/json" @change="onRestoreFileChange" />
       </label>
       <FormField v-model="restoreConfirmText" label='Type "REPLACE" to confirm' placeholder="REPLACE" />
       <p v-if="restoreError" class="error">{{ restoreError }}</p>
