@@ -7,3 +7,7 @@ hub-data/
 
 # The Obsidian vault is committed; only the editor's per-user state is ignored.
 Yggltree_vault/.obsidian/
+
+# Desktop app build output (the DMGs and the staged hub and relay)
+desktop/dist/
+desktop/build/app-hub/

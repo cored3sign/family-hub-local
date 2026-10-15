@@ -1,0 +1,47 @@
+# Builds the Yggltree Mac app and its DMG. Stage the hub first (scripts/stage.mjs --arch <arch>),
+# then run dist:mac with the same architecture:
+#   npm run dist:mac -- --arm64      (Apple silicon)
+#   npm run dist:mac -- --x64        (Intel)
+appId: com.yggltree.app
+productName: Yggltree
+copyright: Free and open source under the MIT License.
+directories:
+  output: dist
+  buildResources: build
+files:
+  - main.js
+  - hubProcess.js
+  - trayMenu.js
+  - updates.js
+  - preload.cjs
+  - loading.html
+  - assets/**/*
+  - package.json
+extraResources:
+  - from: build/app-hub
+    to: app-hub
+mac:
+  category: public.app-category.productivity
+  icon: build/icon.icns
+  # Ad-hoc signing: Apple silicon Macs won't run an unsigned app at all, but this is not a
+  # Developer ID signature, so the first open still needs the Open Anyway step.
+  identity: "-"
+  hardenedRuntime: false
+  target:
+    - target: dmg
+  extendInfo:
+    NSCameraUsageDescription: "Yggltree uses the camera only when you scan a family QR code."
+dmg:
+  title: "Yggltree"
+  artifactName: "Yggltree-${arch}.${ext}"
+  window:
+    width: 540
+    height: 380
+  contents:
+    - x: 140
+      y: 180
+      type: file
+    - x: 400
+      y: 180
+      type: link
+      path: /Applications

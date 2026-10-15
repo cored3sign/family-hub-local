@@ -1,0 +1,65 @@
+# Builds the Yggltree Mac app (one DMG per chip) when a version tag is pushed, and publishes the
+# DMGs and their checksums on a GitHub release. Bump the version in the root package.json first:
+# the app reports that number.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  mac:
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - runner: macos-14
+            arch: arm64
+          - runner: macos-13
+            arch: x64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install and test
+        run: |
+          npm ci
+          npm test -w hub
+          npm test -w frontend
+      - name: Build the frontend
+        run: npm run build
+      - name: Build the desktop app
+        working-directory: desktop
+        run: |
+          npm ci
+          node scripts/stage.mjs --arch ${{ matrix.arch }}
+          npx electron-builder --mac --${{ matrix.arch }} --publish never
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Yggltree-${{ matrix.arch }}
+          path: desktop/dist/Yggltree-${{ matrix.arch }}.dmg
+
+  publish:
+    needs: mac
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: release
+          merge-multiple: true
+      - name: Checksums
+        working-directory: release
+        run: sha256sum Yggltree-*.dmg > SHA256SUMS.txt
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" release/Yggltree-arm64.dmg release/Yggltree-x64.dmg release/SHA256SUMS.txt \
+            --repo "${GITHUB_REPOSITORY}" \
+            --title "Yggltree ${GITHUB_REF_NAME#v}" \
+            --generate-notes
