@@ -7,7 +7,7 @@
 //
 // Run after `npm run build` at the repository root, which builds frontend/dist.
 
-import { cp, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises'
+import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { execFileSync } from 'node:child_process'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -38,17 +38,23 @@ await cp(join(repo, 'hub', 'package.json'), join(out, 'hub', 'package.json'))
 // The hub imports a few frontend modules (backup format, sync protocol), so the frontend source comes too.
 await cp(join(repo, 'frontend', 'src'), join(out, 'frontend', 'src'), { recursive: true })
 await cp(join(repo, 'frontend', 'dist'), join(out, 'frontend', 'dist'), { recursive: true })
-execFileSync('npm', ['install', '--omit=dev', '--no-package-lock', '--no-audit', '--no-fund', `--cpu=${npmArch}`, '--os=darwin'], {
+// Installed from the repository's lockfile, with install scripts off: nothing a dependency downloads or runs
+// at install time gets into the app, and the release can't pick up versions newer than the reviewed ones.
+// npm ci needs the lockfile in the folder it installs into, so the root one is copied in and removed after.
+await cp(join(repo, 'package-lock.json'), join(out, 'hub', 'package-lock.json'))
+execFileSync('npm', ['ci', '--omit=dev', '--ignore-scripts', '--no-audit', '--no-fund', `--cpu=${npmArch}`, '--os=darwin'], {
   cwd: join(out, 'hub'),
   stdio: 'inherit',
 })
+await rm(join(out, 'hub', 'package-lock.json'))
 
 // The relay: prebuilt static files, its source, and Wrangler with the workerd binary for this architecture.
+// Its dependencies come from its own lockfile, installed the same way.
 await mkdir(join(out, 'relay'), { recursive: true })
-for (const entry of ['src', 'public', 'wrangler.jsonc', 'package.json']) {
+for (const entry of ['src', 'public', 'wrangler.jsonc', 'package.json', 'package-lock.json']) {
   await cp(join(repo, 'relay', entry), join(out, 'relay', entry), { recursive: true })
 }
-execFileSync('npm', ['install', '--no-package-lock', '--no-audit', '--no-fund', `--cpu=${npmArch}`, '--os=darwin'], {
+execFileSync('npm', ['ci', '--ignore-scripts', '--no-audit', '--no-fund', `--cpu=${npmArch}`, '--os=darwin'], {
   cwd: join(out, 'relay'),
   stdio: 'inherit',
 })
@@ -61,15 +67,10 @@ await rm(join(modules, '@img'), { recursive: true, force: true })
 const workerdPackage = join(modules, '@cloudflare', `workerd-darwin-${npmArch === 'x64' ? '64' : 'arm64'}`)
 execFileSync('strip', ['-x', join(workerdPackage, 'bin', 'workerd')])
 
-// workerd's install script copies a binary into workerd/bin for the Node that runs it, so a cross-build
-// (arm64 on an Intel Mac) gets the wrong one, and it also keeps a fetched copy. Wrangler loads the binary
-// from this architecture's package, so drop those copies and check the package's binary is the right one.
-const workerd = join(modules, 'workerd')
-await rm(join(workerd, 'bin'), { recursive: true, force: true })
-await rm(join(modules, '.bin', 'workerd'), { force: true }) // its npm link, which would now dangle
-for (const file of await readdir(join(workerd, 'lib'))) {
-  if (file.startsWith('downloaded-')) await rm(join(workerd, 'lib', file))
-}
+// workerd's binary lives in its platform package, which npm installs for this architecture. Its install
+// script, which would copy a binary into workerd/bin for the Node that runs it, doesn't run, so the bin link
+// npm made points at nothing and is removed. Wrangler loads the binary from the platform package.
+await rm(join(modules, '.bin', 'workerd'), { force: true })
 const binaryType = execFileSync('file', ['-b', join(workerdPackage, 'bin', 'workerd')], { encoding: 'utf8' })
 if (!binaryType.includes(npmArch === 'x64' ? 'x86_64' : 'arm64')) {
   throw new Error(`workerd for ${arch} is the wrong architecture: ${binaryType}`)
