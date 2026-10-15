@@ -55,17 +55,19 @@ describe('members', () => {
     expect(getMember(doc, kid.id).role).toBe('admin')
   })
 
-  it('pins, unpins and reorders nav modules with a 5-slot limit', () => {
-    const { doc, admin } = newFamilyDoc()
+  it('pins, unpins and reorders nav modules with a 4-slot limit', () => {
+    const { doc, admin, kid } = newFamilyDoc()
     pinModule(doc, admin.id, 'calendar')
     pinModule(doc, admin.id, 'calendar')
     expect(getMember(doc, admin.id).nav_pinned).toEqual(['todos', 'shopping', 'calendar'])
     pinModule(doc, admin.id, 'goals')
-    pinModule(doc, admin.id, 'wishlist')
-    expect(() => pinModule(doc, admin.id, 'library')).toThrow('All 5 nav slots are full')
+    expect(() => pinModule(doc, admin.id, 'wishlist')).toThrow('All 4 nav slots are full')
     unpinModule(doc, admin.id, 'todos')
+    pinModule(doc, admin.id, 'wishlist')
     reorderPinned(doc, admin.id, ['wishlist', 'goals', 'calendar', 'shopping'])
     expect(getMember(doc, admin.id).nav_pinned).toEqual(['wishlist', 'goals', 'calendar', 'shopping'])
+    // Pins belong to each member: a second member's bottom menu is untouched.
+    expect(getMember(doc, kid.id).nav_pinned).toEqual(['todos', 'shopping'])
   })
 
   it('sorts deterministically across synced devices when members share a created_at second', () => {

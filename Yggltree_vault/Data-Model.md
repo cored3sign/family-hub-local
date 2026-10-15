@@ -33,10 +33,11 @@ top-level maps aren't in `COLLECTIONS` because they aren't record lists:
   legacy key kept for backup compatibility; the app no longer reads it (each
   member's theme is `theme_preference`, below). Read/written by
   `data/settings.js`'s `getSettings()` / `saveSettings()`.
-- **`modules_enabled`** (`Y.Map`, key → `true`) — which modules this family
-  has turned on. A map of independent keys rather than one array value on
-  purpose: two devices enabling *different* modules at once must both
-  survive, which an array last-writer-wins would not guarantee.
+- **`modules_enabled`** (`Y.Map`, key → `true`) — retired. Modules are no longer
+  switched on per family, so nothing writes this map now and nothing reads it.
+  Families set up before the change keep the old entries, unused. It was a map
+  of independent keys rather than one array, so two devices switching
+  *different* modules on at once would both survive.
 - **`meta`** (`Y.Map`) — `schema_version` and `created_at`. `isSetUp(doc)`
   is just `doc.getMap('meta').get('schema_version') != null`.
 
@@ -50,7 +51,7 @@ Records keep the snake_case column names used since the first release (see
 "Field names" below). The non-obvious or CRDT-relevant ones:
 
 - **`members`** — `name`, `role` (`admin`/`member`), `avatar_color`,
-  `avatar_asset_id`, `nav_pinned` (array, max 5, whole-value LWW),
+  `avatar_asset_id`, `nav_pinned` (array, max 4, whole-value LWW),
   `theme_preference` (one of the eight themes, or `null` for the default,
   coral; each member's own choice), `todo_default_view`, `has_seen_onboarding`.
 - **`todos`** — `title`, `status` (`todo`/`doing`/`done`),
@@ -127,7 +128,7 @@ helpers (`table`, `all`, `get`, `insert`, `patch`, `remove`,
   the UI always replaces wholesale (`recipe.ingredients`, `member.nav_pinned`)
   is stored as one plain JSON value — last-writer-wins is fine because
   there's one "owner" of the whole value at a time. A field that different
-  devices might add to *independently* (which modules are enabled, which
+  devices might add to *independently* (which modules are pinned, which
   announcements a member has read) gets its own map key instead, so two
   concurrent adds both survive rather than one overwriting the other.
 - **Deterministic ids for side effects that must not double-apply.**

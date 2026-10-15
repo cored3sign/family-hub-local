@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { newFamilyDoc, forkDoc, syncDocs } from './testing'
-import { getSettings, saveSettings, enableModule } from './settings'
+import { newFamilyDoc } from './testing'
+import { getSettings, saveSettings } from './settings'
 
 describe('settings', () => {
   it('saves family settings (admin only, validated)', () => {
@@ -16,12 +16,8 @@ describe('settings', () => {
     expect(getSettings(doc).theme.color_theme).toBe('coral')
   })
 
-  it('modules enabled on two devices at once both survive', () => {
-    const { doc: a, admin } = newFamilyDoc()
-    const b = forkDoc(a)
-    enableModule(a, admin, 'goals')
-    enableModule(b, admin, 'library')
-    syncDocs(a, b)
-    expect(getSettings(a).modules_enabled).toEqual(expect.arrayContaining(['todos', 'shopping', 'goals', 'library']))
+  it('has no per-family module list: every module is available to every family', () => {
+    const { doc } = newFamilyDoc()
+    expect(getSettings(doc)).not.toHaveProperty('modules_enabled')
   })
 })

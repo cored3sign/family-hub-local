@@ -120,7 +120,7 @@ const delay = (ms) => new Promise((r) => setTimeout(r, ms))
 async function seededHub() {
   const hubCtx = await hub()
   const A = await device()
-  setUpFamily(A.doc, { familyName: 'Test Family', adminName: 'Pat Parent', modules: ['todos'] })
+  setUpFamily(A.doc, { familyName: 'Test Family', adminName: 'Pat Parent' })
   const a = connect(A, configFor(hubCtx, 'hub-machine'))
   await until(a, (s) => s.mainSynced)
   const hubMain = await hubCtx.h._debug.doc('main')
@@ -243,7 +243,7 @@ describe('connectFamily against a real hub', () => {
     let A = await openFamily(names)
     let aliveA = A
     later(() => aliveA.destroy())
-    setUpFamily(A.doc, { familyName: 'Test Family', adminName: 'Pat Parent', modules: ['todos'] })
+    setUpFamily(A.doc, { familyName: 'Test Family', adminName: 'Pat Parent' })
     insert(A.doc, 'shopping_items', { title: 'Before backup', completed: false }, 'item-before')
     const storage = memoryStorage()
     const config = await applyPairing({

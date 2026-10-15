@@ -1,40 +1,22 @@
 <script setup>
-import { computed } from 'vue'
-import { useCoreStore } from '../stores/core'
 import YggltreeLogo from './YggltreeLogo.vue'
-import { addons, findAddon } from '../addons/registry'
+import { navigableAddons } from '../addons/registry'
 import {
-  LayoutGrid, LayoutDashboard, Grid2x2Plus,
+  LayoutGrid, LayoutDashboard,
   CheckCircle2, Calendar, ShoppingCart, Coins, ChefHat,
-  Megaphone, Target, Gift, Library, BookOpen,
+  Megaphone, Target, Gift, Library, BookOpen, Cake,
 } from 'lucide-vue-next'
 
-// Desktop-only left rail (>=1200px, see DashboardLayout.vue's desktop-shell
-// breakpoint). Unlike the mobile bottom-nav, there's no slot scarcity in a
-// tall left column, so every *enabled* module gets a permanent link here --
-// not just the member's `pinnedModules` (that pin/slot system exists purely
-// to solve "only 4 bottom-nav slots on a phone", which isn't a constraint
-// this layout has).
+// Desktop-only left rail (>=1200px, see DashboardLayout.vue's desktop-shell breakpoint). There's no slot scarcity
+// in a tall left column, so every module gets a permanent link here. Pins only shape the phone's bottom menu.
 const ICONS = {
   CheckCircle2, Calendar, ShoppingCart, Coins, ChefHat,
-  Megaphone, Target, Gift, Library, BookOpen,
+  Megaphone, Target, Gift, Library, BookOpen, Cake,
 }
-
-const core = useCoreStore()
 
 function iconFor(addon) {
   return ICONS[addon?.lucideIcon] || LayoutGrid
 }
-
-// Same route/component guard DashboardLayout.vue's validPinned and
-// ModulesPage.vue's openModule() already use: a coming_soon/flagged addon
-// (e.g. Advisors) has no route to link to even if it somehow ended up in
-// enabledModules.
-const enabledAddons = computed(() =>
-  core.enabledModules
-    .map(findAddon)
-    .filter((addon) => Boolean(addon?.route))
-)
 </script>
 
 <template>
@@ -50,7 +32,7 @@ const enabledAddons = computed(() =>
     <div class="desktop-nav__divider" role="separator" />
 
     <router-link
-      v-for="addon in enabledAddons"
+      v-for="addon in navigableAddons"
       :key="addon.key"
       :to="addon.route"
       class="desktop-nav__item"
@@ -62,11 +44,11 @@ const enabledAddons = computed(() =>
     <div class="desktop-nav__spacer" />
 
     <!-- CTA, not a plain nav link: primary-accent fill sets it apart from
-         the enabled-module list above, same visual language AppButton's
+         the module list above, same visual language AppButton's
          primary variant uses elsewhere in the app. -->
     <router-link to="/modules" class="desktop-nav__cta">
-      <Grid2x2Plus :size="20" />
-      <span>Add modules</span>
+      <LayoutGrid :size="20" />
+      <span>Modules</span>
     </router-link>
   </nav>
 </template>

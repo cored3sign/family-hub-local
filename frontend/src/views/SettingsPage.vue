@@ -1,5 +1,5 @@
 <script setup>
-// Settings. Not a toggleable module (no requireModuleEnabled gate on any
+// Settings. Not a module (there is no per-module gate on any
 // of its actions), same "platform, not add-on" tier as member
 // management/export -- manually routed in router.js, same precedent as
 // /modules.

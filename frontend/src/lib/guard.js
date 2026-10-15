@@ -1,6 +1,6 @@
 // The router guard's decision, pure.
 //
-// state: { familyReady, memberId, enabledModules, canSetUp, pendingReplace }
+// state: { familyReady, memberId, canSetUp, pendingReplace, needsAdminPin }
 //   memberId is core's RESOLVED member (getMember on the current doc), so a
 //   stale fh.memberId from a replaced family is already null here.
 //
@@ -18,7 +18,5 @@ export function decideRoute(s, to) {
   // An admin with no PIN yet sets one before anything else.
   if (s.needsAdminPin) return to.name === 'set-pin' ? true : { name: 'set-pin' }
   if (to.name === 'set-pin') return { path: '/' }
-  const key = to.meta?.moduleKey
-  if (key && !s.enabledModules.includes(key)) return { path: '/' }
   return true
 }

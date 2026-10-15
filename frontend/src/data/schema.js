@@ -29,7 +29,7 @@ export function isSetUp(doc) {
   return hasFamily(doc)
 }
 
-export function setUpFamily(doc, { familyName, adminName, modules = [] }) {
+export function setUpFamily(doc, { familyName, adminName }) {
   const name = blankToNull(familyName)
   if (!name) throw new Error('Family name is required')
   if (!blankToNull(adminName)) throw new Error('Your name is required')
@@ -37,7 +37,7 @@ export function setUpFamily(doc, { familyName, adminName, modules = [] }) {
   doc.transact(() => {
     doc.getMap('meta').set('schema_version', SCHEMA_VERSION)
     doc.getMap('meta').set('created_at', nowStamp())
-    seedSettings(doc, { familyName: name, modules })
+    seedSettings(doc, { familyName: name })
     adminId = addMember(doc, { name: adminName, role: 'admin' })
     for (const p of DEFAULT_CHECKIN_PROMPTS) {
       insert(doc, 'checkin_prompts', { prompt_text: p.prompt_text, prompt_type: p.prompt_type, active: true }, p.id)

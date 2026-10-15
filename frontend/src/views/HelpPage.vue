@@ -1,6 +1,6 @@
 <script setup>
 // Help page: tutorial replay, install instructions and the live Sync card.
-// Not a toggleable module (no requireModuleEnabled gate), same
+// Not a module (there is no per-module gate), same
 // platform-level tier as Settings/Modules -- manually routed in router.js,
 // same precedent as those two.
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'

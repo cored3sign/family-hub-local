@@ -44,10 +44,8 @@ function goTo(path) {
 }
 
 // Reads are synchronous local-doc lookups, so there is nothing to
-// await and no loading state to track. Local reads are free and safe
-// whether or not a module is enabled, so every list is read
-// unconditionally here -- the `has(...)` guards below still gate which
-// cards *render*.
+// await and no loading state to track. Every module is available to every
+// family, so every card renders.
 const todos = useLive(listTodos)
 const events = useLive(listEvents)
 const chores = useLive(listChores)
@@ -58,8 +56,6 @@ const members = useLive(listMembers)
 // listMembers doesn't carry funds_balance.
 const fundsMembers = useLive(membersWithBalances)
 const budgetItems = useLive(listBudgets)
-
-const has = (key) => core.enabledModules.includes(key)
 
 onMounted(() => {
   shuffleCardOrder()
@@ -253,7 +249,7 @@ const upcomingEventsList = computed(() =>
 )
 
 // ---------------------------------------------------------------------
-// Funds/Budgets highlight (guarded by has('funds') above). Two plain stat
+// Funds/Budgets highlight. Two plain stat
 // tiles, not a spend-vs-budget ring: budget_items only tracks a planned
 // monthly amount per category, there is no expense/spend ledger anywhere
 // in the data to compare it against, so a "$ spent of $ budgeted" ring
@@ -281,7 +277,7 @@ const hasAnyData = computed(() =>
 // lifetime of this visit (not re-rolled on every reactive update, which
 // would make the layout jump around while charts re-render after a
 // toggle/save). Each card's own v-if gating is unchanged; a card simply
-// isn't in `cardOrder` if its module isn't enabled or it has no data.
+// isn't in `cardOrder` if it has no data.
 const CARD_KEYS = ['chores', 'calendar', 'funds']
 const cardOrder = ref([...CARD_KEYS])
 function shuffleCardOrder() {
@@ -322,7 +318,6 @@ function cardStyle(key) {
            through to the To-do module (dashboard tiles are a
            jumping-off point, not just a display). -->
       <section
-        v-if="has('todos')"
         class="chart-card chart-card--hero chart-card--link"
         role="link"
         tabindex="0"
@@ -358,7 +353,7 @@ function cardStyle(key) {
            targets stop propagation so hovering for a tooltip doesn't also
            navigate. Order shuffled per visit alongside This Week / Funds. -->
       <section
-        v-if="has('chores_funds') && choresByMember.length"
+        v-if="choresByMember.length"
         class="chart-card chart-card--link"
         role="link"
         tabindex="0"
@@ -398,7 +393,6 @@ function cardStyle(key) {
       <!-- Events this week: hero count + 7-bar sparkline, single hue.
            Clickable through to Calendar. -->
       <section
-        v-if="has('calendar')"
         class="chart-card chart-card--link"
         role="link"
         tabindex="0"
@@ -447,7 +441,6 @@ function cardStyle(key) {
            complete on its own even without Chores enabled. Clickable
            through to Funds. -->
       <section
-        v-if="has('funds')"
         class="chart-card chart-card--link"
         role="link"
         tabindex="0"
@@ -475,7 +468,7 @@ function cardStyle(key) {
            viewer's own open items — the charts above summarize, this lets
            you act. -->
       <section
-        v-if="has('todos') && myTodos.filter((t) => t.status !== 'done').length"
+        v-if="myTodos.filter((t) => t.status !== 'done').length"
         class="chart-card chart-card--link"
         role="link"
         tabindex="0"
@@ -498,14 +491,14 @@ function cardStyle(key) {
 
       <!-- Module shortcuts: unchanged utility, demoted below the data
            summary since it's navigation, not data. -->
-      <section v-if="has('shopping') || has('goals')" class="dash-shortcuts" style="order: 5">
-        <router-link v-if="has('shopping')" to="/shopping" class="dash-shortcut">
+      <section class="dash-shortcuts" style="order: 5">
+        <router-link to="/shopping" class="dash-shortcut">
           <div class="dash-shortcut__icon dash-shortcut__icon--shopping">
             <ShoppingCart :size="20" />
           </div>
           <span>Shopping</span>
         </router-link>
-        <router-link v-if="has('goals')" to="/goals" class="dash-shortcut">
+        <router-link to="/goals" class="dash-shortcut">
           <div class="dash-shortcut__icon dash-shortcut__icon--goal">
             <Target :size="20" />
           </div>

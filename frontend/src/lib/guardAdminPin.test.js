@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { decideRoute } from './guard.js'
 
-const ready = { familyReady: true, memberId: 'm1', enabledModules: ['todos'], canSetUp: false, pendingReplace: null, needsAdminPin: false }
+const ready = { familyReady: true, memberId: 'm1', canSetUp: false, pendingReplace: null, needsAdminPin: false }
 const route = (name, meta = {}) => ({ name, meta })
 
 describe('an admin with no PIN yet', () => {

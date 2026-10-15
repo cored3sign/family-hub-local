@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { decideRoute } from './guard.js'
 
-const ready = { familyReady: true, memberId: 'm1', enabledModules: ['todos'], canSetUp: false, pendingReplace: null }
+const ready = { familyReady: true, memberId: 'm1', canSetUp: false, pendingReplace: null }
 const route = (name, meta = {}) => ({ name, meta })
 
 describe('decideRoute', () => {
@@ -41,12 +41,12 @@ describe('decideRoute', () => {
     // core.refresh() resolves fh.memberId through getMember(); an id from a
     // replaced family resolves to null, which is all the guard ever sees.
     const s = { ...ready, memberId: null }
-    expect(decideRoute(s, route('todos', { moduleKey: 'todos' }))).toEqual({ name: 'profiles' })
+    expect(decideRoute(s, route('todos'))).toEqual({ name: 'profiles' })
   })
 
-  it('a locked module goes to /', () => {
-    expect(decideRoute(ready, route('shopping', { moduleKey: 'shopping' }))).toEqual({ path: '/' })
-    expect(decideRoute(ready, route('todos', { moduleKey: 'todos' }))).toBe(true)
+  it('every module is open to a member with a profile; there is no per-module lock', () => {
+    expect(decideRoute(ready, route('shopping'))).toBe(true)
+    expect(decideRoute(ready, route('birthdays'))).toBe(true)
     expect(decideRoute(ready, route('dashboard'))).toBe(true)
   })
 })

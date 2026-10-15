@@ -18,7 +18,7 @@ export function syncDocs(a, b) {
 
 export function newFamilyDoc() {
   const doc = new Y.Doc()
-  const adminId = setUpFamily(doc, { familyName: 'Test Family', adminName: 'Pat Parent', modules: ['todos', 'shopping'] })
+  const adminId = setUpFamily(doc, { familyName: 'Test Family', adminName: 'Pat Parent' })
   const kidId = addMember(doc, { name: 'Kit Kid' })
   return { doc, admin: actorFor(doc, adminId), kid: actorFor(doc, kidId) }
 }

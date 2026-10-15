@@ -235,7 +235,7 @@ describe('confirmReplace: wipe and pull', () => {
 
   it('a backup taken after the wipe destroyed the docs still round-trips the family', async () => {
     const fam = await openFamily({ persist: false })
-    setUpFamily(fam.doc, { familyName: 'Test Family', adminName: 'Pat Parent', modules: ['todos'] })
+    setUpFamily(fam.doc, { familyName: 'Test Family', adminName: 'Pat Parent' })
     setFamilyForTests(fam)
     wipe = async ({ current }) => {
       await current.destroy() // what wipeLocalFamily does before deleting

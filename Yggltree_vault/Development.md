@@ -170,8 +170,9 @@ Rules that keep a new page consistent with the rest of the app:
    must print nothing, `npm run build` must succeed, and `npm test` must
    pass.
 7. Register the module in `src/addons/registry.js` (route, lazy
-   `component()` import, icon) so it appears in the nav and the `/modules`
-   catalog.
+   `component()` import, icon, one-line description). Every registered module
+   is available to every family, and appears in the desktop nav and on the
+   Modules page, where members pin it to their phone's bottom menu.
 
 ## Id rules
 

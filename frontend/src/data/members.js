@@ -6,7 +6,8 @@ import { randomBytes, bytesToHex, hexToBytes } from '@noble/hashes/utils.js'
 
 const T = 'members'
 export const AVATAR_COLORS = ['#e76f51', '#2a9d8f', '#e9c46a', '#264653', '#8e7dbe', '#f4a261', '#4d5faf', '#d62828']
-export const NAV_SLOT_LIMIT = 5
+// The bottom menu on a phone has four slots (DashboardLayout.vue's slotCount).
+export const NAV_SLOT_LIMIT = 4
 const EDITABLE = ['name', 'role', 'avatar_color', 'avatar_asset_id', 'theme_preference', 'todo_default_view', 'has_seen_onboarding']
 
 export function listMembers(doc) {

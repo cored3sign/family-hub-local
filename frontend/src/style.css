@@ -65,10 +65,10 @@
      second brand color, not a new module identity of their own. */
   --tile-communication: linear-gradient(135deg, var(--accent-soft), var(--accent));
 
-  /* Module-specific icon-tile accents (ModuleCard.vue catalog grid): Goals
+  /* Module-specific icon-tile accents (the Modules page): Goals
      and Family Binder both use --accent directly on their own pages (a
      per-goal color and a plain coral tile, respectively, neither a fixed
-     module identity), so the catalog grid -- where every module's tile
+     module identity), so the Modules page -- where every module's tile
      sits side by side -- needs its own distinct color for each rather than
      three modules (Chores+Funds, Goals, Binder) all rendering the same
      coral tile. Rose

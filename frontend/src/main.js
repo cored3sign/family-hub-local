@@ -20,7 +20,6 @@ import EmptyState from './components/EmptyState.vue'
 import FormField from './components/FormField.vue'
 import ListRow from './components/ListRow.vue'
 import NotificationBell from './components/NotificationBell.vue'
-import ModuleCard from './components/ModuleCard.vue'
 import BarcodeScanner from './components/BarcodeScanner.vue'
 import FilterButton from './components/FilterButton.vue'
 import UpdatePrompt from './components/UpdatePrompt.vue'
@@ -44,7 +43,6 @@ app.component('EmptyState', EmptyState)
 app.component('FormField', FormField)
 app.component('ListRow', ListRow)
 app.component('NotificationBell', NotificationBell)
-app.component('ModuleCard', ModuleCard)
 app.component('BarcodeScanner', BarcodeScanner)
 app.component('FilterButton', FilterButton)
 app.component('UpdatePrompt', UpdatePrompt)

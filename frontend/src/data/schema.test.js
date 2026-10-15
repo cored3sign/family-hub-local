@@ -10,10 +10,10 @@ describe('setUpFamily', () => {
   it('creates settings, an admin and the default check-in prompts', () => {
     const doc = new Y.Doc()
     expect(isSetUp(doc)).toBe(false)
-    const adminId = setUpFamily(doc, { familyName: 'Rivera', adminName: 'Sam', modules: ['todos', 'shopping'] })
+    const adminId = setUpFamily(doc, { familyName: 'Rivera', adminName: 'Sam' })
     expect(isSetUp(doc)).toBe(true)
     expect(getMember(doc, adminId)).toMatchObject({ name: 'Sam', role: 'admin', nav_pinned: ['todos', 'shopping'] })
-    expect(getSettings(doc)).toMatchObject({ family_name: 'Rivera', week_start_day: 'sunday', modules_enabled: ['shopping', 'todos'] })
+    expect(getSettings(doc)).toMatchObject({ family_name: 'Rivera', week_start_day: 'sunday' })
     expect(all(doc, 'checkin_prompts')).toHaveLength(DEFAULT_CHECKIN_PROMPTS.length)
   })
 

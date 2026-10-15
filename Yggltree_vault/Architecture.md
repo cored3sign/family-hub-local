@@ -72,7 +72,7 @@ src/data/
   session.js       device-local "current member id" (localStorage)
   schema.js        SCHEMA_VERSION, COLLECTIONS, isSetUp(), setUpFamily()
   members.js       members, admin checks, actorFor(), nav pins
-  settings.js      family settings, enabled modules
+  settings.js      family settings
   notifications.js notify() + bell queries
   assets.js        image bytes in the asset doc; resizeImage(); reactive assetUrl()
   backupFormat.js  createBackup/parseBackup/hasFamily -- pure, shared with the hub
@@ -238,7 +238,7 @@ every page reads from it synchronously on first render:
 `stores/core.js` (Pinia) is a **read-model**, not a source of truth: its
 `refresh()` pulls `isSetUp`, `getSettings`, `getMember(currentMemberId())`,
 and the member's pinned modules straight from the doc on every transaction.
-Actions like `createFamily`, `selectMember`, `addModule` and
+Actions like `createFamily`, `selectMember`, `pinModule` and
 `pinModule` are thin wrappers that call into `data/schema.js`,
 `data/settings.js` and `data/members.js` and let the next `refresh()` pick
 up the result — there's no separate mutation path to keep in sync.
@@ -255,8 +255,8 @@ plain `window.alert()` instead of failing silently.
 ## The router guard
 
 `src/router.js`'s `beforeEach` calls the pure `decideRoute()` in
-`src/lib/guard.js`, with `{ familyReady, memberId, enabledModules,
-canSetUp, pendingReplace }`:
+`src/lib/guard.js`, with `{ familyReady, memberId, canSetUp, pendingReplace,
+needsAdminPin }`:
 
 1. **A pending replace or adopt?** Everything goes to `/connect`, which
    asks the user.
@@ -269,8 +269,9 @@ canSetUp, pendingReplace }`:
 4. **No profile chosen on this device?** (`core.memberId`, resolved
    against the current doc, so a stale id from a replaced family counts as
    none.) Everything goes to `/profiles`.
-5. **Is the target route's module enabled?** (`to.meta.moduleKey` against
-   `core.enabledModules`.) A locked module's route never mounts.
+5. **Otherwise** the route opens. There is no per-module lock: every module is
+   available to every family, and a member pins the ones they want to their
+   bottom menu on a phone (`views/ModulesPage.vue`).
 
 Guards only run on navigation, so `ConnectPage` and `SetupPage` each watch
 `core.familyReady` / `sync.canSetUp` and `router.replace('/')` when it

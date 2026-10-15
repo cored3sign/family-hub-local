@@ -5,7 +5,7 @@
 // (admin-only -- see data/modules/binder.js's requireAdmin calls for the
 // reasoning).
 // ONE responsive component that reflows between a mobile accordion
-// and a desktop tab-strip via CSS, same pattern as ModuleCard/AppModal/
+// and a desktop tab-strip via CSS, same pattern as AppModal/
 // AssigneeFilterChips -- not two
 // parallel implementations. The state model that makes one markup tree work
 // for both: `activeSectionId` picks the "open" section. On mobile every

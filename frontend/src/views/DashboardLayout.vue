@@ -3,7 +3,7 @@ import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCoreStore } from '../stores/core'
 import { useOnboardingStore } from '../stores/onboarding'
-import { findAddon } from '../addons/registry'
+import { findAddon, navigableAddons } from '../addons/registry'
 import { assetUrl } from '../data/assets'
 import { useFamily } from '../data/vue'
 import { recordBirthdayReminders } from '../data/modules/birthdays'
@@ -42,16 +42,10 @@ function iconFor(addon) {
 // count.
 const slotCount = 4
 
-// Config-driven nav: only render pinned modules that are
-// both enabled (entitlement) AND known to the frontend registry, AND have
-// an actual route to link to. `coming_soon`/`flagged` registry entries
-// (e.g. Recipes) intentionally have no `route`/`component` yet — if one
-// somehow ends up in pinned+enabled data (e.g. stale seed data),
-// rendering it would hand <router-link> an undefined `to` and throw on
-// resolve. Mirrors the guard ModulesPage.vue's openModule() already uses.
+// The phone's bottom menu: the member's pins, in their order. A pin that doesn't match a module with a page (stale
+// data) is skipped, so the nav never links to nothing.
 const validPinned = computed(() =>
   core.pinnedModules
-    .filter((key) => core.enabledModules.includes(key))
     .map(findAddon)
     .filter((addon) => Boolean(addon?.route))
 )
@@ -79,16 +73,10 @@ const navSequence = computed(() => {
   return seq
 })
 
-// Quick-select drawer contents: every enabled module NOT currently
-// occupying a visible slot -- covers both "never pinned" and "pinned but
-// overflowing this breakpoint's slot count" in one list, since both are
-// just "enabled, but not reachable from the nav right now."
+// Quick-select drawer contents: every module NOT currently occupying a visible slot. That covers both "never
+// pinned" and "pinned but overflowing this breakpoint's slot count", since both are just "not in the nav right now."
 const visibleKeys = computed(() => new Set(visibleNavItems.value.map((a) => a.key)))
-const quickSelectModules = computed(() =>
-  core.enabledModules
-    .map(findAddon)
-    .filter((addon) => Boolean(addon?.route) && !visibleKeys.value.has(addon.key))
-)
+const quickSelectModules = computed(() => navigableAddons.filter((addon) => !visibleKeys.value.has(addon.key)))
 
 const drawerOpen = ref(false)
 // null = opened via the FAB (tapping a module just navigates); a number =
@@ -212,7 +200,7 @@ onUnmounted(() => {
 //     by the mobile/desktop breakpoint -- the `needsDrawer` watch below
 //     still force-opens it for step 3 on desktop exactly as on mobile, so
 //     the drawer and its "More modules" link are real and clickable there
-//     too. Desktop users can already reach every enabled module directly
+//     too. Desktop users can already reach every module directly
 //     from the rail, but this step is about the FULL, not-yet-enabled
 //     catalog (/modules), which the drawer's link also surfaces -- still a
 //     real, sensible anchor on desktop, not just a non-broken fallback.
@@ -245,14 +233,14 @@ const ONBOARDING_STEPS = computed(() => {
       // target (see OnboardingCallout.vue's own isRealAnchor handling).
       selector: '.desktop-nav__divider + .desktop-nav__item',
       placement: 'below',
-      text: 'Your enabled modules show up here in the sidebar.',
+      text: 'Every module is in this sidebar.',
     },
     {
       // Step 2 (desktop): DesktopNav.vue's "Add modules" CTA, the desktop
       // equivalent of the mobile FAB.
       selector: '.desktop-nav__cta',
       placement: 'above',
-      text: 'Add more modules here anytime.',
+      text: 'The Modules page is here. Use it any time to see everything Yggltree does.',
     },
   ]
   const mobileSteps = [
@@ -282,7 +270,7 @@ const ONBOARDING_STEPS = computed(() => {
       // breakpoints -- see comment above.
       selector: '.quick-drawer__more',
       placement: 'above',
-      text: 'Browse the full catalog here to see every module Yggltree offers.',
+      text: 'Open Modules to pin your favorites to this menu, in the order you want.',
     },
     {
       // Step 4: the topbar avatar/menu trigger -- Settings, Help,
@@ -391,7 +379,7 @@ function onOnboardingClose() {
     </header>
 
     <!-- Desktop shell only (>=1200px, see .app-shell's media query below):
-         a permanent 1/4-width left rail listing every enabled module, plus
+         a permanent 1/4-width left rail listing every module, plus
          an accent-colored "Add modules" CTA. Below the breakpoint this
          simply doesn't render -- the mobile bottom-nav (further down)
          covers navigation instead. -->
@@ -415,7 +403,7 @@ function onOnboardingClose() {
         <button v-else-if="entry.type === 'fab'" type="button" class="nav-fab" aria-label="More modules" @click="openDrawer(null)">
           <Grid2x2Plus :size="28" />
         </button>
-        <button v-else type="button" class="nav-item nav-item--empty" aria-label="Add a module to this slot" @click="openDrawer(entry.slotIndex)">
+        <button v-else type="button" class="nav-item nav-item--empty" aria-label="Pin a module to this slot" @click="openDrawer(entry.slotIndex)">
           <Plus :size="26" class="nav-icon" />
           <span class="nav-label">Add</span>
         </button>

@@ -518,85 +518,6 @@ button:focus-visible {
   color: var(--text-muted);
 }
 
-/* ModuleCard — mobile: stacked list row. Desktop: grid tile. One component,
-   reflowed via CSS, not two layouts. */
-.module-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.module-card {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 14px;
-  padding: 14px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  transition: box-shadow 120ms ease, border-color 120ms ease;
-}
-
-.module-card:hover {
-  box-shadow: var(--elevation-1);
-  border-color: color-mix(in srgb, var(--text) 16%, var(--border));
-}
-
-.module-card--muted {
-  opacity: 0.72;
-}
-
-.module-card--enabled {
-  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
-}
-
-.module-card__icon {
-  font-size: 22px;
-  line-height: 1;
-  flex-shrink: 0;
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--surface-variant);
-  color: var(--text-muted);
-  border-radius: 12px;
-}
-
-.module-card__icon--tinted {
-  color: var(--accent-contrast);
-}
-
-.module-card__body {
-  flex: 1;
-  min-width: 200px;
-}
-
-.module-card__top {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.module-card__label {
-  font: var(--type-title);
-  margin: 0;
-}
-
-.module-card__desc {
-  font: var(--type-body);
-  font-size: 14px;
-  color: var(--text-muted);
-  margin: 2px 0 0;
-}
-
-.module-card__action {
-  flex-shrink: 0;
-}
-
 .app-tag--muted {
   color: var(--text-muted);
   background: var(--surface-variant);
@@ -611,42 +532,6 @@ button:focus-visible {
   cursor: pointer;
 }
 
-.catalog-category {
-  margin-bottom: 28px;
-}
-
-.catalog-category h3 {
-  margin-bottom: 12px;
-}
-
-@media (min-width: 900px) {
-  .module-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 14px;
-  }
-
-  .module-card {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-
-  .module-card__top {
-    width: 100%;
-  }
-
-  .module-card__action {
-    width: 100%;
-  }
-
-  .module-card__action .app-btn,
-  .module-card__action .app-tag {
-    width: 100%;
-    text-align: center;
-    display: block;
-  }
-}
 
 /* UpdatePrompt (force-update on stale PWA build) -- a top banner,
    fixed above .topbar (z-index 10, style.css) so it's never hidden behind

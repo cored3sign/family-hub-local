@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { family } from '../data/family'
 import { isSetUp, setUpFamily } from '../data/schema'
 import { blankToNull } from '../data/collection'
-import { getSettings, enableModule } from '../data/settings'
+import { getSettings } from '../data/settings'
 import { actorFor, getMember, updateMember, pinModule, unpinModule, reorderPinned } from '../data/members'
 import { currentMemberId, setCurrentMemberId } from '../data/session'
 import { refreshPresence } from '../data/presence.js'
@@ -27,7 +27,6 @@ export const useCoreStore = defineStore('core', {
     todoDefaultView: null,
     config: null,
     moduleRegistry: Object.fromEntries(addons.map((a) => [a.key, a])),
-    enabledModules: [],
     pinnedModules: [],
     // This member's own theme pick, or null for the default (coral).
     memberTheme: null,
@@ -57,7 +56,6 @@ export const useCoreStore = defineStore('core', {
       const settings = getSettings(doc)
       this.config = settings
       this.familyName = settings.family_name || null
-      this.enabledModules = settings.modules_enabled
       // An fh.memberId that isn't in this family (e.g. left over from a
       // family this device replaced) resolves to no member -> /profiles.
       const member = this.familyReady ? getMember(doc, currentMemberId()) : null
@@ -92,11 +90,10 @@ export const useCoreStore = defineStore('core', {
         this.refresh()
         throw new Error(ALREADY_SET_UP_MESSAGE)
       }
-      const available = addons.filter((a) => a.route && a.component).map((a) => a.key)
       // The claim id is kept until the family has synced to the hub (the
       // sync store releases it then), so a hub restart before the upload
       // can still accept this tab's claim.
-      const adminId = setUpFamily(family().doc, { familyName, adminName, modules: available })
+      const adminId = setUpFamily(family().doc, { familyName, adminName })
       this.selectMember(adminId)
     },
 
@@ -111,10 +108,6 @@ export const useCoreStore = defineStore('core', {
       setCurrentMemberId(null)
       refreshPresence()
       this.refresh()
-    },
-
-    addModule(moduleKey) {
-      enableModule(family().doc, actorFor(family().doc, this.memberId), moduleKey)
     },
 
     pinModule(moduleKey) {
