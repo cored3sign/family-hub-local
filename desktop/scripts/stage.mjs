@@ -48,12 +48,15 @@ execFileSync('npm', ['ci', '--omit=dev', '--ignore-scripts', '--no-audit', '--no
 })
 await rm(join(out, 'hub', 'package-lock.json'))
 
-// The relay: prebuilt static files, its source, and Wrangler with the workerd binary for this architecture.
+// The relay: its source, the app it serves to phones, and Wrangler with the workerd binary for this architecture.
 // Its dependencies come from its own lockfile, installed the same way.
 await mkdir(join(out, 'relay'), { recursive: true })
-for (const entry of ['src', 'public', 'wrangler.jsonc', 'package.json', 'package-lock.json']) {
+for (const entry of ['src', 'wrangler.jsonc', 'package.json', 'package-lock.json']) {
   await cp(join(repo, 'relay', entry), join(out, 'relay', entry), { recursive: true })
 }
+// The phones' app is the build the hub serves, copied the way relay/package.json's build:app does. It comes
+// from frontend/dist, not from relay/public, which is a leftover from an earlier build and can be stale.
+await cp(join(repo, 'frontend', 'dist'), join(out, 'relay', 'public'), { recursive: true })
 execFileSync('npm', ['ci', '--ignore-scripts', '--no-audit', '--no-fund', `--cpu=${npmArch}`, '--os=darwin'], {
   cwd: join(out, 'relay'),
   stdio: 'inherit',

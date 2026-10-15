@@ -2,9 +2,10 @@
 # DMGs and their checksums on a GitHub release. Bump the version in the root package.json first:
 # the app reports that number.
 #
-# Only the publish job can write to the repository. The build jobs run dependency install scripts
-# and tests, so they get a read-only token and don't keep the checkout's credentials. Actions are
-# pinned to commit SHAs (the v4 releases at the time of writing); change them on purpose.
+# Only the publish job can write to the repository. The build jobs get a read-only token and don't keep
+# the checkout's credentials. They install with --ignore-scripts: the Mac build needs none of the
+# dependencies' install scripts (Electron downloads its own binary when packaging). Actions are pinned
+# to commit SHAs (the v4 releases at the time of writing); change them on purpose.
 name: Release
 
 on:
@@ -34,7 +35,7 @@ jobs:
           node-version: 22
       - name: Install and test
         run: |
-          npm ci
+          npm ci --ignore-scripts
           npm test -w hub
           npm test -w frontend
       - name: Build the frontend
@@ -42,7 +43,7 @@ jobs:
       - name: Build the desktop app
         working-directory: desktop
         run: |
-          npm ci
+          npm ci --ignore-scripts
           npm test
           node scripts/stage.mjs --arch ${{ matrix.arch }}
           npx electron-builder --mac --${{ matrix.arch }} --publish never
