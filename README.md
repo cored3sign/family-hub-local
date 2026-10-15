@@ -32,13 +32,15 @@ other way round:
   "something changed" ping, with no content.
 - **Open Library**, only if you look up a book by its ISBN: the ISBN is sent, and
   the cover loads from it.
+- **GitHub**, only for the Mac app's daily check for a newer version. You can turn
+  the check off in the menu bar.
 - **The Yggltree maintainers:** nothing. There are no servers and no analytics.
 
 Phones join by **scanning a QR code**, and they sync from anywhere. There's no
 family account to create and no subscription.
 
-> **On a phone right now?** Set up Yggltree on your family computer first,
-> then set up the family relay. The full walkthrough is in
+> **On a phone right now?** Set up Yggltree on your family's Mac first, then set up
+> the family relay. The full walkthrough is in
 > [`GETTING_STARTED.md`](GETTING_STARTED.md).
 
 ## What's in it
@@ -50,43 +52,34 @@ offline and syncs when it can.
 
 ## Quick start
 
-You need a Mac or Windows computer that stays at home, a free
-[Cloudflare](https://cloudflare.com) account for the family relay, and
-[Node.js](https://nodejs.org) **22.12 or newer** (install the LTS version).
+You need a Mac that stays at home and a free [Cloudflare](https://cloudflare.com)
+account for the family relay. (Windows is coming next.)
 
-1. **Install Node.js** from [nodejs.org](https://nodejs.org) (the LTS
-   installer).
-2. **Get Yggltree:** on GitHub, click **Code → Download ZIP** and unzip it.
-   Or clone it:
+1. **Download Yggltree** for your Mac:
+   - **Apple silicon** (M1 and later): [Yggltree-arm64.dmg](https://github.com/cored3sign/yggltree/releases/latest/download/Yggltree-arm64.dmg)
+   - **Intel:** [Yggltree-x64.dmg](https://github.com/cored3sign/yggltree/releases/latest/download/Yggltree-x64.dmg)
 
-   ```sh
-   git clone https://github.com/cored3sign/yggltree.git
-   ```
-3. **Start it:** double-click **Start Yggltree** in the folder
-   (`Start Yggltree.command` on a Mac, `Start Yggltree.bat` on
-   Windows), or run this in the folder:
+   Not sure which? Choose **About This Mac** from the Apple menu. "Chip: Apple M…"
+   means Apple silicon; "Processor: Intel" means Intel.
+2. **Drag Yggltree into Applications**, then open it from there. The first time,
+   macOS may say it can't check the app. Open **System Settings → Privacy &
+   Security**, scroll down, click **Open Anyway**, then open Yggltree again.
+   (On macOS 14 and earlier, right-click Yggltree and choose **Open**.)
+3. **Set up your family** in the window that opens. Yggltree stays in the menu bar
+   while the window is closed, so phones keep syncing.
+4. **Set up the family relay:** in **Settings → Sync**, connect your Cloudflare
+   account and name your relay. Yggltree creates it on your account.
+5. **Add devices:** in **Settings → Sync**, expand **Add a device** and scan the
+   family QR code with each phone.
 
-   ```sh
-   npm start
-   ```
+Everything an admin needs afterwards is in the menu bar: restart Yggltree, update
+the relay, back up, and reset an admin PIN.
 
-   The first start installs and builds the app, which takes a few minutes.
-   Keep the window open while your family uses Yggltree.
-4. **Open [http://localhost:8787](http://localhost:8787)** on that computer
-   (it usually opens by itself) and set up your family.
-5. **Set up the family relay:** in **Settings → Sync**, connect your
-   Cloudflare account and name your relay. Yggltree creates it on your account.
-   [`relay/README.md`](relay/README.md) explains the steps.
-6. **Add devices:** on each phone, open the relay address, add it to the Home
-   Screen, and scan the family QR code shown in **Settings → Sync**.
-
-Your family's data is stored in a data folder outside the program folder
-(on a Mac, `~/Library/Application Support/Yggltree`; on Windows,
-`%APPDATA%\Yggltree`), so updating Yggltree never touches it.
+Your family's data is stored in `~/Library/Application Support/Yggltree`, so
+updating Yggltree never touches it.
 
 **➡️ See [`GETTING_STARTED.md`](GETTING_STARTED.md)** for the step-by-step
-guide: installing on Mac and Windows, the family relay, adding devices, keeping
-it running, backups, and troubleshooting.
+guide: setting up the relay, adding devices, backups, updates, and troubleshooting.
 
 ## How it works
 
@@ -97,9 +90,8 @@ it locally, so nothing waits on the network. Devices merge their changes using
 - **The family relay** is a small service on your own Cloudflare account. It
   holds your family's data encrypted, so phones sync with each other from
   anywhere. The relay can't read the data. See [`relay/README.md`](relay/README.md).
-- **The family computer** runs a small local server (one Node.js process) that
-  serves the app and keeps the family's data on that computer. It listens on
-  this computer only.
+- **The Mac app** runs a small local server, the family's hub, and keeps the
+  family's data on that computer. The hub listens on this computer only.
 - Phones join with a QR code from **Settings → Sync**. No passwords.
 - Phones open the app over HTTPS from the relay, so they open without a
   connection once they've been opened. Changes made without a connection sync
@@ -110,13 +102,28 @@ it locally, so nothing waits on the network. Devices merge their changes using
 Developer and design notes live in the [`Yggltree_vault/`](Yggltree_vault/Home.md)
 folder, an Obsidian vault that also reads fine on GitHub.
 
+## Running from source (developers)
+
+You need [Node.js](https://nodejs.org) **22.12 or newer**. From a clone of this
+repository:
+
+```sh
+npm start
+```
+
+The first start installs and builds the app. Then open
+[http://localhost:8787](http://localhost:8787) on that computer. On a Mac or
+Windows, double-click `Start Yggltree.command` or `Start Yggltree.bat` instead.
+The developer notes in [`Yggltree_vault/Development.md`](Yggltree_vault/Development.md)
+cover tests, builds, and the desktop app's packaging.
+
 ## Roadmap
 
+- **Windows app**, built from the same desktop code as the Mac app.
+- **A signed Mac app**, so the first open needs no extra step.
 - **A hub on a cloud account you control**, for families without an always-on
   computer.
 - **Removing one lost phone** from the family, which needs a family key change.
-- **A desktop app wrapper** (Tauri or Electron), so the hub runs without a
-  terminal window.
 - **Store apps for phones** (Capacitor), for a full offline app that works
   away from home.
 

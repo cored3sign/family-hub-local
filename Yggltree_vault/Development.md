@@ -197,6 +197,41 @@ Automated tests cover the data layer, the hub and the sync logic. Checks in a
 real browser (layout, the install flow on phones, the join screens) are done
 by hand for now. There is no committed end-to-end script yet.
 
+## The Mac app (desktop/)
+
+The Mac app is the family's installed copy of Yggltree: a window and a menu-bar
+leaf around the hub, built with Electron. `desktop/` has its own `package.json`
+and is not a workspace, so the source install doesn't pull in Electron.
+
+- **Run it from source:** `cd desktop && npm install && npx electron .` (set
+  `YGGLTREE_DESKTOP_PORT` to use another port, and `--user-data-dir=<dir>` for a
+  separate data folder while testing). Build the frontend first: `npm run build`
+  at the root.
+- **Tests:** `cd desktop && npm test` (Node's test runner; no Electron needed). The
+  menu contents, the hub's start, stop and restart, and the version check are pure
+  and tested. The window and tray are checked by hand.
+- **Packaging:** from the repository root, `npm run build`, then
+  `cd desktop && node scripts/stage.mjs --arch arm64` (or `x64`), then
+  `npx electron-builder --mac --arm64` (or `--x64`). The output is
+  `desktop/dist/Yggltree-<arch>.dmg`. Each DMG carries one architecture, because
+  Wrangler's `workerd` binary is about 135 MB per architecture. `stage.mjs`
+  assembles the hub, the frontend build and the relay (with its own Wrangler) into
+  `desktop/build/app-hub`, and trims what the deploy never loads.
+- **How the packaged app finds things:** the app's resources hold `app-hub/` (hub,
+  frontend, relay). The main process sets `YGGLTREE_NODE_BIN`,
+  `YGGLTREE_WRANGLER_BIN`, `YGGLTREE_RELAY_DIR` and `YGGLTREE_RELAY_PREBUILT` for the
+  hub. Wrangler runs with the app's own Node (`ELECTRON_RUN_AS_NODE`), from a copy
+  of the relay under the data folder, because the app's files are read-only.
+- **Release:** bump the version in the root `package.json` (the app reports it),
+  then push a `v*` tag. `.github/workflows/release.yml` builds both DMGs on
+  their own runners, runs the tests, writes `SHA256SUMS.txt`, and publishes the
+  release. The product page and the README link to `releases/latest`.
+- **Signing:** the app is ad-hoc signed, not notarized. Families use **Open
+  Anyway** once. Signing with a Developer ID and notarizing would remove that
+  step, and it needs the Apple secrets in the repository (never committed).
+- **The desktop app's only outbound request** is the daily check of GitHub's
+  latest release. It's on by default, and the menu bar turns it off.
+
 ## Related notes
 
 - [[Architecture]] — the system this code implements

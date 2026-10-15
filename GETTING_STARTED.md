@@ -1,11 +1,10 @@
 # Getting Started with Yggltree
 
-This guide walks you through installing Yggltree on your family's computer,
-setting up the family relay, and adding everyone's phones. You don't need to
-know how to program. A few steps ask you to type one short command, and the
-exact text is always given.
+This guide walks you through installing Yggltree on your family's Mac, setting up
+the family relay, and adding everyone's phones. You don't need to know how to
+program, and you don't need to type anything into Terminal.
 
-**How it works:** Yggltree runs on one computer in your home, which we call
+**How it works:** Yggltree runs on one Mac in your home, which we call
 the **family computer**. Phones and tablets sync through the **family relay**,
 a small free service on your own Cloudflare account. The relay only ever holds
 your family's data in encrypted form, so phones sync from anywhere: at home, on
@@ -21,7 +20,7 @@ company server that can read your data.
 
 1. [What you need](#1-what-you-need)
 2. [Install on a Mac](#2-install-on-a-mac)
-3. [Install on Windows](#3-install-on-windows)
+3. [Windows (coming next)](#3-windows-coming-next)
 4. [First-run setup](#4-first-run-setup)
 5. [Set up the family relay](#5-set-up-the-family-relay)
 6. [Add a device](#6-add-a-device)
@@ -37,118 +36,54 @@ company server that can read your data.
 
 ## 1. What you need
 
-- **A Mac or Windows computer that stays at home.** This is your family
-  computer. Yggltree runs on it, and it uploads its changes to the relay
-  while it's running.
+- **A Mac that stays at home.** This is your family computer. Yggltree runs on
+  it, and it uploads its changes to the relay while it's running. Any Mac from
+  the last several years works. The download page lists the two kinds.
 - **Internet access.** Phones reach the family relay over Wi-Fi or mobile data.
 - **A free Cloudflare account**, for the family relay (section 5).
-- **Node.js 22.12 or newer.** This is free software that Yggltree runs on.
-  Sections 2 and 3 show how to install it.
 - Phones and tablets need a current web browser: Safari on iPhone and iPad,
   Chrome on Android. There's no app store download.
+
+You don't need to install anything else. Yggltree includes everything it runs on.
 
 ---
 
 ## 2. Install on a Mac
 
-**Step 1: Install Node.js.**
+**Step 1: Download Yggltree.**
 
-1. Go to [nodejs.org](https://nodejs.org) and download the **LTS** version
-   for macOS (the `.pkg` installer).
-2. Open the downloaded file and click through the installer with the
-   default options.
+1. Find out which kind of Mac you have: choose **About This Mac** from the Apple
+   menu. **Chip: Apple M…** means Apple silicon. **Processor: Intel** means Intel.
+2. Download the matching file:
+   - **Apple silicon:** [Yggltree-arm64.dmg](https://github.com/cored3sign/yggltree/releases/latest/download/Yggltree-arm64.dmg)
+   - **Intel:** [Yggltree-x64.dmg](https://github.com/cored3sign/yggltree/releases/latest/download/Yggltree-x64.dmg)
 
-**Step 2: Download Yggltree.**
+**Step 2: Install Yggltree.**
 
-1. Go to [github.com/cored3sign/yggltree](https://github.com/cored3sign/yggltree).
-2. Click the green **Code** button, then **Download ZIP**.
-3. Open your **Downloads** folder. If the ZIP wasn't unzipped
-   automatically, double-click it. You'll get a folder named something like
-   `yggltree-main`.
-4. Move that folder into your **Documents** folder.
+1. Open the downloaded file. A window opens with the Yggltree icon and an
+   Applications folder.
+2. Drag the **Yggltree** icon onto the **Applications** folder.
+3. Open **Applications** and double-click **Yggltree**.
+4. **The first time,** macOS may say it can't check the app. Open **System
+   Settings → Privacy & Security**, scroll down, and click **Open Anyway**
+   next to the message about Yggltree. Then open Yggltree again and choose
+   **Open**.
+   - On macOS 14 (Sonoma) and earlier, instead hold **Control**, click
+     Yggltree, and choose **Open**.
 
-**Step 3: Start Yggltree.**
+Yggltree opens its own window and leaves a leaf icon in the menu bar at the top
+of the screen. Closing the window doesn't stop Yggltree, so phones keep syncing.
 
-1. Open the folder and double-click **Start Yggltree** (the file named
-   `Start Yggltree.command`).
-2. **The first time,** your Mac may refuse to open it because it was
-   downloaded from the internet. If that happens:
-   - Hold **Control** and click the file (or right-click it), choose
-     **Open**, then click **Open** again.
-   - On newer versions of macOS there may be no **Open** button. In that
-     case, click **Done**. Then open **System Settings → Privacy &
-     Security**, scroll down, and click **Open Anyway** next to the message
-     about "Start Yggltree". Then double-click **Start Yggltree** again
-     and choose **Open**.
-3. A Terminal window opens. The very first start installs what Yggltree
-   needs and builds the app. This takes a few minutes and needs the
-   internet. Later starts are much faster.
-
-**Prefer typing a command?** Open the **Terminal** app. Type `cd` followed by
-a space, then drag your Yggltree folder onto the Terminal window and press
-**Return**. Then type this and press **Return**:
-
-```sh
-npm start
-```
-
-When Yggltree is ready, the window shows something like this, and your web
-browser opens Yggltree by itself:
-
-```
-Yggltree is running.
-  On this computer:  http://localhost:8787
-  Phones sync through the family relay: see Settings → Sync.
-  Data folder:       /Users/you/Library/Application Support/Yggltree
-  Keep this window open. Press Ctrl+C or close it to stop Yggltree.
-```
-
-Continue with [section 4](#4-first-run-setup).
+**Check the download:** the release page lists a checksum for each file in
+`SHA256SUMS.txt`. In Terminal, `shasum -a 256 ~/Downloads/Yggltree-arm64.dmg`
+(or `x64`) should print the same value.
 
 ---
 
-## 3. Install on Windows
+## 3. Windows (coming next)
 
-**Step 1: Install Node.js.**
-
-1. Go to [nodejs.org](https://nodejs.org) and download the **LTS** version
-   for Windows (the `.msi` installer).
-2. Run it and keep all the default options. You don't need the optional
-   "Tools for Native Modules".
-
-**Step 2: Download Yggltree.**
-
-1. Go to [github.com/cored3sign/yggltree](https://github.com/cored3sign/yggltree).
-2. Click the green **Code** button, then **Download ZIP**.
-3. In your **Downloads** folder, right-click the ZIP and choose **Extract
-   All…**, then **Extract**. You'll get a folder named something like
-   `yggltree-main`. Move it somewhere permanent, such as
-   **Documents**.
-4. **Don't run Yggltree from inside the ZIP.** Windows lets you open a
-   ZIP like a folder, but Yggltree won't work from there. Always use the
-   extracted folder.
-
-**Step 3: Start Yggltree.**
-
-1. Open the extracted folder and double-click **Start Yggltree** (the
-   file named `Start Yggltree.bat`).
-2. If Windows shows **"Windows protected your PC"**, click **More info**,
-   then **Run anyway**.
-3. A black Command Prompt window opens. The very first start installs what
-   Yggltree needs and builds the app. This takes a few minutes and needs
-   the internet. Later starts are much faster.
-
-**Prefer typing a command?** Open the extracted folder in File Explorer,
-click the address bar at the top, type `cmd` and press **Enter**. In the
-window that opens, type this and press **Enter**:
-
-```sh
-npm start
-```
-
-When Yggltree is ready, the window shows a summary like the Mac example
-above, with **Data folder** under `C:\Users\you\AppData\Roaming\Yggltree`,
-and your web browser opens Yggltree by itself.
+The Windows app isn't ready yet. It will use the same desktop app as the Mac
+version. Until then, Yggltree runs on a Mac.
 
 ---
 
@@ -157,18 +92,20 @@ and your web browser opens Yggltree by itself.
 Setup happens **only on the family computer**. Phones and tablets join later
 (section 6).
 
-Your browser opens **http://localhost:8787** and shows **Set up your family
-hub**. If it didn't open, type that address into your browser yourself. Always
-use **http://localhost:8787** on the family computer.
+The first time you open Yggltree, its window shows **Set up your family**. If
+you need that page again later, open Yggltree from the leaf in the menu bar.
 
 You have two choices:
 
-- **Start fresh:** enter your **Family name** and **Your name**, then
-  click **Create family**. You become the family's first admin.
-- **Restore a backup:** if you already have a Yggltree backup file
-  (a file ending in `.fhub.json`), click **Restore from a backup file
-  instead**. Choose the file, type `REPLACE` in the box, and click
-  **Restore**.
+- **Start fresh:** enter your **Family name** and **Your name**, then click
+  **Create family**. You become the family's first admin.
+- **Restore a backup:** if you already have a Yggltree backup file (a file
+  ending in `.fhub.json` or `.yggltree.json`), click **Restore from a backup file
+  instead**. Choose the file, type `REPLACE` in the box, and click **Restore**.
+
+**Set your admin PIN next.** Admins use a six-digit PIN to open the admin
+profile and to confirm changes to the family. Choose one you'll remember. If
+you forget it, see [section 12](#12-troubleshooting).
 
 **Add your family members next.** Open the menu behind your picture in the
 top corner, choose **Settings**, and add each person under **Family
@@ -257,28 +194,16 @@ it can reach the relay.
 
 ## 7. Keeping it running
 
-- **Keep your Yggltree window open** while you use the family computer.
-  Closing it, or pressing **Ctrl+C** in it, stops Yggltree on that computer.
-  Phones keep syncing with each other through the relay, but the family
-  computer's own changes only reach the relay while Yggltree runs.
-- **Don't let the family computer sleep** while you want its changes to go out.
-  - **Mac:** in **System Settings**, open **Energy** (or **Battery → Options**
-    on a laptop). Turn on **Prevent automatic sleeping when the display is off**,
-    or **Wake for network access**. The exact names vary between macOS versions.
-  - **Windows:** **Settings → System → Power** (or **Power & battery**). Set
-    **Sleep** to **Never** while plugged in.
-- **Start it automatically when you log in (optional):**
-  - **Mac:** open **System Settings → General → Login Items**. Under
-    **Open at Login**, click **+** and choose `Start Yggltree.command` in
-    your Yggltree folder.
-  - **Windows:** press **Windows key + R**, type `shell:startup` and press
-    **Enter**. Right-click the **Start Yggltree** file, choose **Create
-    shortcut**, and move the shortcut into the folder that opened.
-
-  Each time Yggltree starts, it also opens your browser.
-
-Starting Yggltree twice is harmless. The second window says **Yggltree
-is already running at http://localhost:8787** and opens the browser there.
+- **Keep Yggltree running.** Closing the window doesn't stop it: Yggltree stays in
+  the menu bar, so phones keep syncing. To stop it, choose **Quit Yggltree** from
+  the leaf in the menu bar. Opening Yggltree again brings up its window, instead of
+  starting a second copy.
+- **Start it when you log in.** This is on by default. To change it, choose
+  **Start Yggltree when I log in** in the menu bar.
+- **Keep the Mac awake.** Also on by default: **Keep this Mac awake while Yggltree
+  runs**. The family computer's own changes only reach the relay while it's awake.
+  If you turn that off, check **System Settings → Energy** (or **Battery → Options**
+  on a laptop) so the Mac doesn't sleep.
 
 ---
 
@@ -358,20 +283,22 @@ with the backup's contents.
 
 ## 11. Updating Yggltree
 
-1. **Stop Yggltree:** close its window, or press **Ctrl+C** in it.
-2. **Get the new version:**
-   - **If you downloaded a ZIP,** download a new one ([section 2](#2-install-on-a-mac)
-     or [section 3](#3-install-on-windows), step 2). Replace your old Family
-     Hub folder with the new one.
-   - **If you used `git clone`,** run `git pull` in the folder.
-3. **Start it again** the same way as before. The first start after an update
-   installs and builds again, which takes a few minutes.
+1. **Check for a new version.** Yggltree checks once a day. When a newer version
+   exists, the leaf in the menu bar shows a dot and **Version … is available**. To
+   check now, choose **Check for updates** from the menu.
+2. **Download it.** Choose the **Version … is available** item, and download the
+   file for your Mac (section 2).
+3. **Replace the app.** Quit Yggltree from the menu bar, drag the new Yggltree into
+   Applications, and replace the old one. Then open Yggltree.
 
-Your family's data lives in the data folder, not the program folder, so it
-stays put. Phones keep their family and don't need to join again.
+Your family's data lives in `~/Library/Application Support/Yggltree`, not in the
+app, so it stays put. Phones keep their family and don't need to join again.
 
-> If you set up automatic start ([section 7](#7-keeping-it-running)), point it
-> at the new folder if its location changed.
+After an update, open **Settings → Sync**. If it says the relay serves an older
+version, choose **Update the relay**, enter your PIN, and wait a few minutes.
+Phones get the new version the next time they open Yggltree.
+
+To turn off the daily check, choose **Check for updates every day** in the menu bar.
 
 ---
 
@@ -379,11 +306,9 @@ stays put. Phones keep their family and don't need to join again.
 
 | Problem | What to do |
 | --- | --- |
-| The window says **Yggltree needs Node.js 22.12 or newer** | Install the LTS version from [nodejs.org](https://nodejs.org) ([section 2](#2-install-on-a-mac) or [section 3](#3-install-on-windows)), then start Yggltree again. |
-| The first start stops with **Installing failed** | Check the internet connection, then start Yggltree again. |
-| The window says **Port 8787 is being used by another program** | Close the other program and start Yggltree again. Or start on another port, for example `npm start -- --port 8788`, then open `http://localhost:8788`. |
+| The menu bar shows **Not running**, with **Port 8787 is being used by another program** | Close the other program, then choose **Start Yggltree** from the leaf in the menu bar. |
 | The window says **Another program appears to be using Yggltree's data folder** | Usually left over after a crash. If Yggltree really isn't running, delete the `hub.lock` file the message names and start again. |
-| The family computer shows **Yggltree isn't running** | Start Yggltree ([section 2](#2-install-on-a-mac) or [section 3](#3-install-on-windows)), then reload the page. |
+| The family computer shows **Yggltree isn't running** | Open Yggltree from Applications, or choose **Start Yggltree** from the leaf in the menu bar. |
 | **Relay address** says it must start with `https://` | Paste the whole address Cloudflare gave you, starting with `https://`. |
 | There's no QR code in **Settings → Sync** | Only admins see it. Expand **Add a device** to show it. Ask an admin to open the page on the family computer. |
 | Scanning the QR code doesn't work | Make sure you allowed the camera when the phone asked. Or tap **Or paste the family link** and paste the link from the family computer. |
@@ -393,8 +318,11 @@ stays put. Phones keep their family and don't need to join again.
 | **Settings → Sync** has no relay address | This happens after the browser's data is cleared, or after a restore. Paste the relay address into **Relay address**, click **Start the family relay**, and have each phone scan the new QR code ([section 10](#10-restoring-a-backup)). |
 | You can't find the relay address | It's the address Cloudflare gave you when you deployed the relay. In the Cloudflare dashboard, open **Workers & Pages** and choose the relay; its address is shown on its page. |
 | A notification never arrives | Turn notifications on from the Home Screen app ([section 6](#6-add-a-device)). On iPhone, notifications only work from the Home Screen app. |
-| An admin forgot their PIN | On the family computer, with Yggltree running, open a terminal in the Yggltree folder and run `npm run reset-admin-pin`. Confirm, and each admin sets a new PIN the next time they open Yggltree. |
+| An admin forgot their PIN | Choose **Reset admin PIN…** from the leaf in the menu bar, and confirm. Each admin sets a new PIN the next time they open Yggltree. |
 | A phone doesn't appear under **Settings → Family** | It hasn't received the family's data yet. Scan the family QR code again ([section 6](#6-add-a-device)). |
+| The leaf in the menu bar has a dot | Something needs attention: the relay serves an older version, a new version is available, or Yggltree isn't running. Open the menu to see which. |
+| **Settings → Sync** says the relay serves an older version | Choose **Update the relay**, enter your PIN, and wait a few minutes. Phones get the new version the next time they open Yggltree. |
+| macOS says it can't check Yggltree when you open it | Follow the **Open Anyway** step in [section 2](#2-install-on-a-mac). |
 
 ---
 

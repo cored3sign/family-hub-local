@@ -19,8 +19,10 @@ updated: 2026-10-10
 
 ## Later
 
-- **A desktop app** (Tauri or Electron), so the family computer runs without a
-  terminal window and starts with the computer.
+- **A Windows app**, built from the same Electron code as the Mac app, so the
+  family computer runs without a terminal window and starts with the computer.
+- **A signed Mac app**: a Developer ID signature and notarization, which removes
+  the one-time Open Anyway step.
 - **Phone apps** (Capacitor), for a full offline app on iPhone and Android.
 - **Photos on the relay.** Photos are stored per object in the relay's Durable
   Object storage, which has a size limit per object. Move them to R2 (free allowance)
