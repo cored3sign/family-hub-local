@@ -2,7 +2,7 @@
 
 What changed in each version of Yggltree. Each release page on GitHub shows its section from this file as its notes.
 
-## Unreleased
+## 1.0.0 (2026-10-15)
 
 ### Added
 
