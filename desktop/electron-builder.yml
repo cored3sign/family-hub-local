@@ -13,6 +13,7 @@ files:
   - hubProcess.js
   - trayMenu.js
   - updates.js
+  - links.js
   - preload.cjs
   - loading.html
   - assets/**/*
