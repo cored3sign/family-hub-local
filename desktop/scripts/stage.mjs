@@ -10,7 +10,7 @@
 import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { execFileSync } from 'node:child_process'
 import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -47,6 +47,13 @@ execFileSync('npm', ['ci', '--omit=dev', '--ignore-scripts', '--no-audit', '--no
   stdio: 'inherit',
 })
 await rm(join(out, 'hub', 'package-lock.json'))
+// The frontend files the hub imports (backupFormat.js, protocol.js) import yjs, and so does the hub. Two copies of
+// yjs would be two library instances, which Yjs warns breaks its type checks. So the frontend's yjs is a shim that
+// re-exports the hub's copy, which is the one file both use.
+const yjsShim = join(out, 'frontend', 'node_modules', 'yjs')
+await mkdir(yjsShim, { recursive: true })
+await writeFile(join(yjsShim, 'package.json'), JSON.stringify({ name: 'yjs', private: true, type: 'module', exports: { '.': './index.mjs' } }, null, 2))
+await writeFile(join(yjsShim, 'index.mjs'), "// One copy of yjs for the hub and the frontend files it uses; see desktop/scripts/stage.mjs.\nexport * from '../../../hub/node_modules/yjs/dist/yjs.mjs'\n")
 
 // The relay: its source, the app it serves to phones, and Wrangler with the workerd binary for this architecture.
 // Its dependencies come from its own lockfile, installed the same way.
@@ -79,4 +86,7 @@ if (!binaryType.includes(npmArch === 'x64' ? 'x86_64' : 'arm64')) {
   throw new Error(`workerd for ${arch} is the wrong architecture: ${binaryType}`)
 }
 
+for (const module of ['frontend/src/data/backupFormat.js', 'frontend/src/data/sync/protocol.js']) {
+  await import(pathToFileURL(join(out, module)).href)
+}
 console.log(`Staged the app's hub and relay for ${arch} in ${out}`)
